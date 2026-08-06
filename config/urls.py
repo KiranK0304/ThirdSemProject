@@ -9,6 +9,8 @@ from drf_spectacular.views import SpectacularAPIView
 from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
+from talentwright.users.api.auth_views import UserMeView
+
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
@@ -31,6 +33,9 @@ urlpatterns = [
 urlpatterns += [
     # API base url
     path("api/", include("config.api_router")),
+    # JWT Auth API
+    path("api/auth/", include("talentwright.users.api.urls", namespace="auth_api")),
+    path("api/me/", UserMeView.as_view(), name="api-me"),
     # DRF auth token
     path("api/auth-token/", obtain_auth_token, name="obtain_auth_token"),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),

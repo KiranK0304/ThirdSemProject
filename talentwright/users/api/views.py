@@ -10,6 +10,8 @@ from talentwright.users.models import User
 
 from .serializers import UserSerializer
 
+from rest_framework.permissions import AllowAny
+
 
 class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = UserSerializer
@@ -24,3 +26,23 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     def me(self, request):
         serializer = UserSerializer(request.user, context={"request": request})
         return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    # @action(detail=False, methods=["get"])
+    # def health(self, request):
+    #     return Response({"status": "ok"})
+
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[AllowAny],
+    )
+    def health(self, request):
+        return Response({"status": "ok"})
+            
+    @action(detail=False, methods=["get"])
+    def whoami(self, request):
+        return Response({
+            "id": request.user.id,
+            "email": request.user.email,
+            "name": request.user.name,
+        })
