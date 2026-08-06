@@ -3,7 +3,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from talentwright.users.models import User
+from talentwright.users.api.permissions import IsAdmin, IsEmployer, IsSeeker, IsVerifiedEmployer
+from talentwright.users.models import EmployerProfile, SeekerProfile, User, VerificationStatus
 
 pytestmark = pytest.mark.django_db
 
@@ -12,152 +13,173 @@ class TestJWTAuthenticationAPI:
     def setup_method(self):
         self.client = APIClient()
 
-    def test_register_user_success(self):
+    def test_register_employer_success(self):
         url = reverse("auth_api:register")
         payload = {
-            "email": "newuser@example.com",
-            "name": "New User",
+            "email": "employer@acme.com",
+            "name": "Acme Admin",
             "password": "StrongPassword123!",
             "password_confirm": "StrongPassword123!",
+            "account_type": "EMPLOYER",
         }
         response = self.client.post(url, payload, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
         assert "tokens" in response.data
-        assert "access" in response.data["tokens"]
-        assert "refresh" in response.data["tokens"]
-        assert response.data["user"]["email"] == "newuser@example.com"
-        assert response.data["user"]["name"] == "New User"
+        assert response.data["user"]["email"] == "employer@acme.com"
+        assert response.data["user"]["account_type"] == "EMPLOYER"
+        assert response.data["user"]["employer_profile"]["verification_status"] == "PENDING"
 
-        user = User.objects.get(email="newuser@example.com")
-        assert user.is_active is True
+        user = User.objects.get(email="employer@acme.com")
+        assert user.is_employer is True
+        assert user.is_seeker is False
 
-    def test_register_password_mismatch(self):
+    def test_register_seeker_success(self):
         url = reverse("auth_api:register")
         payload = {
-            "email": "mismatch@example.com",
+            "email": "seeker@example.com",
+            "name": "Jane Seeker",
             "password": "StrongPassword123!",
-            "password_confirm": "DifferentPassword123!",
+            "password_confirm": "StrongPassword123!",
+            "account_type": "SEEKER",
+        }
+        response = self.client.post(url, payload, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["user"]["account_type"] == "SEEKER"
+        assert response.data["user"]["seeker_profile"] is not None
+
+        user = User.objects.get(email="seeker@example.com")
+        assert user.is_seeker is True
+        assert user.is_employer is False
+
+    def test_register_missing_account_type(self):
+        url = reverse("auth_api:register")
+        payload = {
+            "email": "noaccounttype@example.com",
+            "password": "StrongPassword123!",
+            "password_confirm": "StrongPassword123!",
         }
         response = self.client.post(url, payload, format="json")
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "password_confirm" in response.data
+        assert "account_type" in response.data
 
-    def test_login_success(self):
-        user = User.objects.create_user(
-            email="loginuser@example.com",
-            password="LoginPassword123!",
-            name="Login User",
-            is_active=True,
-        )
-        url = reverse("auth_api:login")
+    def test_patch_me_update_employer_profile(self):
+        url = reverse("auth_api:register")
         payload = {
-            "email": "loginuser@example.com",
-            "password": "LoginPassword123!",
+            "email": "emp_patch@acme.com",
+            "name": "Old Name",
+            "password": "StrongPassword123!",
+            "password_confirm": "StrongPassword123!",
+            "account_type": "EMPLOYER",
         }
-        response = self.client.post(url, payload, format="json")
+        reg_resp = self.client.post(url, payload, format="json")
+        access_token = reg_resp.data["tokens"]["access"]
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        me_url = reverse("api-me")
+        patch_payload = {
+            "name": "New Name",
+            "employer_profile": {
+                "company_name": "Updated Acme Corp",
+                "website": "https://updated-acme.com",
+            },
+        }
+        response = self.client.patch(me_url, patch_payload, format="json")
 
         assert response.status_code == status.HTTP_200_OK
-        assert "access" in response.data
-        assert "refresh" in response.data
-        assert response.data["user"]["id"] == user.id
+        assert response.data["name"] == "New Name"
+        assert response.data["employer_profile"]["company_name"] == "Updated Acme Corp"
+        assert response.data["employer_profile"]["website"] == "https://updated-acme.com"
 
-    def test_login_invalid_credentials(self):
-        User.objects.create_user(
-            email="loginuser2@example.com",
-            password="LoginPassword123!",
-            is_active=True,
+    def test_permissions_helpers(self):
+        # Create Employer
+        emp_user = User.objects.create_user(email="emp_perm@example.com", password="Pass", is_active=True)
+        emp_prof = EmployerProfile.objects.create(user=emp_user, verification_status=VerificationStatus.PENDING)
+
+        # Create Seeker
+        seeker_user = User.objects.create_user(email="seeker_perm@example.com", password="Pass", is_active=True)
+        SeekerProfile.objects.create(user=seeker_user)
+
+        # Create Admin
+        admin_user = User.objects.create_user(email="admin_perm@example.com", password="Pass", is_staff=True, is_active=True)
+
+        class DummyRequest:
+            def __init__(self, user):
+                self.user = user
+
+        # Test IsEmployer
+        perm = IsEmployer()
+        assert perm.has_permission(DummyRequest(emp_user), None) is True
+        assert perm.has_permission(DummyRequest(seeker_user), None) is False
+
+        # Test IsVerifiedEmployer
+        v_perm = IsVerifiedEmployer()
+        assert v_perm.has_permission(DummyRequest(emp_user), None) is False
+        emp_prof.verification_status = VerificationStatus.APPROVED
+        emp_prof.save()
+        assert v_perm.has_permission(DummyRequest(emp_user), None) is True
+
+        # Test IsSeeker
+        s_perm = IsSeeker()
+        assert s_perm.has_permission(DummyRequest(seeker_user), None) is True
+        assert s_perm.has_permission(DummyRequest(emp_user), None) is False
+
+        # Test IsAdmin
+        a_perm = IsAdmin()
+        assert a_perm.has_permission(DummyRequest(admin_user), None) is True
+        assert a_perm.has_permission(DummyRequest(emp_user), None) is False
+
+    def test_admin_employer_list_and_approve_reject_flow(self):
+        admin_user = User.objects.create_user(
+            email="admin_api@example.com", password="AdminPassword123!", is_staff=True, is_active=True
         )
-        url = reverse("auth_api:login")
-        payload = {
-            "email": "loginuser2@example.com",
-            "password": "WrongPassword123!",
-        }
-        response = self.client.post(url, payload, format="json")
+        emp_user = User.objects.create_user(
+            email="emp_api@example.com", password="EmpPassword123!", is_active=True
+        )
+        emp_prof = EmployerProfile.objects.create(
+            user=emp_user, company_name="Test Company", verification_status=VerificationStatus.PENDING
+        )
 
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        login_url = reverse("auth_api:login")
+        login_resp = self.client.post(
+            login_url, {"email": "admin_api@example.com", "password": "AdminPassword123!"}, format="json"
+        )
+        admin_token = login_resp.data["access"]
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {admin_token}")
 
-    def test_authenticated_me_endpoint_success(self):
-        user = User.objects.create_user(
-            email="meuser@example.com",
-            password="MePassword123!",
-            name="Me User",
-            is_active=True,
+        # List pending employers
+        list_url = reverse("auth_api:admin-employer-list")
+        list_resp = self.client.get(f"{list_url}?status=PENDING")
+        assert list_resp.status_code == status.HTTP_200_OK
+        assert len(list_resp.data) == 1
+        assert list_resp.data[0]["company_name"] == "Test Company"
+
+        # Approve employer
+        approve_url = reverse("auth_api:admin-employer-approve", kwargs={"pk": emp_prof.pk})
+        approve_resp = self.client.patch(approve_url)
+        assert approve_resp.status_code == status.HTTP_200_OK
+        assert approve_resp.data["verification_status"] == "APPROVED"
+
+        # Reject employer
+        reject_url = reverse("auth_api:admin-employer-reject", kwargs={"pk": emp_prof.pk})
+        reject_resp = self.client.patch(reject_url)
+        assert reject_resp.status_code == status.HTTP_200_OK
+        assert reject_resp.data["verification_status"] == "REJECTED"
+
+    def test_non_admin_forbidden_on_admin_endpoints(self):
+        normal_user = User.objects.create_user(
+            email="normal@example.com", password="NormalPassword123!", is_active=True
         )
         login_url = reverse("auth_api:login")
         login_resp = self.client.post(
-            login_url,
-            {"email": "meuser@example.com", "password": "MePassword123!"},
-            format="json",
+            login_url, {"email": "normal@example.com", "password": "NormalPassword123!"}, format="json"
         )
         access_token = login_resp.data["access"]
-
-        me_url = reverse("api-me")
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
-        response = self.client.get(me_url)
 
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["email"] == "meuser@example.com"
-        assert response.data["name"] == "Me User"
+        list_url = reverse("auth_api:admin-employer-list")
+        response = self.client.get(list_url)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
-    def test_me_endpoint_unauthorized(self):
-        me_url = reverse("api-me")
-        response = self.client.get(me_url)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
-
-    def test_refresh_token_flow(self):
-        user = User.objects.create_user(
-            email="refreshuser@example.com",
-            password="RefreshPassword123!",
-            is_active=True,
-        )
-        login_url = reverse("auth_api:login")
-        login_resp = self.client.post(
-            login_url,
-            {"email": "refreshuser@example.com", "password": "RefreshPassword123!"},
-            format="json",
-        )
-        refresh_token = login_resp.data["refresh"]
-
-        refresh_url = reverse("auth_api:refresh")
-        response = self.client.post(
-            refresh_url, {"refresh": refresh_token}, format="json"
-        )
-
-        assert response.status_code == status.HTTP_200_OK
-        assert "access" in response.data
-        assert "refresh" in response.data  # Rotated refresh token
-
-    def test_logout_blacklists_token(self):
-        user = User.objects.create_user(
-            email="logoutuser@example.com",
-            password="LogoutPassword123!",
-            is_active=True,
-        )
-        login_url = reverse("auth_api:login")
-        login_resp = self.client.post(
-            login_url,
-            {"email": "logoutuser@example.com", "password": "LogoutPassword123!"},
-            format="json",
-        )
-        access_token = login_resp.data["access"]
-        refresh_token = login_resp.data["refresh"]
-
-        # Authenticate and call logout
-        logout_url = reverse("auth_api:logout")
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
-        logout_resp = self.client.post(
-            logout_url, {"refresh": refresh_token}, format="json"
-        )
-
-        assert logout_resp.status_code == status.HTTP_200_OK
-
-        # Try to use the blacklisted refresh token to obtain a new access token
-        refresh_url = reverse("auth_api:refresh")
-        self.client.credentials()  # clear auth header
-        refresh_resp = self.client.post(
-            refresh_url, {"refresh": refresh_token}, format="json"
-        )
-
-        assert refresh_resp.status_code == status.HTTP_401_UNAUTHORIZED

@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import UserAdminChangeForm
 from .forms import UserAdminCreationForm
-from .models import User
+from .models import EmployerProfile, SeekerProfile, User, VerificationStatus
 
 if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
     # Force the `admin` sign in process to go through the `django-allauth` workflow:
@@ -48,3 +48,28 @@ class UserAdmin(auth_admin.UserAdmin):
             },
         ),
     )
+
+
+@admin.action(description=_("Approve selected employers"))
+def approve_employers(modeladmin, request, queryset):
+    queryset.update(verification_status=VerificationStatus.APPROVED)
+
+
+@admin.action(description=_("Reject selected employers"))
+def reject_employers(modeladmin, request, queryset):
+    queryset.update(verification_status=VerificationStatus.REJECTED)
+
+
+@admin.register(EmployerProfile)
+class EmployerProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "company_name", "verification_status", "created_at"]
+    list_filter = ["verification_status", "created_at"]
+    search_fields = ["user__email", "company_name"]
+    actions = [approve_employers, reject_employers]
+
+
+@admin.register(SeekerProfile)
+class SeekerProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "phone", "created_at"]
+    search_fields = ["user__email", "phone"]
+

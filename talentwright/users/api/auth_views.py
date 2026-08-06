@@ -79,12 +79,75 @@ class LogoutView(APIView):
             )
 
 
-class UserMeView(generics.RetrieveAPIView):
+from talentwright.users.api.permissions import IsAdmin
+from talentwright.users.models import EmployerProfile, VerificationStatus
+from .auth_serializers import (
+    CustomTokenObtainPairSerializer,
+    EmployerProfileAdminSerializer,
+    LogoutSerializer,
+    RegisterSerializer,
+    UserMeSerializer,
+)
+
+
+class UserMeView(generics.RetrieveUpdateAPIView):
     """
-    API View for retrieving the current authenticated user's profile information.
+    API View for retrieving and updating the current authenticated user's profile information.
     """
     serializer_class = UserMeSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+
+
+class AdminEmployerListView(generics.ListAPIView):
+    """
+    API View for admins to list all employer profiles (with optional ?status=PENDING filter).
+    """
+    serializer_class = EmployerProfileAdminSerializer
+    permission_classes = [IsAdmin]
+
+    def get_queryset(self):
+        queryset = EmployerProfile.objects.select_related("user").all().order_by("-created_at")
+        status_param = self.request.query_params.get("status")
+        if status_param and status_param.upper() in VerificationStatus.values:
+            queryset = queryset.filter(verification_status=status_param.upper())
+        return queryset
+
+
+class AdminEmployerApproveView(APIView):
+    """
+    API View for admins to approve an employer profile.
+    """
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, pk):
+        try:
+            profile = EmployerProfile.objects.get(pk=pk)
+        except EmployerProfile.DoesNotExist:
+            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        profile.verification_status = VerificationStatus.APPROVED
+        profile.save()
+        serializer = EmployerProfileAdminSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AdminEmployerRejectView(APIView):
+    """
+    API View for admins to reject an employer profile.
+    """
+    permission_classes = [IsAdmin]
+
+    def patch(self, request, pk):
+        try:
+            profile = EmployerProfile.objects.get(pk=pk)
+        except EmployerProfile.DoesNotExist:
+            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        profile.verification_status = VerificationStatus.REJECTED
+        profile.save()
+        serializer = EmployerProfileAdminSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
