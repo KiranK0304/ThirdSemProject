@@ -105,6 +105,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "talentwright.users",
+    "talentwright.jobs",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
