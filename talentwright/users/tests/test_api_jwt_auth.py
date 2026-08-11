@@ -183,3 +183,23 @@ class TestJWTAuthenticationAPI:
         response = self.client.get(list_url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
+    def test_admin_employer_list_invalid_status_returns_400(self):
+        admin_user = User.objects.create_user(
+            email="admin_invalid_status@example.com", password="AdminPassword123!", is_staff=True, is_active=True
+        )
+
+        login_url = reverse("auth_api:login")
+        login_resp = self.client.post(
+            login_url,
+            {"email": "admin_invalid_status@example.com", "password": "AdminPassword123!"},
+            format="json",
+        )
+        admin_token = login_resp.data["access"]
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {admin_token}")
+
+        list_url = reverse("auth_api:admin-employer-list")
+        response = self.client.get(f"{list_url}?status=abc")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "status" in response.data
+

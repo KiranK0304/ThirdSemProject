@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -111,8 +112,12 @@ class AdminEmployerListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = EmployerProfile.objects.select_related("user").all().order_by("-created_at")
         status_param = self.request.query_params.get("status")
-        if status_param and status_param.upper() in VerificationStatus.values:
-            queryset = queryset.filter(verification_status=status_param.upper())
+        if status_param:
+            normalized_status = status_param.upper()
+            if normalized_status not in VerificationStatus.values:
+                allowed_statuses = ", ".join(VerificationStatus.values)
+                raise ValidationError({"status": f"Invalid status. Allowed values: {allowed_statuses}."})
+            queryset = queryset.filter(verification_status=normalized_status)
         return queryset
 
 
