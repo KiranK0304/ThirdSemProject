@@ -6,6 +6,8 @@ Get Started
 
 Documentation can be written as rst files in `talentwright/docs`.
 
+Feature-based API reference lives in `docs/api/` as Markdown files.
+
 
 To build and serve docs, use the commands::
 
