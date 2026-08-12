@@ -3,6 +3,17 @@ from django.db import transaction
 from rest_framework import serializers
 
 from talentwright.jobs.models import Job
+from talentwright.users.models import EmployerProfile
+
+
+class PublicEmployerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployerProfile
+        fields = [
+            "company_name",
+            "website",
+        ]
+        read_only_fields = fields
 
 
 class JobCreateSerializer(serializers.ModelSerializer):
@@ -75,3 +86,24 @@ class JobCreateSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             instance.save()
         return instance
+
+
+class PublicJobSerializer(serializers.ModelSerializer):
+    employer = PublicEmployerSerializer(read_only=True)
+
+    class Meta:
+        model = Job
+        fields = [
+            "id",
+            "title",
+            "description",
+            "location",
+            "employment_type",
+            "salary_min",
+            "salary_max",
+            "salary_currency",
+            "created_at",
+            "updated_at",
+            "employer",
+        ]
+        read_only_fields = fields

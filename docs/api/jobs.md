@@ -4,41 +4,81 @@
 
 ## Summary
 
-The Jobs API allows verified employers to manage their own job postings.
+The Jobs API is split into two parts:
 
-Currently, authenticated and approved employers can:
+* Public read endpoints for job search and discovery.
+* Authenticated employer-management endpoints for creating and maintaining jobs.
 
-* Create a job
-* List their own jobs
-* Retrieve a specific job they own
-* Update one of their jobs
-* Delete one of their jobs
+Public endpoints only expose jobs that are:
 
-All operations are restricted to jobs owned by the authenticated employer.
+* `OPEN`
+* posted by an employer whose verification status is `APPROVED`
 
----
-
-## Authentication
-
-All endpoints require a valid JWT Bearer token.
-
-Requirements:
-
-* The authenticated user must have an `EmployerProfile`.
-* The employer's `verification_status` must be `APPROVED`.
-* The authenticated employer is determined from the JWT. The client must never provide an employer identifier.
+Sensitive ownership data is not exposed in the public responses.
 
 ---
 
-## Endpoints
+## Public Job Search
+
+These endpoints are accessible to everyone.
+
+### List Open Jobs
+
+`GET /api/jobs/`
+
+Return all jobs that are currently open and belong to approved employers.
+
+**Rules**
+
+* Only jobs with `status = OPEN` are returned.
+* Only jobs from employers with `verification_status = APPROVED` are returned.
+* Closed, draft, archived, or pending-employer jobs are excluded.
+
+### View Open Job Details
+
+`GET /api/jobs/<id>/`
+
+Return the details of a single open job from an approved employer.
+
+**Rules**
+
+* The job must be `OPEN`.
+* The employer must be approved.
+* If the job is not public, the API returns `404`.
+
+**Public response includes**
+
+* Job title and description
+* Location
+* Employment type
+* Salary range
+* Employer company information such as company name and website
+
+**Public response excludes**
+
+* Employer ownership references
+* Internal user or employer profile identifiers beyond the job identifier needed for the endpoint
+* Any private admin or management-only fields
+
+---
+
+## Employer Job Management
+
+These endpoints require a valid JWT Bearer token and an approved employer account.
 
 ### Create Job
 
-`POST /api/jobs/`
+`POST /api/jobs/manage/`
 
 Create a new job posting for the authenticated employer.
 
-**Request Body**
+**Authentication**
+
+* Header: `Authorization: Bearer <YOUR_ACCESS_TOKEN>`
+* The user must have an `EmployerProfile`
+* The employer must be approved
+
+**Request body**
 
 ```json
 {
@@ -52,50 +92,32 @@ Create a new job posting for the authenticated employer.
 }
 ```
 
-**Validation Notes**
+**Validation notes**
 
 * `title`, `description`, and `employment_type` are required.
 * `employment_type` must match one of the supported choices.
 * If both salary values are provided, `salary_min` must be less than or equal to `salary_max`.
 * `status` is managed by the server and cannot be supplied by the client.
-* The client must not provide `employer` or any employer identifier.
-
----
 
 ### List My Jobs
 
-`GET /api/jobs/`
+`GET /api/jobs/manage/`
 
-Returns all jobs created by the authenticated employer.
+Return all jobs created by the authenticated employer.
 
-**Authentication**
+### Retrieve My Job
 
-* Bearer Token required.
-* Only approved employers may access this endpoint.
+`GET /api/jobs/manage/<id>/`
 
----
+Return a specific job owned by the authenticated employer.
 
-### Retrieve Job
+### Update My Job
 
-`GET /api/jobs/<id>/`
-
-Returns the details of a specific job owned by the authenticated employer.
-
-**Authentication**
-
-* Bearer Token required.
-* The requested job must belong to the authenticated employer.
-* If the job does not belong to the authenticated employer (or does not exist), an appropriate error response is returned.
-
----
-
-### Update Job
-
-`PATCH /api/jobs/<id>/`
+`PATCH /api/jobs/manage/<id>/`
 
 Update one or more fields of a job owned by the authenticated employer.
 
-**Example Request**
+**Example request**
 
 ```json
 {
@@ -104,35 +126,26 @@ Update one or more fields of a job owned by the authenticated employer.
 }
 ```
 
-**Validation Notes**
+### Delete My Job
 
-* Partial updates are supported.
-* Model validation is executed before saving.
-* Server-managed fields (`id`, `status`, `created_at`, `updated_at`) cannot be modified.
-* Ownership is verified before the update is performed.
-
----
-
-### Delete Job
-
-`DELETE /api/jobs/<id>/`
+`DELETE /api/jobs/manage/<id>/`
 
 Delete a job owned by the authenticated employer.
-
-**Authentication**
-
-* Bearer Token required.
-* Ownership is verified before deletion.
-* Employers may delete only their own job postings.
 
 ---
 
 ## Authorization Rules
 
-The Jobs API enforces the following rules:
-
-* Only authenticated users may access these endpoints.
-* Only approved employers may manage jobs.
+* Public read endpoints are available without authentication.
+* Employer-management endpoints require authentication.
+* Only approved employers may create, update, or delete jobs.
 * Employers can manage only their own job postings.
-* Employer ownership is determined from the authenticated user, never from client-provided data.
-* All validation is performed using the serializer and model-level validation to ensure data integrity.
+* Public search never exposes jobs that are not `OPEN` or not posted by approved employers.
+
+## Related Endpoints
+
+Job application endpoints live in [applications.md](applications.md) and are mounted under the job URL space:
+
+* `POST /api/jobs/<job_id>/apply/`
+* `GET /api/jobs/<job_id>/applications/`
+* `GET /api/employer/applications/`
