@@ -7,4 +7,5 @@ This folder contains the feature-based API documentation for the current project
 ## Documents
 
 - [users.md](users.md): authentication, profile management, and admin employer approval endpoints.
-- [jobs.md](jobs.md): job creation for approved employers.
+- [jobs.md](jobs.md): public job search plus authenticated employer job management.
+- [applications.md](applications.md): seeker applications and employer application review endpoints.
