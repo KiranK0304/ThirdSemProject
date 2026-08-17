@@ -32,6 +32,13 @@ class Application(models.Model):
         on_delete=CASCADE,
         related_name="applications",
     )
+    resume = ForeignKey(
+        "users.Resume",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="applications",
+    )
     cover_letter = TextField(_("Cover letter"), blank=True)
     status = CharField(
         _("Status"),
@@ -57,8 +64,12 @@ class Application(models.Model):
                 errors["job"] = _("Applications can only be submitted to open jobs.")
             elif self.job.employer.verification_status != VerificationStatus.APPROVED:
                 errors["job"] = _("Applications can only be submitted to jobs from approved employers.")
+        if self.resume_id and self.seeker_id:
+            if self.resume.seeker_id != self.seeker_id:
+                errors["resume"] = _("The attached resume must belong to the applicant.")
         if errors:
             raise ValidationError(errors)
+
 
     def __str__(self) -> str:
         return f"Application for {self.job_id} by {self.seeker_id}"

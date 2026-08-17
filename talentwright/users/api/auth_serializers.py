@@ -1,12 +1,55 @@
+import os
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from talentwright.users.models import EmployerProfile, SeekerProfile
+from talentwright.users.models import EmployerProfile, Resume, SeekerProfile
 
 User = get_user_model()
+
+
+class ResumeSerializer(serializers.ModelSerializer):
+    """
+    Serializer for candidate uploaded resumes.
+    """
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Resume
+        fields = ["id", "title", "file", "file_url", "created_at", "updated_at"]
+        read_only_fields = ["id", "file_url", "created_at", "updated_at"]
+
+    def get_file_url(self, obj) -> str | None:
+        if obj.file:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.file.url)
+            return obj.file.url
+        return None
+
+    def validate_file(self, value):
+        allowed_extensions = [".pdf", ".doc", ".docx"]
+        ext = os.path.splitext(value.name)[1].lower()
+        if ext not in allowed_extensions:
+            raise serializers.ValidationError(
+                f"Unsupported file format '{ext}'. Allowed formats: {', '.join(allowed_extensions)}"
+            )
+        max_size_mb = 5
+        if value.size > max_size_mb * 1024 * 1024:
+            raise serializers.ValidationError(f"File size exceeds maximum limit of {max_size_mb}MB.")
+        return value
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        if request and hasattr(request.user, "seeker_profile"):
+            seeker = request.user.seeker_profile
+            if not self.instance and seeker.resumes.count() >= 3:
+                raise serializers.ValidationError(
+                    {"detail": "You cannot upload more than 3 resumes. Please delete an existing resume first."}
+                )
+        return attrs
 
 
 class EmployerProfileSerializer(serializers.ModelSerializer):
@@ -31,10 +74,13 @@ class SeekerProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for SeekerProfile model.
     """
+    resumes = ResumeSerializer(many=True, read_only=True)
+
     class Meta:
         model = SeekerProfile
-        fields = ["id", "phone", "bio", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = ["id", "phone", "bio", "resumes", "created_at", "updated_at"]
+        read_only_fields = ["id", "resumes", "created_at", "updated_at"]
+
 
 
 class RegisterSerializer(serializers.ModelSerializer):

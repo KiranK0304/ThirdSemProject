@@ -34,11 +34,13 @@ Create a new application for an open, publicly visible job.
 
 ```json
 {
-  "cover_letter": "I would love to work on this team."
+  "cover_letter": "I would love to work on this team.",
+  "resume_id": 1
 }
 ```
 
-The `cover_letter` field is optional.
+* `cover_letter` *(optional)*: Text cover letter.
+* `resume_id` *(optional)*: ID of one of the seeker's uploaded resumes.
 
 ---
 
@@ -87,6 +89,14 @@ Return all applications submitted by the authenticated job seeker.
       "created_at": "2026-08-17T09:00:00Z",
       "updated_at": "2026-08-17T09:00:00Z"
     },
+    "resume": {
+      "id": 1,
+      "title": "Backend Developer Resume",
+      "file": "/media/resumes/2026/08/backend.pdf",
+      "file_url": "http://127.0.0.1:8000/media/resumes/2026/08/backend.pdf",
+      "created_at": "2026-08-17T10:00:00Z",
+      "updated_at": "2026-08-17T10:00:00Z"
+    },
     "cover_letter": "I would love to work on this team.",
     "status": "SUBMITTED",
     "created_at": "2026-08-17T12:00:00Z",
@@ -94,6 +104,7 @@ Return all applications submitted by the authenticated job seeker.
   }
 ]
 ```
+
 
 ---
 

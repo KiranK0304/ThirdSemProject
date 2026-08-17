@@ -3,8 +3,9 @@
 from typing import ClassVar
 
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import CharField, DateTimeField, EmailField, OneToOneField, TextChoices, TextField, URLField
+from django.db.models import CASCADE, CharField, DateTimeField, EmailField, FileField, ForeignKey, OneToOneField, TextChoices, TextField, URLField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -95,4 +96,37 @@ class SeekerProfile(models.Model):
 
     def __str__(self) -> str:
         return f"SeekerProfile for {self.user.email}"
+
+
+class Resume(models.Model):
+    """
+    Uploaded resume documents for a job seeker (maximum 3 per seeker).
+    """
+    seeker = ForeignKey(
+        SeekerProfile,
+        on_delete=CASCADE,
+        related_name="resumes",
+    )
+    title = CharField(_("Resume Title"), max_length=255, blank=True)
+    file = FileField(_("Resume File"), upload_to="resumes/%Y/%m/")
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def clean(self):
+        super().clean()
+        if not self.pk and self.seeker_id:
+            if self.seeker.resumes.count() >= 3:
+                raise ValidationError({"seeker": _("A seeker can have a maximum of 3 resumes.")})
+
+    def save(self, *args, **kwargs):
+        if not self.title and self.file:
+            self.title = self.file.name.split("/")[-1]
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self.title or self.file.name} ({self.seeker.user.email})"
+
 

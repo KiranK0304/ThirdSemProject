@@ -8,6 +8,7 @@ from talentwright.applications.models import ApplicationStatus
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobStatus
 from talentwright.users.models import EmployerProfile
+from talentwright.users.models import Resume
 from talentwright.users.models import SeekerProfile
 from talentwright.users.models import User
 from talentwright.users.models import VerificationStatus
@@ -365,5 +366,73 @@ class TestJobApplicationAPI:
 
         response = self.client.get(reverse("applications_api:seeker-applications"))
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_seeker_can_apply_with_chosen_resume(self):
+        job = self._create_approved_employer_job()
+        seeker_user = self._login_seeker("attach-resume@example.com")
+        resume = Resume.objects.create(
+            seeker=seeker_user.seeker_profile,
+            title="Tailored Resume",
+            file="resumes/2026/08/tailored.pdf",
+        )
+
+        response = self.client.post(
+            reverse("applications_api:job-apply", kwargs={"job_id": job.pk}),
+            {"cover_letter": "With resume", "resume_id": resume.id},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["resume"]["id"] == resume.id
+        assert response.data["resume"]["title"] == "Tailored Resume"
+        app = Application.objects.get(job=job, seeker=seeker_user.seeker_profile)
+        assert app.resume == resume
+
+    def test_seeker_cannot_apply_with_another_users_resume(self):
+        job = self._create_approved_employer_job()
+        other_user = User.objects.create_user(email="other-r@example.com", password="StrongPassword123!", is_active=True)
+        other_seeker = SeekerProfile.objects.create(user=other_user)
+        other_resume = Resume.objects.create(
+            seeker=other_seeker,
+            title="Other Resume",
+            file="resumes/2026/08/other.pdf",
+        )
+
+        self._login_seeker("my-r@example.com")
+
+        response = self.client.post(
+            reverse("applications_api:job-apply", kwargs={"job_id": job.pk}),
+            {"cover_letter": "Stealing resume", "resume_id": other_resume.id},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert Application.objects.count() == 0
+
+    def test_employer_sees_attached_resume_on_applications_list(self):
+        owner_user, owner_employer = self._login_verified_employer("employer-resume-view@example.com")
+        job = Job.objects.create(
+            employer=owner_employer,
+            title="Resume View Job",
+            description="Looking for resumes",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        seeker_user = User.objects.create_user(email="applicant-resume@example.com", password="StrongPassword123!", is_active=True)
+        seeker_profile = SeekerProfile.objects.create(user=seeker_user)
+        resume = Resume.objects.create(
+            seeker=seeker_profile,
+            title="Candidate Resume",
+            file="resumes/2026/08/candidate.pdf",
+        )
+        Application.objects.create(job=job, seeker=seeker_profile, resume=resume, cover_letter="Hi")
+
+        response = self.client.get(reverse("applications_api:job-applications", kwargs={"job_id": job.pk}))
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["resume"]["id"] == resume.id
+        assert response.data[0]["resume"]["title"] == "Candidate Resume"
+
 
 

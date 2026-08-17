@@ -53,6 +53,7 @@ class JobApplicationsListView(generics.ListAPIView):
                 "job__employer__user",
                 "seeker",
                 "seeker__user",
+                "resume",
             )
             .filter(job=job)
             .order_by("-created_at")
@@ -72,6 +73,7 @@ class EmployerApplicationsListView(generics.ListAPIView):
                 "job__employer__user",
                 "seeker",
                 "seeker__user",
+                "resume",
             )
             .filter(job__employer=employer)
             .order_by("-created_at")
@@ -101,6 +103,7 @@ class SeekerApplicationsListView(generics.ListAPIView):
                 "job__employer__user",
                 "seeker",
                 "seeker__user",
+                "resume",
             )
             .filter(seeker=seeker)
             .order_by("-created_at")
@@ -119,6 +122,8 @@ class SeekerApplicationDetailView(generics.RetrieveDestroyAPIView):
             "job__employer__user",
             "seeker",
             "seeker__user",
+            "resume",
         ).filter(seeker=seeker)
+
 
 

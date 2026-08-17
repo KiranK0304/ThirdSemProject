@@ -128,9 +128,84 @@ Update the authenticated user's name and nested employer or seeker profile data.
 }
 ```
 
+---
+
+### Seeker Resumes (Up to 3 Max)
+
+#### List My Resumes
+
+`GET /api/auth/seeker/resumes/`
+
+Return all uploaded resumes for the authenticated seeker.
+
+**Authentication**
+
+- Header: `Authorization: Bearer <SEEKER_ACCESS_TOKEN>`
+
+**Response example (`200 OK`)**
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Backend Developer Resume",
+    "file": "/media/resumes/2026/08/backend.pdf",
+    "file_url": "http://127.0.0.1:8000/media/resumes/2026/08/backend.pdf",
+    "created_at": "2026-08-17T18:00:00Z",
+    "updated_at": "2026-08-17T18:00:00Z"
+  }
+]
+```
+
+#### Upload a Resume
+
+`POST /api/auth/seeker/resumes/`
+
+Upload a new resume file (maximum 3 per seeker).
+
+**Authentication**
+
+- Header: `Authorization: Bearer <SEEKER_ACCESS_TOKEN>`
+- Content-Type: `multipart/form-data`
+
+**Request form data**
+
+- `file`: Resume file (allowed extensions: `.pdf`, `.doc`, `.docx`; max size 5MB).
+- `title` *(optional)*: Title or label for the resume (e.g. `"Fullstack Resume"`).
+
+**Response example (`201 Created`)**
+
+```json
+{
+  "id": 2,
+  "title": "Fullstack Resume",
+  "file": "/media/resumes/2026/08/fullstack.pdf",
+  "file_url": "http://127.0.0.1:8000/media/resumes/2026/08/fullstack.pdf",
+  "created_at": "2026-08-17T18:05:00Z",
+  "updated_at": "2026-08-17T18:05:00Z"
+}
+```
+
+#### Delete a Resume
+
+`DELETE /api/auth/seeker/resumes/<id>/`
+
+Delete an uploaded resume, freeing a slot to upload a replacement.
+
+**Authentication**
+
+- Header: `Authorization: Bearer <SEEKER_ACCESS_TOKEN>`
+
+**Response**
+
+- `204 No Content`
+
+---
+
 ### List employer profiles for admins
 
 `GET /api/auth/admin/employers/`
+
 
 List employer profiles for admin review. Optional filter: `?status=PENDING`.
 

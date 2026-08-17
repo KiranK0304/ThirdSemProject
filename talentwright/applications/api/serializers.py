@@ -5,7 +5,8 @@ from rest_framework import serializers
 from talentwright.applications.models import Application
 from talentwright.applications.models import ApplicationStatus
 from talentwright.jobs.api.serializers import PublicJobSerializer
-from talentwright.users.models import SeekerProfile
+from talentwright.users.api.auth_serializers import ResumeSerializer
+from talentwright.users.models import Resume, SeekerProfile
 
 
 class ApplicationSeekerSerializer(serializers.ModelSerializer):
@@ -29,6 +30,14 @@ class ApplicationSeekerSerializer(serializers.ModelSerializer):
 class ApplicationSerializer(serializers.ModelSerializer):
     job = PublicJobSerializer(read_only=True)
     seeker = ApplicationSeekerSerializer(read_only=True)
+    resume = ResumeSerializer(read_only=True)
+    resume_id = serializers.PrimaryKeyRelatedField(
+        queryset=Resume.objects.all(),
+        source="resume",
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
     cover_letter = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
@@ -37,6 +46,8 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "id",
             "job",
             "seeker",
+            "resume",
+            "resume_id",
             "cover_letter",
             "status",
             "created_at",
@@ -46,21 +57,27 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "id",
             "job",
             "seeker",
+            "resume",
             "status",
             "created_at",
             "updated_at",
         ]
 
     def validate(self, attrs):
-        job = self.context["job"]
-        seeker = self.context["seeker"]
+        job = self.context.get("job")
+        seeker = self.context.get("seeker")
 
-        if Application.objects.filter(job=job, seeker=seeker).exists():
+        if job and seeker and Application.objects.filter(job=job, seeker=seeker).exists():
             raise serializers.ValidationError({"non_field_errors": ["You have already applied to this job."]})
+
+        resume = attrs.get("resume")
+        if resume and seeker and resume.seeker != seeker:
+            raise serializers.ValidationError({"resume_id": ["The selected resume does not belong to you."]})
 
         application = Application(
             job=job,
             seeker=seeker,
+            resume=resume,
             cover_letter=attrs.get("cover_letter", ""),
         )
 
@@ -76,8 +93,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
             return Application.objects.create(
                 job=self.context["job"],
                 seeker=self.context["seeker"],
+                resume=validated_data.get("resume"),
                 cover_letter=validated_data.get("cover_letter", ""),
             )
+
 
 
 class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):

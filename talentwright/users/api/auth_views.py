@@ -156,3 +156,36 @@ class AdminEmployerRejectView(APIView):
         serializer = EmployerProfileAdminSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from talentwright.users.api.permissions import IsSeeker
+from talentwright.users.models import Resume
+from .auth_serializers import ResumeSerializer
+
+
+class SeekerResumeListCreateView(generics.ListCreateAPIView):
+    """
+    API view for seekers to list their resumes and upload new resumes (up to 3 max).
+    """
+    serializer_class = ResumeSerializer
+    permission_classes = [IsSeeker]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        return Resume.objects.filter(seeker=self.request.user.seeker_profile).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(seeker=self.request.user.seeker_profile)
+
+
+class SeekerResumeDetailView(generics.RetrieveDestroyAPIView):
+    """
+    API view for seekers to retrieve or delete an individual resume.
+    """
+    serializer_class = ResumeSerializer
+    permission_classes = [IsSeeker]
+
+    def get_queryset(self):
+        return Resume.objects.filter(seeker=self.request.user.seeker_profile)
+
+
