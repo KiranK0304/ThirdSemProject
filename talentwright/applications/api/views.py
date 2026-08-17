@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 
 from talentwright.applications.api.serializers import ApplicationSerializer
+from talentwright.applications.api.serializers import ApplicationStatusUpdateSerializer
 from talentwright.applications.models import Application
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobStatus
@@ -75,3 +76,49 @@ class EmployerApplicationsListView(generics.ListAPIView):
             .filter(job__employer=employer)
             .order_by("-created_at")
         )
+
+
+class EmployerApplicationStatusUpdateView(generics.UpdateAPIView):
+    serializer_class = ApplicationStatusUpdateSerializer
+    permission_classes = [IsVerifiedEmployer]
+    http_method_names = ["patch", "options", "head"]
+
+    def get_queryset(self):
+        employer = self.request.user.employer_profile
+        return Application.objects.filter(job__employer=employer)
+
+
+class SeekerApplicationsListView(generics.ListAPIView):
+    serializer_class = ApplicationSerializer
+    permission_classes = [IsSeeker]
+
+    def get_queryset(self):
+        seeker = self.request.user.seeker_profile
+        return (
+            Application.objects.select_related(
+                "job",
+                "job__employer",
+                "job__employer__user",
+                "seeker",
+                "seeker__user",
+            )
+            .filter(seeker=seeker)
+            .order_by("-created_at")
+        )
+
+
+class SeekerApplicationDetailView(generics.RetrieveDestroyAPIView):
+    serializer_class = ApplicationSerializer
+    permission_classes = [IsSeeker]
+
+    def get_queryset(self):
+        seeker = self.request.user.seeker_profile
+        return Application.objects.select_related(
+            "job",
+            "job__employer",
+            "job__employer__user",
+            "seeker",
+            "seeker__user",
+        ).filter(seeker=seeker)
+
+

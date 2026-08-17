@@ -3,6 +3,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from talentwright.applications.models import Application
+from talentwright.applications.models import ApplicationStatus
 from talentwright.jobs.api.serializers import PublicJobSerializer
 from talentwright.users.models import SeekerProfile
 
@@ -77,3 +78,33 @@ class ApplicationSerializer(serializers.ModelSerializer):
                 seeker=self.context["seeker"],
                 cover_letter=validated_data.get("cover_letter", ""),
             )
+
+
+class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Application
+        fields = [
+            "id",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]
+
+    def validate_status(self, value):
+        allowed_statuses = [
+            ApplicationStatus.SUBMITTED,
+            ApplicationStatus.UNDER_REVIEW,
+            ApplicationStatus.SHORTLISTED,
+            ApplicationStatus.REJECTED,
+        ]
+        if value not in allowed_statuses:
+            raise serializers.ValidationError(
+                f"Invalid status for employer update. Choose one of: {', '.join(allowed_statuses)}."
+            )
+        return value
+

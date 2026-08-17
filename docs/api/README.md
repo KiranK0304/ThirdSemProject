@@ -8,4 +8,4 @@ This folder contains the feature-based API documentation for the current project
 
 - [users.md](users.md): authentication, profile management, and admin employer approval endpoints.
 - [jobs.md](jobs.md): public job search plus authenticated employer job management.
-- [applications.md](applications.md): seeker applications and employer application review endpoints.
+- [applications.md](applications.md): seeker application submission, history, and withdrawals, along with employer reviews and status updates.

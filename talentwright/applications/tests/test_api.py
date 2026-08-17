@@ -221,3 +221,149 @@ class TestJobApplicationAPI:
         assert len(response.data) == 2
         returned_job_ids = {item["job"]["id"] for item in response.data}
         assert returned_job_ids == {job_one.id, job_two.id}
+
+    def test_job_owner_can_update_application_status(self):
+        owner_user, owner_employer = self._login_verified_employer("status-owner@example.com")
+        job = Job.objects.create(
+            employer=owner_employer,
+            title="Owner Role",
+            description="Owner job.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        seeker_user = User.objects.create_user(email="seeker-status@example.com", password="StrongPassword123!", is_active=True)
+        seeker_profile = SeekerProfile.objects.create(user=seeker_user)
+        application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
+
+        response = self.client.patch(
+            reverse("applications_api:employer-application-status-update", kwargs={"pk": application.pk}),
+            {"status": ApplicationStatus.SHORTLISTED},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == ApplicationStatus.SHORTLISTED
+        application.refresh_from_db()
+        assert application.status == ApplicationStatus.SHORTLISTED
+
+    def test_non_owner_cannot_update_application_status(self):
+        job = self._create_approved_employer_job()
+        seeker_user = User.objects.create_user(email="seeker-other@example.com", password="StrongPassword123!", is_active=True)
+        seeker_profile = SeekerProfile.objects.create(user=seeker_user)
+        application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
+
+        self._login_verified_employer("different-employer@example.com")
+
+        response = self.client.patch(
+            reverse("applications_api:employer-application-status-update", kwargs={"pk": application.pk}),
+            {"status": ApplicationStatus.SHORTLISTED},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+        application.refresh_from_db()
+        assert application.status == ApplicationStatus.SUBMITTED
+
+    def test_invalid_status_rejected_for_employer_update(self):
+        owner_user, owner_employer = self._login_verified_employer("status-invalid@example.com")
+        job = Job.objects.create(
+            employer=owner_employer,
+            title="Owner Role",
+            description="Owner job.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        seeker_user = User.objects.create_user(email="seeker-inv@example.com", password="StrongPassword123!", is_active=True)
+        seeker_profile = SeekerProfile.objects.create(user=seeker_user)
+        application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
+
+        response = self.client.patch(
+            reverse("applications_api:employer-application-status-update", kwargs={"pk": application.pk}),
+            {"status": "INVALID_STATUS"},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_seeker_cannot_update_application_status(self):
+        job = self._create_approved_employer_job()
+        seeker_user = self._login_seeker()
+        application = Application.objects.create(job=job, seeker=seeker_user.seeker_profile, status=ApplicationStatus.SUBMITTED)
+
+        response = self.client.patch(
+            reverse("applications_api:employer-application-status-update", kwargs={"pk": application.pk}),
+            {"status": ApplicationStatus.SHORTLISTED},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_seeker_can_list_own_applications(self):
+        job_one = self._create_approved_employer_job(title="Job Alpha")
+        job_two = Job.objects.create(
+            employer=job_one.employer,
+            title="Job Beta",
+            description="Job Beta desc.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+
+        seeker_user = self._login_seeker("my-applications@example.com")
+        other_user = User.objects.create_user(email="other-seeker@example.com", password="StrongPassword123!", is_active=True)
+        other_seeker = SeekerProfile.objects.create(user=other_user)
+
+        app_one = Application.objects.create(job=job_one, seeker=seeker_user.seeker_profile, cover_letter="App 1")
+        app_two = Application.objects.create(job=job_two, seeker=seeker_user.seeker_profile, cover_letter="App 2")
+        Application.objects.create(job=job_one, seeker=other_seeker, cover_letter="Other seeker app")
+
+        response = self.client.get(reverse("applications_api:seeker-applications"))
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 2
+        returned_ids = {item["id"] for item in response.data}
+        assert returned_ids == {app_one.id, app_two.id}
+
+    def test_seeker_can_retrieve_own_application_detail(self):
+        job = self._create_approved_employer_job()
+        seeker_user = self._login_seeker("seeker-detail@example.com")
+        application = Application.objects.create(job=job, seeker=seeker_user.seeker_profile, cover_letter="Detail check")
+
+        response = self.client.get(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == application.id
+        assert response.data["cover_letter"] == "Detail check"
+        assert response.data["job"]["id"] == job.id
+
+    def test_seeker_can_withdraw_own_application(self):
+        job = self._create_approved_employer_job()
+        seeker_user = self._login_seeker("withdraw-seeker@example.com")
+        application = Application.objects.create(job=job, seeker=seeker_user.seeker_profile, cover_letter="To withdraw")
+
+        response = self.client.delete(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+
+        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert not Application.objects.filter(pk=application.pk).exists()
+
+    def test_seeker_cannot_retrieve_or_withdraw_other_seeker_application(self):
+        job = self._create_approved_employer_job()
+        other_user = User.objects.create_user(email="other-person@example.com", password="StrongPassword123!", is_active=True)
+        other_seeker = SeekerProfile.objects.create(user=other_user)
+        application = Application.objects.create(job=job, seeker=other_seeker, cover_letter="Other app")
+
+        self._login_seeker("me-seeker@example.com")
+
+        get_resp = self.client.get(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+        assert get_resp.status_code == status.HTTP_404_NOT_FOUND
+
+        del_resp = self.client.delete(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+        assert del_resp.status_code == status.HTTP_404_NOT_FOUND
+        assert Application.objects.filter(pk=application.pk).exists()
+
+    def test_employer_cannot_access_seeker_applications_endpoint(self):
+        self._login_verified_employer("emp-no-access@example.com")
+
+        response = self.client.get(reverse("applications_api:seeker-applications"))
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
