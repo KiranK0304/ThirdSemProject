@@ -118,6 +118,112 @@ class TestPublicJobSearchAPI:
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
+    def test_public_search_by_keyword(self):
+        approved_user = User.objects.create_user(
+            email="search-test@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=approved_user,
+            company_name="Google Cloud",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        job_py = Job.objects.create(
+            employer=employer,
+            title="Senior Python Backend Engineer",
+            description="Django REST framework development.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        Job.objects.create(
+            employer=employer,
+            title="React Frontend Developer",
+            description="TypeScript and Tailwind.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+
+        response = self.client.get(reverse("jobs_api:list"), {"search": "Python"})
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == job_py.id
+
+    def test_public_filter_by_employment_type_and_location(self):
+        approved_user = User.objects.create_user(
+            email="filter-test@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=approved_user,
+            company_name="Acme Tech",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        job_remote_ft = Job.objects.create(
+            employer=employer,
+            title="Remote Dev",
+            description="Dev work",
+            location="Remote, Worldwide",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        Job.objects.create(
+            employer=employer,
+            title="Onsite Dev",
+            description="Dev work",
+            location="New York, NY",
+            employment_type="CONTRACT",
+            status=JobStatus.OPEN,
+        )
+
+        # Filter by employment_type
+        resp_type = self.client.get(reverse("jobs_api:list"), {"employment_type": "FULL_TIME"})
+        assert resp_type.status_code == status.HTTP_200_OK
+        assert len(resp_type.data) == 1
+        assert resp_type.data[0]["id"] == job_remote_ft.id
+
+        # Filter by location
+        resp_loc = self.client.get(reverse("jobs_api:list"), {"location": "Remote"})
+        assert resp_loc.status_code == status.HTTP_200_OK
+        assert len(resp_loc.data) == 1
+        assert resp_loc.data[0]["id"] == job_remote_ft.id
+
+    def test_public_ordering_by_salary(self):
+        approved_user = User.objects.create_user(
+            email="ordering-test@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=approved_user,
+            company_name="Salary Co",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        job_low = Job.objects.create(
+            employer=employer,
+            title="Junior Dev",
+            description="Junior work",
+            employment_type="FULL_TIME",
+            salary_max=60000,
+            status=JobStatus.OPEN,
+        )
+        job_high = Job.objects.create(
+            employer=employer,
+            title="Lead Architect",
+            description="Architect work",
+            employment_type="FULL_TIME",
+            salary_max=180000,
+            status=JobStatus.OPEN,
+        )
+
+        resp = self.client.get(reverse("jobs_api:list"), {"ordering": "-salary_max"})
+        assert resp.status_code == status.HTTP_200_OK
+        assert len(resp.data) == 2
+        assert resp.data[0]["id"] == job_high.id
+        assert resp.data[1]["id"] == job_low.id
+
+
 
 class TestEmployerJobManagementAPI:
     def setup_method(self):
@@ -341,3 +447,27 @@ class TestEmployerJobManagementAPI:
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert Job.objects.count() == 0
+
+    def test_employer_can_filter_jobs_by_status(self):
+        _, employer = self._create_verified_employer_and_login("filter-status@example.com")
+        job_draft = Job.objects.create(
+            employer=employer,
+            title="Draft Role",
+            description="Draft job.",
+            employment_type="FULL_TIME",
+            status=JobStatus.DRAFT,
+        )
+        Job.objects.create(
+            employer=employer,
+            title="Open Role",
+            description="Open job.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+
+        response = self.client.get(reverse("jobs_api:manage-list"), {"status": "DRAFT"})
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == job_draft.id
+

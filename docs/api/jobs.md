@@ -22,11 +22,21 @@ Sensitive ownership data is not exposed in the public responses.
 
 These endpoints are accessible to everyone.
 
-### List Open Jobs
+### List Open Jobs (with Search & Filtering)
 
 `GET /api/jobs/`
 
 Return all jobs that are currently open and belong to approved employers.
+
+**Supported Query Parameters**
+
+| Parameter | Type | Example | Description |
+| :--- | :--- | :--- | :--- |
+| `search` | string | `?search=python` | Searches across `title`, `description`, `location`, and employer `company_name`. |
+| `employment_type` | string | `?employment_type=FULL_TIME` | Filters by type: `FULL_TIME`, `PART_TIME`, `CONTRACT`, `INTERNSHIP`, `TEMPORARY`, `FREELANCE`. |
+| `location` | string | `?location=Remote` | Filters jobs by location string (case-insensitive contains). |
+| `min_salary` | number | `?min_salary=80000` | Filters jobs with maximum salary greater than or equal to this amount. |
+| `ordering` | string | `?ordering=-created_at` | Sort results. Options: `created_at`, `-created_at`, `salary_min`, `-salary_min`, `salary_max`, `-salary_max`, `title`. |
 
 **Rules**
 
@@ -35,6 +45,7 @@ Return all jobs that are currently open and belong to approved employers.
 * Closed, draft, archived, or pending-employer jobs are excluded.
 
 ### View Open Job Details
+
 
 `GET /api/jobs/<id>/`
 
@@ -105,7 +116,16 @@ Create a new job posting for the authenticated employer.
 
 Return all jobs created by the authenticated employer.
 
+**Supported Query Parameters**
+
+| Parameter | Type | Example | Description |
+| :--- | :--- | :--- | :--- |
+| `status` | string | `?status=DRAFT` | Filters jobs by status (`DRAFT`, `OPEN`, `CLOSED`, `ARCHIVED`). |
+| `search` | string | `?search=backend` | Searches employer's jobs by title, description, or location. |
+| `ordering` | string | `?ordering=-created_at` | Sorts employer's jobs. |
+
 ### Retrieve My Job
+
 
 `GET /api/jobs/manage/<id>/`
 
