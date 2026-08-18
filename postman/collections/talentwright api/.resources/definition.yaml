@@ -1,0 +1,24 @@
+$kind: collection
+name: Talentwright API
+variables:
+  - key: base_url
+    value: http://localhost:8000/api
+    secret: false
+  - key: employer_profile_id
+    value: "1"
+    secret: false
+  - key: refresh_token
+    value: ""
+    secret: false
+  - key: user_id
+    value: "1"
+    secret: false
+  - key: job_id
+    value: "1"
+    secret: false
+  - key: access_token_s
+    secret: true
+  - key: access_token_e
+    secret: true
+  - key: access_token_a
+    secret: true

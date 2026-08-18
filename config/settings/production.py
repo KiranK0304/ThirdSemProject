@@ -63,6 +63,16 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
     default=True,
 )
 
+# CORS configuration for frontend domain
+# ------------------------------------------------------------------------------
+# https://github.com/adamchainz/django-cors-headers#cors_allowed_origins
+CORS_ALLOWED_ORIGINS = env.list(
+    "DJANGO_CORS_ALLOWED_ORIGINS",
+    default=["https://talentwright.ai", "http://localhost:5173", "http://127.0.0.1:5173"],
+)
+# If using credentials (cookies/auth headers) across domains:
+CORS_ALLOW_CREDENTIALS = True
+
 
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
 AWS_ACCESS_KEY_ID = env("DJANGO_AWS_ACCESS_KEY_ID")

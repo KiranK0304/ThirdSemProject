@@ -1,0 +1,16 @@
+$kind: http-request
+method: PATCH
+url: '{{base_url}}/jobs/manage/{{job_id}}/'
+order: 6000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{access_token}}'
+body:
+  type: json
+  content: |-
+    {
+      "title": "Senior Backend Engineer",
+      "location": "Hybrid"
+    }

@@ -1,0 +1,7 @@
+$kind: http-request
+method: PATCH
+url: '{{base_url}}/auth/admin/employers/{{employer_profile_id}}/reject/'
+order: 14000
+headers:
+  - key: Authorization
+    value: 'Bearer {{access_token}}'

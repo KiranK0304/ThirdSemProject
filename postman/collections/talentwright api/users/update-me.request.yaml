@@ -1,0 +1,19 @@
+$kind: http-request
+method: PATCH
+url: '{{base_url}}/auth/me/'
+order: 6000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{access_token}}'
+body:
+  type: json
+  content: |-
+    {
+      "name": "Updated Name",
+      "seeker_profile": {
+        "phone": "+1234567890",
+        "bio": "Updated bio"
+      }
+    }
