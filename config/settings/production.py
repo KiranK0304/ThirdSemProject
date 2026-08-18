@@ -68,7 +68,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
 # https://github.com/adamchainz/django-cors-headers#cors_allowed_origins
 CORS_ALLOWED_ORIGINS = env.list(
     "DJANGO_CORS_ALLOWED_ORIGINS",
-    default=["https://talentwright.ai", "http://localhost:5173", "http://127.0.0.1:5173"],
+    default=["https://talentwright.ai", "http://localhost:5173", "http://127.0.0.1:5173", "https://talentcraft.duckdns.org", "http://talentcraft.duckdns.org"],
 )
 # If using credentials (cookies/auth headers) across domains:
 CORS_ALLOW_CREDENTIALS = True
