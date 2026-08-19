@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from .forms import UserAdminChangeForm
 from .forms import UserAdminCreationForm
 from .models import EmployerProfile, SeekerProfile, User, VerificationStatus
+from talentwright.notifications.services import notify_employer_approved, notify_employer_rejected
 
 if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
     # Force the `admin` sign in process to go through the `django-allauth` workflow:
@@ -52,12 +53,20 @@ class UserAdmin(auth_admin.UserAdmin):
 
 @admin.action(description=_("Approve selected employers"))
 def approve_employers(modeladmin, request, queryset):
-    queryset.update(verification_status=VerificationStatus.APPROVED)
+    for profile in queryset:
+        if profile.verification_status != VerificationStatus.APPROVED:
+            profile.verification_status = VerificationStatus.APPROVED
+            profile.save(update_fields=["verification_status", "updated_at"])
+            notify_employer_approved(profile)
 
 
 @admin.action(description=_("Reject selected employers"))
 def reject_employers(modeladmin, request, queryset):
-    queryset.update(verification_status=VerificationStatus.REJECTED)
+    for profile in queryset:
+        if profile.verification_status != VerificationStatus.REJECTED:
+            profile.verification_status = VerificationStatus.REJECTED
+            profile.save(update_fields=["verification_status", "updated_at"])
+            notify_employer_rejected(profile)
 
 
 @admin.register(EmployerProfile)

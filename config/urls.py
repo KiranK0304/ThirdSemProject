@@ -34,6 +34,8 @@ urlpatterns += [
     # API base url
     path("api/", include("config.api_router")),
     path("api/jobs/", include("talentwright.jobs.api.urls", namespace="jobs_api")),
+    path("api/", include("talentwright.applications.api.urls", namespace="applications_api")),
+    path("api/notifications/", include("talentwright.notifications.api.urls", namespace="notifications_api")),
     # JWT Auth API
     path("api/auth/", include("talentwright.users.api.urls", namespace="auth_api")),
     path("api/me/", UserMeView.as_view(), name="api-me"),
