@@ -435,7 +435,7 @@ class Command(BaseCommand):
     help = "Seed the database with sample data for Hirely"
 
     def handle(self, *args, **options):
-        self.stdout.write("🌱 Seeding database...")
+        self.stdout.write("Seeding database...")
 
         # Create employer accounts
         employer_profiles = {}
@@ -450,7 +450,7 @@ class Command(BaseCommand):
             if created:
                 user.set_password("demo1234")
                 user.save()
-                self.stdout.write(f"  ✓ Created employer user: {company['email']}")
+                self.stdout.write(f"  [+] Created employer user: {company['email']}")
 
             profile, _ = EmployerProfile.objects.get_or_create(
                 user=user,
@@ -476,7 +476,7 @@ class Command(BaseCommand):
             if created:
                 user.set_password("demo1234")
                 user.save()
-                self.stdout.write(f"  ✓ Created seeker user: {seeker['email']}")
+                self.stdout.write(f"  [+] Created seeker user: {seeker['email']}")
 
             profile, _ = SeekerProfile.objects.get_or_create(
                 user=user,
@@ -510,7 +510,7 @@ class Command(BaseCommand):
             if created:
                 # Backdate the created_at
                 Job.objects.filter(pk=job.pk).update(created_at=created_at)
-                self.stdout.write(f"  ✓ Created job: {job_data['title']} @ {job_data['company']}")
+                self.stdout.write(f"  [+] Created job: {job_data['title']} @ {job_data['company']}")
             jobs.append(job)
 
         # Create applications
@@ -556,14 +556,15 @@ class Command(BaseCommand):
                 if created:
                     application_count += 1
 
-        self.stdout.write(f"  ✓ Created {application_count} applications")
+        self.stdout.write(f"  [+] Created {application_count} applications")
 
         # Summary
         self.stdout.write("\n" + "=" * 50)
-        self.stdout.write(self.style.SUCCESS("✅ Seed complete!"))
+        self.stdout.write(self.style.SUCCESS("Seed complete!"))
         self.stdout.write(f"  Employers: {User.objects.filter(employer_profile__isnull=False).count()}")
         self.stdout.write(f"  Seekers:   {User.objects.filter(seeker_profile__isnull=False).count()}")
         self.stdout.write(f"  Jobs:      {Job.objects.count()}")
         self.stdout.write(f"  Applications: {Application.objects.count()}")
         self.stdout.write(f"\n  Demo login:  arjun.sharma@email.com / demo1234")
         self.stdout.write(f"  Employer login: hr@acmecorp.com / demo1234")
+
