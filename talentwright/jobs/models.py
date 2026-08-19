@@ -52,7 +52,7 @@ class Job(models.Model):
         _("Status"),
         max_length=20,
         choices=JobStatus.choices,
-        default=JobStatus.DRAFT,
+        default=JobStatus.OPEN,
     )
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
