@@ -1,11 +1,15 @@
 import pytest
+from django.core import mail
+from django.core.management import call_command
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from talentwright.jobs.models import Job
+from talentwright.jobs.models import JobAlert
 from talentwright.jobs.models import JobStatus
 from talentwright.users.models import EmployerProfile
+from talentwright.users.models import SeekerProfile
 from talentwright.users.models import User
 from talentwright.users.models import VerificationStatus
 
@@ -470,4 +474,147 @@ class TestEmployerJobManagementAPI:
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
         assert response.data[0]["id"] == job_draft.id
+
+
+class TestSavedJobsAndAlertsAPI:
+    def setup_method(self):
+        self.client = APIClient()
+        self.seeker_user = User.objects.create_user(
+            email="seeker-alerts@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        self.seeker = SeekerProfile.objects.create(user=self.seeker_user)
+        self.client.force_authenticate(user=self.seeker_user)
+
+        employer_user = User.objects.create_user(
+            email="alert-employer@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=employer_user,
+            company_name="Kochi Tech",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        self.react_job = Job.objects.create(
+            employer=employer,
+            title="React Developer",
+            description="Build accessible React applications.",
+            location="Kochi",
+            employment_type="FULL_TIME",
+            salary_max=100000,
+            status=JobStatus.OPEN,
+        )
+        Job.objects.create(
+            employer=employer,
+            title="Python Developer",
+            description="Build Django APIs.",
+            location="Bengaluru",
+            employment_type="CONTRACT",
+            salary_max=90000,
+            status=JobStatus.OPEN,
+        )
+
+    def test_seeker_can_save_list_and_remove_a_public_job(self):
+        save_url = reverse("jobs_api:saved-create-delete", kwargs={"job_id": self.react_job.pk})
+
+        response = self.client.post(save_url)
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["job"]["id"] == self.react_job.id
+
+        repeated_response = self.client.post(save_url)
+        assert repeated_response.status_code == status.HTTP_200_OK
+
+        list_response = self.client.get(reverse("jobs_api:saved-list"))
+        assert list_response.status_code == status.HTTP_200_OK
+        assert len(list_response.data) == 1
+        assert list_response.data[0]["job"]["title"] == "React Developer"
+
+        delete_response = self.client.delete(save_url)
+        assert delete_response.status_code == status.HTTP_204_NO_CONTENT
+        assert self.client.get(reverse("jobs_api:saved-list")).data == []
+
+    def test_seeker_can_create_an_alert_and_view_matching_jobs(self):
+        create_response = self.client.post(
+            reverse("jobs_api:alert-list"),
+            {
+                "keyword": "React",
+                "location": "Kochi",
+                "employment_type": "FULL_TIME",
+                "minimum_salary": "80000.00",
+                "frequency": "DAILY",
+            },
+            format="json",
+        )
+
+        assert create_response.status_code == status.HTTP_201_CREATED
+        alert_id = create_response.data["id"]
+
+        matches_response = self.client.get(
+            reverse("jobs_api:alert-matches", kwargs={"pk": alert_id}),
+        )
+        assert matches_response.status_code == status.HTTP_200_OK
+        assert [job["id"] for job in matches_response.data] == [self.react_job.id]
+
+        update_response = self.client.patch(
+            reverse("jobs_api:alert-detail", kwargs={"pk": alert_id}),
+            {"is_active": False},
+            format="json",
+        )
+        assert update_response.status_code == status.HTTP_200_OK
+        assert update_response.data["is_active"] is False
+
+    def test_alert_requires_at_least_one_search_criterion(self):
+        response = self.client.post(reverse("jobs_api:alert-list"), {"frequency": "WEEKLY"}, format="json")
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "non_field_errors" in response.data
+
+    def test_non_seekers_cannot_use_saved_jobs_or_alerts(self):
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get(reverse("jobs_api:saved-list"))
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+class TestSendJobAlertsCommand:
+    def test_sends_new_matches_and_records_delivery_time(self, settings):
+        settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+        seeker_user = User.objects.create_user(
+            email="alert-recipient@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        seeker = SeekerProfile.objects.create(user=seeker_user)
+        employer_user = User.objects.create_user(
+            email="command-employer@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=employer_user,
+            company_name="React Co",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        Job.objects.create(
+            employer=employer,
+            title="React Engineer",
+            description="React and TypeScript.",
+            location="Remote",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        alert = JobAlert.objects.create(seeker=seeker, keyword="React")
+
+        call_command("send_job_alerts")
+
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].to == ["alert-recipient@example.com"]
+        assert "React Engineer" in mail.outbox[0].body
+        alert.refresh_from_db()
+        assert alert.last_sent_at is not None
+
+        call_command("send_job_alerts")
+        assert len(mail.outbox) == 1
 
