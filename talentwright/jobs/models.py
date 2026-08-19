@@ -77,3 +77,26 @@ class Job(models.Model):
 
     def __str__(self) -> str:
         return f"{self.title} @ {self.employer.company_name or self.employer.user.email}"
+
+
+class JobBookmark(models.Model):
+    seeker = models.ForeignKey(
+        "users.SeekerProfile",
+        on_delete=CASCADE,
+        related_name="job_bookmarks",
+    )
+    job = models.ForeignKey(
+        Job,
+        on_delete=CASCADE,
+        related_name="bookmarks",
+    )
+    created_at = DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            UniqueConstraint(fields=["seeker", "job"], name="jobs_jobbookmark_seeker_job_unique"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.seeker.user.email} bookmarked {self.job.title}"

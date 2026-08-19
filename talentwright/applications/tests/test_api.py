@@ -1,10 +1,15 @@
+from datetime import timedelta
+
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from talentwright.applications.models import Application
 from talentwright.applications.models import ApplicationStatus
+from talentwright.applications.models import Interview
+from talentwright.applications.models import InterviewStatus
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobStatus
 from talentwright.users.models import EmployerProfile
@@ -265,6 +270,7 @@ class TestJobApplicationAPI:
         application.refresh_from_db()
         assert application.status == ApplicationStatus.SUBMITTED
 
+
     def test_invalid_status_rejected_for_employer_update(self):
         owner_user, owner_employer = self._login_verified_employer("status-invalid@example.com")
         job = Job.objects.create(
@@ -433,6 +439,117 @@ class TestJobApplicationAPI:
         assert len(response.data) == 1
         assert response.data[0]["resume"]["id"] == resume.id
         assert response.data[0]["resume"]["title"] == "Candidate Resume"
+
+
+class TestInterviewSchedulingAPI:
+    def setup_method(self):
+        self.client = APIClient()
+        employer_user = User.objects.create_user(
+            email="interview-employer@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        self.employer = EmployerProfile.objects.create(
+            user=employer_user,
+            company_name="Interview Co",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        self.job = Job.objects.create(
+            employer=self.employer,
+            title="Interview Role",
+            description="Role with an interview.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        seeker_user = User.objects.create_user(
+            email="interview-seeker@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        self.seeker = SeekerProfile.objects.create(user=seeker_user)
+        self.application = Application.objects.create(
+            job=self.job,
+            seeker=self.seeker,
+            status=ApplicationStatus.SHORTLISTED,
+        )
+        self.employer_user = employer_user
+        self.seeker_user = seeker_user
+
+    def _authenticate(self, user):
+        self.client.force_authenticate(user=user)
+
+    def test_employer_can_schedule_and_seeker_can_view_interview(self):
+        self._authenticate(self.employer_user)
+        schedule_url = reverse(
+            "applications_api:employer-interview-create",
+            kwargs={"application_id": self.application.pk},
+        )
+        scheduled_at = timezone.now() + timedelta(days=1)
+
+        response = self.client.post(
+            schedule_url,
+            {
+                "scheduled_at": scheduled_at.isoformat(),
+                "duration_minutes": 45,
+                "meeting_url": "https://meet.example.com/interview",
+                "notes": "Please prepare a short project overview.",
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["status"] == InterviewStatus.SCHEDULED
+        assert Interview.objects.filter(application=self.application).count() == 1
+
+        self._authenticate(self.seeker_user)
+        response = self.client.get(reverse("applications_api:seeker-interviews"))
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data) == 1
+        assert response.data[0]["job_title"] == "Interview Role"
+
+    def test_employer_can_cancel_interview_and_cannot_schedule_twice(self):
+        interview = Interview.objects.create(
+            application=self.application,
+            scheduled_at=timezone.now() + timedelta(days=1),
+        )
+        self._authenticate(self.employer_user)
+
+        update_response = self.client.patch(
+            reverse("applications_api:employer-interview-update", kwargs={"pk": interview.pk}),
+            {"status": InterviewStatus.CANCELLED},
+            format="json",
+        )
+        assert update_response.status_code == status.HTTP_200_OK
+        assert update_response.data["status"] == InterviewStatus.CANCELLED
+
+        duplicate_response = self.client.post(
+            reverse(
+                "applications_api:employer-interview-create",
+                kwargs={"application_id": self.application.pk},
+            ),
+            {
+                "scheduled_at": (timezone.now() + timedelta(days=2)).isoformat(),
+            },
+            format="json",
+        )
+        assert duplicate_response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_only_shortlisted_applications_can_be_scheduled(self):
+        self.application.status = ApplicationStatus.UNDER_REVIEW
+        self.application.save(update_fields=["status"])
+        self._authenticate(self.employer_user)
+
+        response = self.client.post(
+            reverse(
+                "applications_api:employer-interview-create",
+                kwargs={"application_id": self.application.pk},
+            ),
+            {"scheduled_at": (timezone.now() + timedelta(days=1)).isoformat()},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 

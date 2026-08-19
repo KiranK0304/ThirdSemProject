@@ -3,6 +3,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from talentwright.jobs.models import Job
+from talentwright.jobs.models import JobBookmark
 from talentwright.users.models import EmployerProfile
 
 
@@ -65,7 +66,7 @@ class JobCreateSerializer(serializers.ModelSerializer):
         try:
             job.full_clean(exclude=["id", "status", "created_at", "updated_at"])
         except DjangoValidationError as exc:
-            raise serializers.ValidationError(exc.message_dict)
+            raise serializers.ValidationError(exc.message_dict) from exc
 
     def validate(self, attrs):
         self._validate_job(attrs)
@@ -106,4 +107,20 @@ class PublicJobSerializer(serializers.ModelSerializer):
             "updated_at",
             "employer",
         ]
+        read_only_fields = fields
+
+
+class RecommendedJobSerializer(PublicJobSerializer):
+    match_score = serializers.IntegerField(read_only=True)
+
+    class Meta(PublicJobSerializer.Meta):
+        fields = [*PublicJobSerializer.Meta.fields, "match_score"]
+
+
+class JobBookmarkSerializer(serializers.ModelSerializer):
+    job = PublicJobSerializer(read_only=True)
+
+    class Meta:
+        model = JobBookmark
+        fields = ["id", "job", "created_at"]
         read_only_fields = fields

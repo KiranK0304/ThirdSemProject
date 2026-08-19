@@ -4,6 +4,8 @@ from rest_framework import serializers
 
 from talentwright.applications.models import Application
 from talentwright.applications.models import ApplicationStatus
+from talentwright.applications.models import Interview
+from talentwright.applications.models import InterviewStatus
 from talentwright.jobs.api.serializers import PublicJobSerializer
 from talentwright.users.api.auth_serializers import ResumeSerializer
 from talentwright.users.models import Resume, SeekerProfile
@@ -126,4 +128,55 @@ class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):
                 f"Invalid status for employer update. Choose one of: {', '.join(allowed_statuses)}."
             )
         return value
+
+
+class InterviewSerializer(serializers.ModelSerializer):
+    application_id = serializers.IntegerField(source="application.id", read_only=True)
+    job_title = serializers.CharField(source="application.job.title", read_only=True)
+    seeker_email = serializers.EmailField(source="application.seeker.user.email", read_only=True)
+
+    class Meta:
+        model = Interview
+        fields = [
+            "id",
+            "application_id",
+            "job_title",
+            "seeker_email",
+            "scheduled_at",
+            "duration_minutes",
+            "meeting_url",
+            "notes",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "application_id",
+            "job_title",
+            "seeker_email",
+            "created_at",
+            "updated_at",
+        ]
+
+    def validate(self, attrs):
+        interview = self.instance or Interview(application=self.context["application"])
+        for field, value in attrs.items():
+            setattr(interview, field, value)
+        try:
+            interview.full_clean(exclude=["id", "created_at", "updated_at"])
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.message_dict) from exc
+        return attrs
+
+    def validate_status(self, value):
+        if value not in InterviewStatus.values:
+            raise serializers.ValidationError("Invalid interview status.")
+        return value
+
+    def create(self, validated_data):
+        return Interview.objects.create(
+            application=self.context["application"],
+            **validated_data,
+        )
 

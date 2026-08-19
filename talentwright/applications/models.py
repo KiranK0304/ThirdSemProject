@@ -7,6 +7,8 @@ from django.db.models import ForeignKey
 from django.db.models import TextChoices
 from django.db.models import TextField
 from django.db.models import UniqueConstraint
+from django.db.models import URLField
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from talentwright.jobs.models import JobStatus
@@ -73,3 +75,44 @@ class Application(models.Model):
 
     def __str__(self) -> str:
         return f"Application for {self.job_id} by {self.seeker_id}"
+
+
+class InterviewStatus(TextChoices):
+    SCHEDULED = "SCHEDULED", _("Scheduled")
+    CANCELLED = "CANCELLED", _("Cancelled")
+    COMPLETED = "COMPLETED", _("Completed")
+
+
+class Interview(models.Model):
+    application = models.OneToOneField(
+        Application,
+        on_delete=CASCADE,
+        related_name="interview",
+    )
+    scheduled_at = DateTimeField()
+    duration_minutes = models.PositiveIntegerField(default=60)
+    meeting_url = URLField(blank=True)
+    notes = TextField(blank=True)
+    status = CharField(
+        max_length=20,
+        choices=InterviewStatus.choices,
+        default=InterviewStatus.SCHEDULED,
+    )
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["scheduled_at"]
+
+    def clean(self):
+        super().clean()
+        errors: dict[str, str] = {}
+        if self.scheduled_at and self.status == InterviewStatus.SCHEDULED and self.scheduled_at <= timezone.now():
+            errors["scheduled_at"] = _("An interview must be scheduled for a future time.")
+        if not 15 <= self.duration_minutes <= 240:
+            errors["duration_minutes"] = _("Interview duration must be between 15 and 240 minutes.")
+        if errors:
+            raise ValidationError(errors)
+
+    def __str__(self) -> str:
+        return f"Interview for application {self.application_id}"

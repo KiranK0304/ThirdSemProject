@@ -99,6 +99,24 @@ class TestSeekerResumeAPI:
         assert new_resp.status_code == status.HTTP_201_CREATED
         assert Resume.objects.filter(seeker=seeker).count() == 3
 
+    def test_seeker_can_update_resume_title(self):
+        _, seeker = self._login_seeker()
+        resume = Resume.objects.create(
+            seeker=seeker,
+            title="Old Resume Title",
+            file="resumes/2026/08/resume.pdf",
+        )
+
+        response = self.client.patch(
+            reverse("auth_api:seeker-resume-detail", kwargs={"pk": resume.pk}),
+            {"title": "Updated Resume Title"},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        resume.refresh_from_db()
+        assert resume.title == "Updated Resume Title"
+
     def test_invalid_file_format_rejected(self):
         self._login_seeker()
         bad_file = SimpleUploadedFile("script.py", b"print('hack')", content_type="text/x-python")
