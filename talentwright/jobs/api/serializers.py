@@ -10,6 +10,7 @@ class PublicEmployerSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployerProfile
         fields = [
+            "id",
             "company_name",
             "website",
         ]
