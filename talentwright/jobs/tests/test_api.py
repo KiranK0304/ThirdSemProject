@@ -277,7 +277,7 @@ class TestEmployerJobManagementAPI:
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["title"] == "Backend Engineer"
-        assert response.data["status"] == "DRAFT"
+        assert response.data["status"] == "OPEN"
         assert Job.objects.count() == 1
         job = Job.objects.get()
         assert job.employer.user == employer_user

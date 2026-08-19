@@ -179,11 +179,12 @@ class UserMeSerializer(serializers.ModelSerializer):
             "name",
             "account_type",
             "is_active",
+            "is_staff",
             "date_joined",
             "employer_profile",
             "seeker_profile",
         ]
-        read_only_fields = ["id", "email", "account_type", "is_active", "date_joined"]
+        read_only_fields = ["id", "email", "account_type", "is_active", "is_staff", "date_joined"]
 
     def update(self, instance, validated_data):
         employer_profile_data = validated_data.pop("employer_profile", None)
