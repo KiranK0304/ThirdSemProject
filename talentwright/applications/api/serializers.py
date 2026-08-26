@@ -98,7 +98,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             )
 
 
-
 class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application

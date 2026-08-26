@@ -6,6 +6,10 @@ from talentwright.applications.api.serializers import ApplicationStatusUpdateSer
 from talentwright.applications.models import Application
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobStatus
+from talentwright.notifications.services import (
+    notify_application_status_changed,
+    notify_application_submitted,
+)
 from talentwright.users.api.permissions import IsSeeker
 from talentwright.users.api.permissions import IsVerifiedEmployer
 from talentwright.users.models import VerificationStatus
@@ -30,7 +34,8 @@ class JobApplicationCreateView(generics.CreateAPIView):
         return context
 
     def perform_create(self, serializer):
-        serializer.save()
+        application = serializer.save()
+        notify_application_submitted(application)
 
 
 class JobApplicationsListView(generics.ListAPIView):
@@ -89,6 +94,12 @@ class EmployerApplicationStatusUpdateView(generics.UpdateAPIView):
         employer = self.request.user.employer_profile
         return Application.objects.filter(job__employer=employer)
 
+    def perform_update(self, serializer):
+        previous_status = serializer.instance.status
+        instance = serializer.save()
+        if previous_status != instance.status:
+            notify_application_status_changed(instance)
+
 
 class SeekerApplicationsListView(generics.ListAPIView):
     serializer_class = ApplicationSerializer
@@ -124,6 +135,4 @@ class SeekerApplicationDetailView(generics.RetrieveDestroyAPIView):
             "seeker__user",
             "resume",
         ).filter(seeker=seeker)
-
-
 

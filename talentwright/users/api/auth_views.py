@@ -81,6 +81,7 @@ class LogoutView(APIView):
 
 
 from talentwright.users.api.permissions import IsAdmin
+from talentwright.notifications.services import notify_employer_approved, notify_employer_rejected
 from talentwright.users.models import EmployerProfile, VerificationStatus
 from .auth_serializers import (
     CustomTokenObtainPairSerializer,
@@ -133,8 +134,10 @@ class AdminEmployerApproveView(APIView):
         except EmployerProfile.DoesNotExist:
             return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        profile.verification_status = VerificationStatus.APPROVED
-        profile.save()
+        if profile.verification_status != VerificationStatus.APPROVED:
+            profile.verification_status = VerificationStatus.APPROVED
+            profile.save()
+            notify_employer_approved(profile)
         serializer = EmployerProfileAdminSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -151,8 +154,10 @@ class AdminEmployerRejectView(APIView):
         except EmployerProfile.DoesNotExist:
             return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        profile.verification_status = VerificationStatus.REJECTED
-        profile.save()
+        if profile.verification_status != VerificationStatus.REJECTED:
+            profile.verification_status = VerificationStatus.REJECTED
+            profile.save()
+            notify_employer_rejected(profile)
         serializer = EmployerProfileAdminSerializer(profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

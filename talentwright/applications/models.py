@@ -70,6 +70,6 @@ class Application(models.Model):
         if errors:
             raise ValidationError(errors)
 
-
     def __str__(self) -> str:
         return f"Application for {self.job_id} by {self.seeker_id}"
+

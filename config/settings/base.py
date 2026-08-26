@@ -108,6 +108,7 @@ LOCAL_APPS = [
     "talentwright.jobs",
     "talentwright.applications",
     "talentwright.message",
+    "talentwright.notifications",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

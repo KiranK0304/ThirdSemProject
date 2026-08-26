@@ -1,11 +1,13 @@
 from django.urls import path
 
-from talentwright.applications.api.views import EmployerApplicationStatusUpdateView
-from talentwright.applications.api.views import EmployerApplicationsListView
-from talentwright.applications.api.views import JobApplicationCreateView
-from talentwright.applications.api.views import JobApplicationsListView
-from talentwright.applications.api.views import SeekerApplicationDetailView
-from talentwright.applications.api.views import SeekerApplicationsListView
+from talentwright.applications.api.views import (
+    EmployerApplicationStatusUpdateView,
+    EmployerApplicationsListView,
+    JobApplicationCreateView,
+    JobApplicationsListView,
+    SeekerApplicationDetailView,
+    SeekerApplicationsListView,
+)
 
 app_name = "applications"
 
@@ -21,5 +23,4 @@ urlpatterns = [
     path("seeker/applications/", SeekerApplicationsListView.as_view(), name="seeker-applications"),
     path("seeker/applications/<int:pk>/", SeekerApplicationDetailView.as_view(), name="seeker-application-detail"),
 ]
-
 
