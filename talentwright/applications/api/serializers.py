@@ -120,6 +120,7 @@ class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):
             ApplicationStatus.SUBMITTED,
             ApplicationStatus.UNDER_REVIEW,
             ApplicationStatus.SHORTLISTED,
+            ApplicationStatus.OFFERED,
             ApplicationStatus.REJECTED,
         ]
         if value not in allowed_statuses:

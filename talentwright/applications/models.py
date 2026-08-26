@@ -19,6 +19,7 @@ class ApplicationStatus(TextChoices):
     SUBMITTED = "SUBMITTED", _("Submitted")
     UNDER_REVIEW = "UNDER_REVIEW", _("Under review")
     SHORTLISTED = "SHORTLISTED", _("Shortlisted")
+    OFFERED = "OFFERED", _("Offered")
     REJECTED = "REJECTED", _("Rejected")
     WITHDRAWN = "WITHDRAWN", _("Withdrawn")
 
