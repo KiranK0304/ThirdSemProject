@@ -2,7 +2,10 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
+from talentwright.jobs.models import ALERT_CRITERIA_ERROR
 from talentwright.jobs.models import Job
+from talentwright.jobs.models import JobAlert
+from talentwright.jobs.models import SavedJob
 from talentwright.users.models import EmployerProfile
 
 
@@ -108,3 +111,50 @@ class PublicJobSerializer(serializers.ModelSerializer):
             "employer",
         ]
         read_only_fields = fields
+
+
+class SavedJobSerializer(serializers.ModelSerializer):
+    job = PublicJobSerializer(read_only=True)
+
+    class Meta:
+        model = SavedJob
+        fields = ["id", "job", "created_at"]
+        read_only_fields = fields
+
+
+class JobAlertSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobAlert
+        fields = [
+            "id",
+            "keyword",
+            "location",
+            "employment_type",
+            "minimum_salary",
+            "frequency",
+            "is_active",
+            "last_sent_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "last_sent_at", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        instance = self.instance
+        keyword = attrs.get("keyword", instance.keyword if instance else "")
+        location = attrs.get("location", instance.location if instance else "")
+        employment_type = attrs.get(
+            "employment_type",
+            instance.employment_type if instance else "",
+        )
+        minimum_salary = attrs.get(
+            "minimum_salary",
+            instance.minimum_salary if instance else None,
+        )
+
+        has_criteria = any(
+            [keyword.strip(), location.strip(), employment_type, minimum_salary is not None]
+        )
+        if not has_criteria:
+            raise serializers.ValidationError(ALERT_CRITERIA_ERROR)
+        return attrs
