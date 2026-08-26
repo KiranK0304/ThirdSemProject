@@ -3,10 +3,14 @@ from django.urls import path
 from talentwright.applications.api.views import (
     EmployerApplicationStatusUpdateView,
     EmployerApplicationsListView,
+    EmployerInterviewCreateView,
+    EmployerInterviewListView,
+    EmployerInterviewUpdateView,
     JobApplicationCreateView,
     JobApplicationsListView,
     SeekerApplicationDetailView,
     SeekerApplicationsListView,
+    SeekerInterviewListView,
 )
 
 app_name = "applications"
@@ -15,6 +19,17 @@ urlpatterns = [
     path("jobs/<int:job_id>/apply/", JobApplicationCreateView.as_view(), name="job-apply"),
     path("jobs/<int:job_id>/applications/", JobApplicationsListView.as_view(), name="job-applications"),
     path("employer/applications/", EmployerApplicationsListView.as_view(), name="employer-applications"),
+    path("employer/interviews/", EmployerInterviewListView.as_view(), name="employer-interviews"),
+    path(
+        "employer/interviews/<int:pk>/",
+        EmployerInterviewUpdateView.as_view(),
+        name="employer-interview-update",
+    ),
+    path(
+        "employer/applications/<int:application_id>/interview/",
+        EmployerInterviewCreateView.as_view(),
+        name="employer-interview-create",
+    ),
     path(
         "employer/applications/<int:pk>/status/",
         EmployerApplicationStatusUpdateView.as_view(),
@@ -22,5 +37,6 @@ urlpatterns = [
     ),
     path("seeker/applications/", SeekerApplicationsListView.as_view(), name="seeker-applications"),
     path("seeker/applications/<int:pk>/", SeekerApplicationDetailView.as_view(), name="seeker-application-detail"),
+    path("seeker/interviews/", SeekerInterviewListView.as_view(), name="seeker-interviews"),
 ]
 

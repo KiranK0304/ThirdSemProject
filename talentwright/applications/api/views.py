@@ -1,9 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+from rest_framework.exceptions import ValidationError
 
 from talentwright.applications.api.serializers import ApplicationSerializer
 from talentwright.applications.api.serializers import ApplicationStatusUpdateSerializer
+from talentwright.applications.api.serializers import InterviewSerializer
 from talentwright.applications.models import Application
+from talentwright.applications.models import ApplicationStatus
+from talentwright.applications.models import Interview
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobStatus
 from talentwright.notifications.services import (
@@ -135,4 +139,69 @@ class SeekerApplicationDetailView(generics.RetrieveDestroyAPIView):
             "seeker__user",
             "resume",
         ).filter(seeker=seeker)
+
+class EmployerInterviewCreateView(generics.CreateAPIView):
+    serializer_class = InterviewSerializer
+    permission_classes = [IsVerifiedEmployer]
+
+    def get_application(self):
+        return get_object_or_404(
+            Application.objects.select_related("job", "job__employer", "seeker", "seeker__user"),
+            pk=self.kwargs["application_id"],
+            job__employer=self.request.user.employer_profile,
+            status=ApplicationStatus.SHORTLISTED,
+        )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["application"] = self.get_application()
+        return context
+
+    def perform_create(self, serializer):
+        application = self.get_application()
+        if hasattr(application, "interview"):
+            raise ValidationError({"detail": "This application already has an interview."})
+        serializer.save()
+
+
+class EmployerInterviewListView(generics.ListAPIView):
+    serializer_class = InterviewSerializer
+    permission_classes = [IsVerifiedEmployer]
+
+    def get_queryset(self):
+        return Interview.objects.select_related(
+            "application",
+            "application__job",
+            "application__seeker__user",
+        ).filter(application__job__employer=self.request.user.employer_profile)
+
+
+class SeekerInterviewListView(generics.ListAPIView):
+    serializer_class = InterviewSerializer
+    permission_classes = [IsSeeker]
+
+    def get_queryset(self):
+        return Interview.objects.select_related(
+            "application",
+            "application__job",
+            "application__seeker__user",
+        ).filter(application__seeker=self.request.user.seeker_profile)
+
+
+class EmployerInterviewUpdateView(generics.UpdateAPIView):
+    serializer_class = InterviewSerializer
+    permission_classes = [IsVerifiedEmployer]
+    http_method_names = ["patch", "options", "head"]
+
+    def get_queryset(self):
+        return Interview.objects.select_related(
+            "application",
+            "application__job",
+            "application__seeker__user",
+        ).filter(application__job__employer=self.request.user.employer_profile)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["application"] = self.get_object().application
+        return context
 

@@ -183,7 +183,7 @@ class SeekerResumeListCreateView(generics.ListCreateAPIView):
         serializer.save(seeker=self.request.user.seeker_profile)
 
 
-class SeekerResumeDetailView(generics.RetrieveDestroyAPIView):
+class SeekerResumeDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     API view for seekers to retrieve or delete an individual resume.
     """

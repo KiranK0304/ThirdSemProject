@@ -5,8 +5,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from talentwright.applications.models import Application
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobAlert
+from talentwright.jobs.models import JobBookmark
 from talentwright.jobs.models import JobStatus
 from talentwright.users.models import EmployerProfile
 from talentwright.users.models import SeekerProfile
@@ -226,6 +228,109 @@ class TestPublicJobSearchAPI:
         assert len(resp.data) == 2
         assert resp.data[0]["id"] == job_high.id
         assert resp.data[1]["id"] == job_low.id
+
+
+class TestSeekerRecommendationsAPI:
+    def setup_method(self):
+        self.client = APIClient()
+        employer_user = User.objects.create_user(
+            email="recommendation-employer@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=employer_user,
+            company_name="Recommendation Co",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        seeker_user = User.objects.create_user(
+            email="recommendation-seeker@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        self.seeker = SeekerProfile.objects.create(user=seeker_user)
+        self.seeker_user = seeker_user
+        self.history_job = Job.objects.create(
+            employer=employer,
+            title="Previous Python Role",
+            description="Previous role.",
+            location="Remote",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        Application.objects.create(job=self.history_job, seeker=self.seeker)
+        self.best_match = Job.objects.create(
+            employer=employer,
+            title="Recommended Remote Role",
+            description="Matches type and location.",
+            location="Remote - Worldwide",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        self.type_match = Job.objects.create(
+            employer=employer,
+            title="Recommended Office Role",
+            description="Matches employment type.",
+            location="New York",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        self.unrelated_job = Job.objects.create(
+            employer=employer,
+            title="Unrelated Contract Role",
+            description="No matching signals.",
+            location="Berlin",
+            employment_type="CONTRACT",
+            status=JobStatus.OPEN,
+        )
+        self.client.force_authenticate(user=seeker_user)
+
+    def test_recommendations_rank_matching_jobs_and_exclude_applied_jobs(self):
+        response = self.client.get(reverse("jobs_api:recommendations"))
+
+        assert response.status_code == status.HTTP_200_OK
+        assert [item["id"] for item in response.data] == [
+            self.best_match.id,
+            self.type_match.id,
+            self.unrelated_job.id,
+        ]
+        assert response.data[0]["match_score"] == 5
+        assert response.data[1]["match_score"] == 3
+        assert response.data[2]["match_score"] == 0
+        assert self.history_job.id not in [item["id"] for item in response.data]
+
+    def test_bookmarked_job_signals_are_used_for_recommendations(self):
+        bookmarked_job = Job.objects.create(
+            employer=self.history_job.employer,
+            title="Bookmarked Type Role",
+            description="Matches a bookmarked job type.",
+            location="London",
+            employment_type="CONTRACT",
+            status=JobStatus.OPEN,
+        )
+        JobBookmark.objects.create(seeker=self.seeker, job=bookmarked_job)
+        contract_match = Job.objects.create(
+            employer=self.history_job.employer,
+            title="Contract Recommendation",
+            description="Matches bookmarked type.",
+            location="Tokyo",
+            employment_type="CONTRACT",
+            status=JobStatus.OPEN,
+        )
+
+        response = self.client.get(reverse("jobs_api:recommendations"))
+
+        assert response.status_code == status.HTTP_200_OK
+        returned_ids = [item["id"] for item in response.data]
+        assert contract_match.id in returned_ids
+        assert response.data[returned_ids.index(contract_match.id)]["match_score"] == 3
+
+    def test_recommendations_require_a_seeker(self):
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get(reverse("jobs_api:recommendations"))
+
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 
@@ -617,4 +722,60 @@ class TestSendJobAlertsCommand:
 
         call_command("send_job_alerts")
         assert len(mail.outbox) == 1
+
+
+class TestJobBookmarksAPI:
+    def setup_method(self):
+        self.client = APIClient()
+        employer_user = User.objects.create_user(
+            email="bookmark-employer@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=employer_user,
+            company_name="Bookmark Co",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        self.open_job = Job.objects.create(
+            employer=employer,
+            title="Bookmarkable Role",
+            description="A role worth saving.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+        self.seeker_user = User.objects.create_user(
+            email="bookmark-seeker@example.com",
+            password="StrongPassword123!",
+            is_active=True,
+        )
+        SeekerProfile.objects.create(user=self.seeker_user)
+        self.client.force_authenticate(user=self.seeker_user)
+
+    def test_seeker_can_create_list_and_delete_bookmark(self):
+        bookmark_url = reverse("jobs_api:bookmark", kwargs={"job_id": self.open_job.pk})
+
+        create_response = self.client.post(bookmark_url)
+        assert create_response.status_code == status.HTTP_201_CREATED
+        assert create_response.data["job"]["id"] == self.open_job.id
+
+        list_response = self.client.get(reverse("jobs_api:bookmarks"))
+        assert list_response.status_code == status.HTTP_200_OK
+        assert len(list_response.data) == 1
+        assert list_response.data[0]["job"]["title"] == "Bookmarkable Role"
+
+        delete_response = self.client.delete(bookmark_url)
+        assert delete_response.status_code == status.HTTP_204_NO_CONTENT
+        assert self.client.get(reverse("jobs_api:bookmarks")).data == []
+
+    def test_seeker_cannot_bookmark_unavailable_job(self):
+        self.open_job.status = JobStatus.CLOSED
+        self.open_job.save(update_fields=["status"])
+
+        response = self.client.post(
+            reverse("jobs_api:bookmark", kwargs={"job_id": self.open_job.pk}),
+        )
+
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
 

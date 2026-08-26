@@ -93,6 +93,32 @@ class TestJWTAuthenticationAPI:
         assert response.data["employer_profile"]["company_name"] == "Updated Acme Corp"
         assert response.data["employer_profile"]["website"] == "https://updated-acme.com"
 
+    def test_patch_me_update_seeker_profile(self):
+        user = User.objects.create_user(
+            email="seeker-profile@example.com",
+            password="StrongPassword123!",
+            name="Old Seeker",
+            is_active=True,
+        )
+        profile = SeekerProfile.objects.create(user=user, phone="+1111111111", bio="Old bio")
+        self.client.force_authenticate(user=user)
+
+        response = self.client.patch(
+            reverse("api-me"),
+            {
+                "name": "Updated Seeker",
+                "seeker_profile": {"phone": "+2222222222", "bio": "Updated bio"},
+            },
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        user.refresh_from_db()
+        profile.refresh_from_db()
+        assert user.name == "Updated Seeker"
+        assert profile.phone == "+2222222222"
+        assert profile.bio == "Updated bio"
+
     def test_permissions_helpers(self):
         # Create Employer
         emp_user = User.objects.create_user(email="emp_perm@example.com", password="Pass", is_active=True)

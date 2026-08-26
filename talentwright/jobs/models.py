@@ -105,6 +105,29 @@ class SavedJob(models.Model):
         return f"{self.seeker.user.email} saved {self.job}"
 
 
+class JobBookmark(models.Model):
+    seeker = ForeignKey(
+        SeekerProfile,
+        on_delete=CASCADE,
+        related_name="job_bookmarks",
+    )
+    job = ForeignKey(
+        Job,
+        on_delete=CASCADE,
+        related_name="bookmarks",
+    )
+    created_at = DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            UniqueConstraint(fields=["seeker", "job"], name="jobs_jobbookmark_seeker_job_unique"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.seeker.user.email} bookmarked {self.job.title}"
+
+
 class AlertFrequency(TextChoices):
     DAILY = "DAILY", _("Daily")
     WEEKLY = "WEEKLY", _("Weekly")
@@ -159,3 +182,4 @@ class JobAlert(models.Model):
 
     def __str__(self) -> str:
         return f"Job alert for {self.seeker.user.email}"
+

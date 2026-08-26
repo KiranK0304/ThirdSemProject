@@ -5,6 +5,7 @@ from rest_framework import serializers
 from talentwright.jobs.models import ALERT_CRITERIA_ERROR
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobAlert
+from talentwright.jobs.models import JobBookmark
 from talentwright.jobs.models import SavedJob
 from talentwright.users.models import EmployerProfile
 
@@ -69,7 +70,7 @@ class JobCreateSerializer(serializers.ModelSerializer):
         try:
             job.full_clean(exclude=["id", "status", "created_at", "updated_at"])
         except DjangoValidationError as exc:
-            raise serializers.ValidationError(exc.message_dict)
+            raise serializers.ValidationError(exc.message_dict) from exc
 
     def validate(self, attrs):
         self._validate_job(attrs)
@@ -113,11 +114,27 @@ class PublicJobSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class RecommendedJobSerializer(PublicJobSerializer):
+    match_score = serializers.IntegerField(read_only=True)
+
+    class Meta(PublicJobSerializer.Meta):
+        fields = [*PublicJobSerializer.Meta.fields, "match_score"]
+
+
 class SavedJobSerializer(serializers.ModelSerializer):
     job = PublicJobSerializer(read_only=True)
 
     class Meta:
         model = SavedJob
+        fields = ["id", "job", "created_at"]
+        read_only_fields = fields
+
+
+class JobBookmarkSerializer(serializers.ModelSerializer):
+    job = PublicJobSerializer(read_only=True)
+
+    class Meta:
+        model = JobBookmark
         fields = ["id", "job", "created_at"]
         read_only_fields = fields
 
@@ -158,3 +175,4 @@ class JobAlertSerializer(serializers.ModelSerializer):
         if not has_criteria:
             raise serializers.ValidationError(ALERT_CRITERIA_ERROR)
         return attrs
+
