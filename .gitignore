@@ -62,6 +62,7 @@ target/
 
 
 # Environments
+.envs/
 .venv
 venv/
 ENV/
