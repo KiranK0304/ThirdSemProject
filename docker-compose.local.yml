@@ -40,3 +40,20 @@ services:
     container_name: talentwright_local_mailpit
     ports:
       - "8025:8025"
+
+  frontend:
+    build:
+      context: ../talentwright_frontend
+      dockerfile: Dockerfile
+      target: dev
+    image: talentwright_frontend:latest
+    container_name: talentwright_frontend
+    depends_on:
+      - django
+    volumes:
+      - ../talentwright_frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_BACKEND_URL=http://django:8000
+    ports:
+      - "5173:5173"
