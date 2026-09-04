@@ -1,0 +1,21 @@
+$kind: http-request
+method: POST
+url: '{{base_url}}/jobs/manage/'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{access_token}}'
+body:
+  type: json
+  content: |-
+    {
+      "title": "Backend Engineer",
+      "description": "Build and maintain APIs",
+      "location": "Remote",
+      "employment_type": "FULL_TIME",
+      "salary_min": "80000.00",
+      "salary_max": "120000.00",
+      "salary_currency": "USD"
+    }

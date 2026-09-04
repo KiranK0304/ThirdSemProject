@@ -1,0 +1,4 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/jobs/{{job_id}}/'
+order: 2000

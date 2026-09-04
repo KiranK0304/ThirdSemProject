@@ -1,0 +1,6 @@
+name: talentwright
+values:
+  - key: base_url
+    value: ''
+  - key: hosted_url
+    value: ''

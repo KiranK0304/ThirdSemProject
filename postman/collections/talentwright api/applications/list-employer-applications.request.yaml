@@ -1,0 +1,7 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/employer/applications/'
+order: 3000
+headers:
+  - key: Authorization
+    value: 'Bearer {{access_token}}'

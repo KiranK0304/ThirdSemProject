@@ -1,0 +1,7 @@
+$kind: http-request
+method: GET
+url: '{{base_url}}/jobs/manage/{{job_id}}/'
+order: 5000
+headers:
+  - key: Authorization
+    value: 'Bearer {{access_token}}'
