@@ -16,6 +16,7 @@ from talentwright.jobs.models import Job
 from talentwright.resume_screening.schemas import CandidateScreeningData
 from talentwright.resume_screening.schemas import JobScreeningResponse
 from talentwright.resume_screening.schemas import ProcessingStatus
+from talentwright.resume_screening.schemas import StructuredResume
 from talentwright.resume_screening.services.candidate_builder import build_candidate_data
 from talentwright.resume_screening.services.llm_provider import LLMProviderError
 from talentwright.resume_screening.services.llm_structurer import structure_resume
@@ -56,6 +57,28 @@ def _process_single_application(application: Application) -> CandidateScreeningD
                 errors=["Resume record exists but file is missing"],
             ),
         )
+
+    # ── Check if already structured and cached in DB ────────────────
+    from talentwright.resume_screening.models import CandidateScreeningRecord
+
+    file_name = getattr(application.resume.file, "name", "")
+    existing_record = CandidateScreeningRecord.objects.filter(application=application).first()
+    if existing_record and existing_record.structured_resume and existing_record.resume_file_name == file_name:
+        try:
+            cached_resume = StructuredResume.model_validate(existing_record.structured_resume)
+            return build_candidate_data(
+                application=application,
+                structured_resume=cached_resume,
+                processing=ProcessingStatus(
+                    success=True,
+                    has_resume=True,
+                    resume_extracted=True,
+                    resume_structured=True,
+                    errors=[],
+                ),
+            )
+        except Exception as e:
+            logger.warning("Failed to validate cached structured resume for app %d: %s", application.id, e)
 
     # ── Step 2: Extract text from PDF ───────────────────────────────
     extraction = extract_text_from_pdf(application.resume.file)
@@ -99,6 +122,20 @@ def _process_single_application(application: Application) -> CandidateScreeningD
         errors.append("LLM returned minimal/empty structured data")
 
     success = resume_structured and not errors
+
+    # ── Cache structured resume in CandidateScreeningRecord ─────────
+    if structured_resume:
+        try:
+            CandidateScreeningRecord.objects.update_or_create(
+                application=application,
+                defaults={
+                    "job": application.job,
+                    "structured_resume": structured_resume.model_dump(exclude_none=True),
+                    "resume_file_name": file_name,
+                },
+            )
+        except Exception:
+            logger.exception("Failed to cache screening record for app %d", application.id)
 
     return build_candidate_data(
         application=application,

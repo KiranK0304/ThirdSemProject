@@ -57,6 +57,23 @@ def evaluate_single_candidate(
         details = {c: CriterionDetail(score=0, reason=reason_msg) for c in criteria}
         return scores, details
 
+    # ── Check if criteria evaluations are already cached in DB ──────
+    from talentwright.resume_screening.models import CandidateScreeningRecord
+
+    app_id = candidate.application.application_id
+    record = CandidateScreeningRecord.objects.filter(application_id=app_id).first()
+
+    if record and record.criteria_evaluations:
+        cached_evals = record.criteria_evaluations
+        if all(c.strip().lower() in cached_evals for c in criteria):
+            scores = {}
+            details = {}
+            for c in criteria:
+                data = cached_evals[c.strip().lower()]
+                scores[c] = data["score"]
+                details[c] = CriterionDetail(score=data["score"], reason=data["reason"])
+            return scores, details
+
     # ── Prepare resume JSON for prompt ──────────────────────────────
     resume_dict = candidate.resume.model_dump(exclude_none=True)
     resume_json = json.dumps(resume_dict, indent=2)
@@ -145,6 +162,27 @@ def evaluate_single_candidate(
                     score=0,
                     reason="Criterion was not evaluated by the model.",
                 )
+
+    # ── Persist criteria evaluations to DB cache ────────────────────
+    try:
+        from talentwright.applications.models import Application
+        if record:
+            updated_evals = dict(record.criteria_evaluations or {})
+            for c, detail in details.items():
+                updated_evals[c.strip().lower()] = {"score": detail.score, "reason": detail.reason}
+            record.criteria_evaluations = updated_evals
+            record.save(update_fields=["criteria_evaluations", "updated_at"])
+        elif Application.objects.filter(id=app_id).exists():
+            CandidateScreeningRecord.objects.create(
+                application_id=app_id,
+                job=job,
+                criteria_evaluations={
+                    c.strip().lower(): {"score": detail.score, "reason": detail.reason}
+                    for c, detail in details.items()
+                },
+            )
+    except Exception:
+        logger.exception("Failed to save criteria evaluations for application %d", app_id)
 
     return scores, details
 

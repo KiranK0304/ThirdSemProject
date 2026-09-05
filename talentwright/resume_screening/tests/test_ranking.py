@@ -320,3 +320,45 @@ class TestRankingAPI:
         assert get_data["job_id"] == self.job.id
         assert get_data["total_candidates"] == 1
         assert get_data["ranked_candidates"][0]["candidate_name"] == "Candidate Top"
+
+    def test_ranking_uses_cached_evaluations_without_calling_llm(self):
+        """Verify that when CandidateScreeningRecord is cached, ranking completes instantly without LLM calls."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from talentwright.resume_screening.models import CandidateScreeningRecord
+        from talentwright.users.models import Resume
+
+        applicant = User.objects.create_user(email="cached_user@test.com", name="Cached User")
+        seeker = SeekerProfile.objects.create(user=applicant)
+        dummy_file = SimpleUploadedFile("resume.pdf", b"%PDF-dummy", content_type="application/pdf")
+        resume = Resume.objects.create(seeker=seeker, file=dummy_file)
+        app = Application.objects.create(job=self.job, seeker=seeker, resume=resume)
+
+        # Pre-seed cached evaluations in DB
+        CandidateScreeningRecord.objects.create(
+            application=app,
+            job=self.job,
+            resume_file_name=resume.file.name,
+            structured_resume={"candidate_name": "Cached User", "skills": ["Python"]},
+            criteria_evaluations={
+                "experience": {"score": 95, "reason": "10 years exp"},
+                "skills": {"score": 90, "reason": "Python expert"},
+                "projects": {"score": 85, "reason": "Great projects"},
+            },
+        )
+
+        self.client.force_authenticate(user=self.employer_user)
+
+        # POST /rank/ with matching criteria - should hit DB cache and return score
+        response = self.client.post(
+            f"/api/screening/jobs/{self.job.id}/rank/",
+            {"weights": {"experience": 0.5, "skills": 0.3, "projects": 0.2}},
+            format="json",
+        )
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        top_cand = data["ranked_candidates"][0]
+        assert top_cand["candidate_name"] == "Cached User"
+        # 95*0.5 (47.5) + 90*0.3 (27.0) + 85*0.2 (17.0) = 91.5
+        assert top_cand["final_score"] == 91.5
+        assert top_cand["criteria_scores"]["experience"] == 95
+
