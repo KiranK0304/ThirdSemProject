@@ -16,7 +16,6 @@ from django.db.models import (
     TextField,
     URLField,
 )
-from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
@@ -62,15 +61,6 @@ class User(AbstractUser):
     @property
     def is_seeker(self) -> bool:
         return hasattr(self, "seeker_profile")
-
-    def get_absolute_url(self) -> str:
-        """Get URL for user's detail view.
-
-        Returns:
-            str: URL for user detail.
-
-        """
-        return reverse("users:detail", kwargs={"pk": self.id})
 
 
 class EmployerProfile(models.Model):
