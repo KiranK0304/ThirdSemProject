@@ -16,6 +16,8 @@ from talentwright.recruiter_copilot.models import CopilotMessage
 from talentwright.recruiter_copilot.models import CopilotSession
 from talentwright.recruiter_copilot.models import MessageRole
 
+from talentwright.recruiter_copilot.orchestrator.engine import CopilotOrchestrator
+
 logger = logging.getLogger(__name__)
 
 
@@ -172,12 +174,19 @@ class SessionMessageListCreateView(APIView):
             content=user_text,
         )
 
-        # 6. Save assistant placeholder reply (advanced agent will connect here)
+        # 6. Call Copilot Orchestrator to generate intelligent reply with tool support
+        orchestrator = CopilotOrchestrator()
+        assistant_text, metadata = orchestrator.run(
+            session=session,
+            new_user_message=user_text,
+        )
+
+        # 7. Save assistant reply in database
         assistant_message = CopilotMessage.objects.create(
             session=session,
             role=MessageRole.ASSISTANT,
-            content="Copilot initialized and ready. Candidate reasoning will be executed here.",
-            metadata={},
+            content=assistant_text,
+            metadata=metadata,
         )
 
         # Update session timestamp
