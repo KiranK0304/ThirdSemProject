@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -177,7 +178,7 @@ class SeekerResumeListCreateView(generics.ListCreateAPIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
-        return Resume.objects.filter(seeker=self.request.user.seeker_profile).order_by("-created_at")
+        return Resume.objects.filter(seeker=self.request.user.seeker_profile).order_by("-is_primary", "-created_at")
 
     def perform_create(self, serializer):
         serializer.save(seeker=self.request.user.seeker_profile)
@@ -185,12 +186,29 @@ class SeekerResumeListCreateView(generics.ListCreateAPIView):
 
 class SeekerResumeDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    API view for seekers to retrieve or delete an individual resume.
+    API view for seekers to retrieve, update, or delete an individual resume.
     """
     serializer_class = ResumeSerializer
     permission_classes = [IsSeeker]
 
     def get_queryset(self):
         return Resume.objects.filter(seeker=self.request.user.seeker_profile)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+
+class SeekerResumeSetPrimaryView(APIView):
+    """
+    API view to designate a specific resume as the seeker's primary resume.
+    """
+    permission_classes = [IsSeeker]
+
+    def post(self, request, pk):
+        resume = get_object_or_404(Resume, pk=pk, seeker=request.user.seeker_profile)
+        resume.is_primary = True
+        resume.save()
+        serializer = ResumeSerializer(resume, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 

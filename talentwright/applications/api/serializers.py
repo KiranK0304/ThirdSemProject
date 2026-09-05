@@ -6,6 +6,7 @@ from talentwright.applications.models import Application
 from talentwright.applications.models import ApplicationStatus
 from talentwright.applications.models import Interview
 from talentwright.applications.models import InterviewStatus
+from talentwright.jobs.models import Job
 from talentwright.jobs.api.serializers import PublicJobSerializer
 from talentwright.users.api.auth_serializers import ResumeSerializer
 from talentwright.users.models import Resume, SeekerProfile
@@ -23,6 +24,39 @@ class ApplicationSeekerSerializer(serializers.ModelSerializer):
             "user_name",
             "phone",
             "bio",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class CompactJobSerializer(serializers.ModelSerializer):
+    """
+    Lightweight job summary avoiding duplicate full job descriptions in application lists.
+    """
+    class Meta:
+        model = Job
+        fields = ["id", "title"]
+
+
+class JobApplicantSerializer(serializers.ModelSerializer):
+    """
+    Streamlined serializer for listing applicants for a job.
+    Omits repetitive full job descriptions and employer company details.
+    """
+    job = CompactJobSerializer(read_only=True)
+    seeker = ApplicationSeekerSerializer(read_only=True)
+    resume = ResumeSerializer(read_only=True)
+
+    class Meta:
+        model = Application
+        fields = [
+            "id",
+            "job",
+            "seeker",
+            "resume",
+            "cover_letter",
+            "status",
             "created_at",
             "updated_at",
         ]

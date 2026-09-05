@@ -1,0 +1,192 @@
+"""LLM provider abstraction for resume screening.
+
+Uses the OpenAI-compatible API via OpenRouter.  The provider is designed
+to be swappable — changing models or API providers requires modifying
+only this module.
+
+Configuration (environment variables or Django settings):
+    SCREENING_LLM_API_KEY   – OpenRouter API key  (required)
+    SCREENING_LLM_BASE_URL  – API base URL         (default: https://openrouter.ai/api/v1)
+    SCREENING_LLM_MODEL     – Model identifier     (default: openai/gpt-4o-mini)
+"""
+from __future__ import annotations
+
+import logging
+import os
+
+from openai import OpenAI
+from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
+
+
+# ── Configuration helpers ───────────────────────────────────────────────
+
+
+def _get_setting(name: str, default: str = "") -> str:
+    """Read a setting from Django settings with env-var fallback."""
+    try:
+        from django.conf import settings as django_settings
+
+        value = getattr(django_settings, name, None)
+        if value:
+            return value
+    except Exception:  # noqa: BLE001
+        pass
+    return os.environ.get(name, default)
+
+
+# ── Exceptions ──────────────────────────────────────────────────────────
+
+
+class LLMProviderError(Exception):
+    """Raised when the LLM provider encounters an error."""
+
+
+# ── Provider ────────────────────────────────────────────────────────────
+
+
+class LLMProvider:
+    """OpenAI-compatible LLM provider configured for OpenRouter."""
+
+    def __init__(self) -> None:
+        api_key = _get_setting("SCREENING_LLM_API_KEY") or _get_setting("OPENROUTER_API_KEY")
+        base_url = _get_setting(
+            "SCREENING_LLM_BASE_URL",
+            "https://openrouter.ai/api/v1",
+        )
+        self.model = _get_setting("SCREENING_LLM_MODEL", "openai/gpt-4o-mini")
+
+        if not api_key:
+            msg = (
+                "SCREENING_LLM_API_KEY or OPENROUTER_API_KEY is not configured. "
+                "Set it in Django settings or as an environment variable."
+            )
+            raise ValueError(msg)
+
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
+
+    def generate_structured(
+        self,
+        prompt: str,
+        response_schema: type[BaseModel],
+        temperature: float = 0.0,
+    ) -> BaseModel:
+        """Send a prompt to the LLM and validate the response against a Pydantic model.
+
+        Uses JSON-object response mode for broad provider compatibility,
+        then validates the raw JSON through Pydantic.
+
+        Args:
+            prompt: The complete prompt including schema and resume text.
+            response_schema: Pydantic model class to validate the response.
+            temperature: Sampling temperature (0.0 = most deterministic).
+
+        Returns:
+            An instance of ``response_schema`` populated with LLM output.
+
+        Raises:
+            LLMProviderError: If the API call fails or the response is invalid.
+        """
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a precise data extraction assistant. "
+                            "Always respond with valid JSON matching the "
+                            "requested schema."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object"},
+                temperature=temperature,
+            )
+        except Exception as exc:
+            logger.exception("LLM API call failed")
+            raise LLMProviderError(f"LLM API call failed: {exc}") from exc
+
+        raw_content = response.choices[0].message.content
+        if not raw_content:
+            raise LLMProviderError("LLM returned empty response")
+
+        logger.debug("LLM raw response length: %d chars", len(raw_content))
+
+        try:
+            return response_schema.model_validate_json(raw_content)
+        except Exception as exc:
+            logger.exception(
+                "Failed to parse LLM response into %s",
+                response_schema.__name__,
+            )
+            raise LLMProviderError(
+                f"Failed to parse LLM response: {exc}",
+            ) from exc
+
+    def generate_chat_response(
+        self,
+        system_prompt: str,
+        messages: list[dict[str, str]],
+        temperature: float = 0.3,
+        max_tokens: int = 1500,
+    ) -> str:
+        """Send chat messages to the LLM and return the assistant reply.
+
+        Args:
+            system_prompt: Background instructions, role, and context.
+            messages: Conversation history (list of dicts with role and content).
+            temperature: Sampling temperature (0.3 for focused yet natural generation).
+            max_tokens: Maximum tokens in response.
+
+        Returns:
+            The text content generated by the LLM.
+
+        Raises:
+            LLMProviderError: If the API call fails.
+        """
+        payload_messages = [{"role": "system", "content": system_prompt}]
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            if role in ("user", "assistant") and content:
+                payload_messages.append({"role": role, "content": content})
+
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=payload_messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        except Exception as exc:
+            logger.exception("LLM chat API call failed")
+            raise LLMProviderError(f"LLM chat API call failed: {exc}") from exc
+
+        raw_content = response.choices[0].message.content
+        if not raw_content:
+            raise LLMProviderError("LLM returned empty response")
+
+        return raw_content.strip()
+
+
+# ── Singleton access ────────────────────────────────────────────────────
+
+
+_provider_instance: LLMProvider | None = None
+
+
+def get_llm_provider() -> LLMProvider:
+    """Get or create the singleton LLM provider instance."""
+    global _provider_instance  # noqa: PLW0603
+    if _provider_instance is None:
+        _provider_instance = LLMProvider()
+    return _provider_instance
+
+
+def reset_llm_provider() -> None:
+    """Reset the singleton (useful for testing or config changes)."""
+    global _provider_instance  # noqa: PLW0603
+    _provider_instance = None

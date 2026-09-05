@@ -62,6 +62,7 @@ target/
 
 
 # Environments
+.envs/
 .venv
 venv/
 ENV/
@@ -273,6 +274,5 @@ talentwright/media/
 .pytest_cache/
 .ipython/
 .env
-.envs/*
-!.envs/.local/
-!.envs/.local/*
+.envs/
+

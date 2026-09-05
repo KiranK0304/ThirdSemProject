@@ -12,19 +12,8 @@ from rest_framework.authtoken.views import obtain_auth_token
 from talentwright.users.api.auth_views import UserMeView
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path(
-        "about/",
-        TemplateView.as_view(template_name="pages/about.html"),
-        name="about",
-    ),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    path("users/", include("talentwright.users.urls", namespace="users")),
-    path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
-    # ...
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
@@ -37,6 +26,7 @@ urlpatterns += [
     path("api/", include("talentwright.applications.api.urls", namespace="applications_api")),
     path("api/messages/", include("talentwright.message.api.urls", namespace="message_api")),
     path("api/notifications/", include("talentwright.notifications.api.urls", namespace="notifications_api")),
+    path("api/screening/", include("talentwright.resume_screening.api.urls", namespace="resume_screening_api")),
     # JWT Auth API
     path("api/auth/", include("talentwright.users.api.urls", namespace="auth_api")),
     path("api/me/", UserMeView.as_view(), name="api-me"),

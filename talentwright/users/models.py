@@ -5,8 +5,19 @@ from typing import ClassVar
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import CASCADE, CharField, DateTimeField, EmailField, FileField, ForeignKey, OneToOneField, TextChoices, TextField, URLField
-from django.urls import reverse
+from django.db.models import (
+    CASCADE,
+    BooleanField,
+    CharField,
+    DateTimeField,
+    EmailField,
+    FileField,
+    ForeignKey,
+    OneToOneField,
+    TextChoices,
+    TextField,
+    URLField,
+)
 from django.utils.translation import gettext_lazy as _
 
 from .managers import UserManager
@@ -52,15 +63,6 @@ class User(AbstractUser):
     @property
     def is_seeker(self) -> bool:
         return hasattr(self, "seeker_profile")
-
-    def get_absolute_url(self) -> str:
-        """Get URL for user's detail view.
-
-        Returns:
-            str: URL for user detail.
-
-        """
-        return reverse("users:detail", kwargs={"pk": self.id})
 
 
 class EmployerProfile(models.Model):
@@ -109,11 +111,12 @@ class Resume(models.Model):
     )
     title = CharField(_("Resume Title"), max_length=255, blank=True)
     file = FileField(_("Resume File"), upload_to="resumes/%Y/%m/")
+    is_primary = BooleanField(_("Is Primary"), default=False)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-is_primary", "-created_at"]
 
     def clean(self):
         super().clean()
@@ -124,9 +127,29 @@ class Resume(models.Model):
     def save(self, *args, **kwargs):
         if not self.title and self.file:
             self.title = self.file.name.split("/")[-1]
+
+        # Automatically mark as primary if it's the seeker's first resume
+        if self.seeker_id and not self.pk:
+            if not Resume.objects.filter(seeker_id=self.seeker_id).exists():
+                self.is_primary = True
+
         super().save(*args, **kwargs)
 
+        # If this resume is set as primary, unmark other resumes for this seeker
+        if self.is_primary and self.seeker_id:
+            Resume.objects.filter(seeker_id=self.seeker_id).exclude(pk=self.pk).update(is_primary=False)
+
+    def delete(self, *args, **kwargs):
+        was_primary = self.is_primary
+        seeker_id = self.seeker_id
+        super().delete(*args, **kwargs)
+        if was_primary and seeker_id:
+            remaining = Resume.objects.filter(seeker_id=seeker_id).order_by("-created_at").first()
+            if remaining:
+                remaining.is_primary = True
+                remaining.save(update_fields=["is_primary"])
+
     def __str__(self) -> str:
-        return f"{self.title or self.file.name} ({self.seeker.user.email})"
+        return f"{self.title or self.file.name} ({self.seeker.user.email}){' [PRIMARY]' if self.is_primary else ''}"
 
 
