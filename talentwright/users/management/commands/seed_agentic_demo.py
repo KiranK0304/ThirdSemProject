@@ -16,7 +16,6 @@ Usage:
 """
 from decimal import Decimal
 from django.core.management.base import BaseCommand
-from allauth.account.models import EmailAddress
 
 from talentwright.users.models import User, EmployerProfile, SeekerProfile, Resume, VerificationStatus
 from talentwright.jobs.models import Job, EmploymentType, JobStatus
@@ -200,13 +199,6 @@ class Command(BaseCommand):
         emp_user.name = EMPLOYER["name"]
         emp_user.set_password(COMMON_PASSWORD)
         emp_user.save()
-
-        EmailAddress.objects.update_or_create(
-            user=emp_user,
-            email=EMPLOYER["email"],
-            defaults={"verified": True, "primary": True},
-        )
-
         emp_profile, _ = EmployerProfile.objects.update_or_create(
             user=emp_user,
             defaults={
@@ -249,12 +241,6 @@ class Command(BaseCommand):
             user.name = emp_data["name"]
             user.set_password(COMMON_PASSWORD)
             user.save()
-
-            EmailAddress.objects.update_or_create(
-                user=user,
-                email=emp_data["email"],
-                defaults={"verified": True, "primary": True},
-            )
 
             seeker_profile, _ = SeekerProfile.objects.update_or_create(
                 user=user,
