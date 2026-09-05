@@ -11,8 +11,14 @@ from rest_framework.views import APIView
 
 from talentwright.jobs.models import Job
 from talentwright.resume_screening.models import JobRankingSnapshot
-from talentwright.resume_screening.schemas import JobCriteriaResponse
-from talentwright.resume_screening.schemas import JobRankingResponse
+from talentwright.resume_screening.schemas import (
+    CopilotMessage,
+    CopilotRequest,
+    CopilotResponse,
+    JobCriteriaResponse,
+    JobRankingResponse,
+)
+from talentwright.resume_screening.services.copilot import execute_copilot_command
 from talentwright.resume_screening.services.pipeline import prepare_candidates_for_job
 from talentwright.resume_screening.services.ranker import rank_candidates
 from talentwright.resume_screening.services.weights import get_job_weights
@@ -192,6 +198,35 @@ class JobScreeningRankView(APIView):
             total_candidates=latest_snapshot.total_candidates,
             ranked_candidates=latest_snapshot.ranked_candidates,
             created_at=latest_snapshot.created_at.isoformat(),
+        )
+
+        return Response(response_data.model_dump(), status=status.HTTP_200_OK)
+
+
+class JobScreeningCopilotView(APIView):
+    """AI Recruiter Agent Copilot endpoint.
+
+    POST /api/screening/jobs/<job_id>/copilot/
+        Processes recruiter prompts, questions, candidate comparisons,
+        and request for outreach/interview questions. Returns structured
+        replies and one-click direct actions.
+    """
+
+    permission_classes = [IsVerifiedEmployer]
+
+    def post(self, request, job_id):
+        job = _get_employer_job(request, job_id)
+
+        try:
+            req_data = CopilotRequest.model_validate(request.data)
+        except ValidationError as exc:
+            return Response(exc.errors(), status=status.HTTP_400_BAD_REQUEST)
+
+        response_data: CopilotResponse = execute_copilot_command(
+            job=job,
+            message=req_data.message,
+            history=req_data.history,
+            candidate_ids=req_data.candidate_ids,
         )
 
         return Response(response_data.model_dump(), status=status.HTTP_200_OK)

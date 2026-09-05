@@ -216,3 +216,53 @@ class JobRankingResponse(BaseModel):
     ranked_candidates: list[RankedCandidate]
     created_at: str | None = None
 
+
+# ── AI Recruiter Copilot Schemas ─────────────────────────────────────────
+
+
+class CopilotAction(BaseModel):
+    """An actionable button or shortcut returned by the AI Copilot."""
+
+    action_type: str = Field(
+        description="Type of action: 'shortlist', 'copy_text', 'filter', or 'inspect'",
+    )
+    label: str = Field(description="Display label for the action button")
+    application_id: int | None = None
+    candidate_id: int | None = None
+    candidate_name: str | None = None
+    payload: str | None = Field(
+        default=None,
+        description="Optional payload, such as pre-written email body or questions to copy",
+    )
+
+
+class CopilotMessage(BaseModel):
+    """Single message in a copilot conversation."""
+
+    role: str = Field(description="'user' or 'assistant'")
+    content: str = Field(description="Message body text in markdown")
+
+
+class CopilotRequest(BaseModel):
+    """Request payload for the copilot endpoint."""
+
+    message: str = Field(description="The user's query or command")
+    history: list[CopilotMessage] = Field(
+        default_factory=list,
+        description="Prior conversation history",
+    )
+    candidate_ids: list[int] = Field(
+        default_factory=list,
+        description="Optional application IDs or candidate IDs to focus on",
+    )
+
+
+class CopilotResponse(BaseModel):
+    """Response returned by the copilot endpoint."""
+
+    reply: str = Field(description="Assistant response in markdown format")
+    suggested_actions: list[CopilotAction] = Field(
+        default_factory=list,
+        description="List of direct actions the user can execute with 1-click",
+    )
+

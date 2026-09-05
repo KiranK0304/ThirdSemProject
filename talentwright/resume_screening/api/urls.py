@@ -2,6 +2,7 @@
 from django.urls import path
 
 from talentwright.resume_screening.api.views import (
+    JobScreeningCopilotView,
     JobScreeningCriteriaView,
     JobScreeningPrepareView,
     JobScreeningRankView,
@@ -24,5 +25,10 @@ urlpatterns = [
         "jobs/<int:job_id>/rank/",
         JobScreeningRankView.as_view(),
         name="job-screening-rank",
+    ),
+    path(
+        "jobs/<int:job_id>/copilot/",
+        JobScreeningCopilotView.as_view(),
+        name="job-screening-copilot",
     ),
 ]
