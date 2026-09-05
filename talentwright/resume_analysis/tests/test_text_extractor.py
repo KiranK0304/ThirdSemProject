@@ -1,14 +1,13 @@
 """Tests for resume text extraction service."""
 import io
 import zipfile
-import pytest
-import fitz
 
-from talentwright.resume_analysis.exceptions import (
-    EmptyResumeError,
-    TextExtractionError,
-    UnsupportedFileFormatError,
-)
+import fitz
+import pytest
+
+from talentwright.resume_analysis.exceptions import EmptyResumeError
+from talentwright.resume_analysis.exceptions import TextExtractionError
+from talentwright.resume_analysis.exceptions import UnsupportedFileFormatError
 from talentwright.resume_analysis.services.text_extractor import extract_text_from_file
 
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import io
 import logging
-import os
 import re
 import xml.etree.ElementTree as ET
 import zipfile
@@ -18,11 +17,9 @@ from typing import BinaryIO
 
 import fitz  # PyMuPDF
 
-from talentwright.resume_analysis.exceptions import (
-    EmptyResumeError,
-    TextExtractionError,
-    UnsupportedFileFormatError,
-)
+from talentwright.resume_analysis.exceptions import EmptyResumeError
+from talentwright.resume_analysis.exceptions import TextExtractionError
+from talentwright.resume_analysis.exceptions import UnsupportedFileFormatError
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +48,7 @@ def extract_text_from_file(
 
     if ext not in SUPPORTED_EXTENSIONS:
         raise UnsupportedFileFormatError(
-            f"Unsupported resume file format '{ext}'. Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
+            f"Unsupported resume file format '{ext}'. Supported formats: {', '.join(sorted(SUPPORTED_EXTENSIONS))}",
         )
 
     file_bytes = _read_to_bytes(file_source)
@@ -76,7 +73,7 @@ def extract_text_from_file(
     cleaned_text = _clean_text(raw_text)
     if not cleaned_text or len(cleaned_text.strip()) < 10:
         raise EmptyResumeError(
-            "Extracted resume content contains no legible text. The file may be an image-only scan or corrupted."
+            "Extracted resume content contains no legible text. The file may be an image-only scan or corrupted.",
         )
 
     return cleaned_text

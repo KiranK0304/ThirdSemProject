@@ -15,3 +15,11 @@ class TextExtractionError(ResumeAnalysisError):
 
 class EmptyResumeError(ResumeAnalysisError):
     """Raised when the extracted text from a resume is empty or unreadable."""
+
+
+class LLMConfigurationError(ResumeAnalysisError):
+    """Raised when the LLM API key or base URL is misconfigured."""
+
+
+class ResumeParsingError(ResumeAnalysisError):
+    """Raised when LLM structuring or parsing fails."""
