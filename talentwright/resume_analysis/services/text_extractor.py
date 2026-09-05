@@ -5,6 +5,7 @@ Supports extracting clean textual content from:
 - Word Documents (.docx) using built-in ZIP/XML extraction or python-docx
 - Plain Text (.txt)
 """
+
 from __future__ import annotations
 
 import io
@@ -63,12 +64,16 @@ def extract_text_from_file(
         elif ext == ".txt":
             raw_text = _extract_from_txt(file_bytes)
         else:
-            raise UnsupportedFileFormatError(f"Handler not implemented for extension: {ext}")
-    except (UnsupportedFileFormatError, EmptyResumeError):
+            raise UnsupportedFileFormatError(
+                f"Handler not implemented for extension: {ext}"
+            )
+    except UnsupportedFileFormatError, EmptyResumeError:
         raise
     except Exception as exc:
         logger.exception("Text extraction failed for file '%s' (%s)", filename, ext)
-        raise TextExtractionError(f"Failed to extract text from {ext} file: {exc}") from exc
+        raise TextExtractionError(
+            f"Failed to extract text from {ext} file: {exc}"
+        ) from exc
 
     cleaned_text = _clean_text(raw_text)
     if not cleaned_text or len(cleaned_text.strip()) < 10:
@@ -79,7 +84,9 @@ def extract_text_from_file(
     return cleaned_text
 
 
-def _resolve_extension(file_source: str | Path | BinaryIO | bytes, filename: str | None) -> str:
+def _resolve_extension(
+    file_source: str | Path | BinaryIO | bytes, filename: str | None
+) -> str:
     """Determine the file extension from filename or file path."""
     target_name = ""
     if filename:

@@ -1,6 +1,5 @@
 """Tests for resume_analysis Pydantic schemas."""
 
-
 from talentwright.resume_analysis.schemas import CandidateContact
 from talentwright.resume_analysis.schemas import Certification
 from talentwright.resume_analysis.schemas import Education
@@ -129,7 +128,14 @@ def test_structured_resume_serialization_roundtrip():
 
     dumped = resume.model_dump()
     assert dumped["contact"]["email"] == "jane@example.com"
-    assert dumped["skills"] == ["Python", "Django", "React", "PostgreSQL", "Docker", "AWS"]
+    assert dumped["skills"] == [
+        "Python",
+        "Django",
+        "React",
+        "PostgreSQL",
+        "Docker",
+        "AWS",
+    ]
 
 
 def test_structured_resume_empty_defaults():

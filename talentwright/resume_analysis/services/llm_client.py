@@ -56,9 +56,7 @@ class LLMClient:
             or "https://openrouter.ai/api/v1"
         )
         self.model = (
-            model
-            or _get_setting("SCREENING_LLM_MODEL")
-            or "openai/gpt-4o-mini"
+            model or _get_setting("SCREENING_LLM_MODEL") or "openai/gpt-4o-mini"
         )
         self.timeout = timeout
         self.client = OpenAI(

@@ -26,8 +26,12 @@ class DummyResponse:
 def test_llm_client_missing_api_key(monkeypatch):
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("SCREENING_LLM_API_KEY", raising=False)
-    with patch("talentwright.resume_analysis.services.llm_client._get_setting", return_value=""):
-        with pytest.raises(LLMConfigurationError, match="Neither OPENROUTER_API_KEY nor"):
+    with patch(
+        "talentwright.resume_analysis.services.llm_client._get_setting", return_value=""
+    ):
+        with pytest.raises(
+            LLMConfigurationError, match="Neither OPENROUTER_API_KEY nor"
+        ):
             LLMClient(api_key=None)
 
 
@@ -44,9 +48,7 @@ def test_llm_client_clean_json_response():
 
 def test_llm_client_generate_structured_success():
     client = LLMClient(api_key="test-key")
-    json_payload = (
-        '{"summary": "Software Engineer", "skills": ["Python", "Docker"], "total_years_experience": 3.0}'
-    )
+    json_payload = '{"summary": "Software Engineer", "skills": ["Python", "Docker"], "total_years_experience": 3.0}'
 
     with patch.object(
         client.client.chat.completions,
@@ -66,11 +68,14 @@ def test_llm_client_generate_structured_success():
 
 def test_llm_client_empty_response():
     client = LLMClient(api_key="test-key")
-    with patch.object(
-        client.client.chat.completions,
-        "create",
-        return_value=DummyResponse(""),
-    ), pytest.raises(ResumeParsingError, match="LLM returned an empty response"):
+    with (
+        patch.object(
+            client.client.chat.completions,
+            "create",
+            return_value=DummyResponse(""),
+        ),
+        pytest.raises(ResumeParsingError, match="LLM returned an empty response"),
+    ):
         client.generate_structured(
             prompt="parse this",
             system_prompt="system",
@@ -80,11 +85,14 @@ def test_llm_client_empty_response():
 
 def test_llm_client_invalid_json():
     client = LLMClient(api_key="test-key")
-    with patch.object(
-        client.client.chat.completions,
-        "create",
-        return_value=DummyResponse("Not a valid JSON payload"),
-    ), pytest.raises(ResumeParsingError, match="Failed to validate LLM response"):
+    with (
+        patch.object(
+            client.client.chat.completions,
+            "create",
+            return_value=DummyResponse("Not a valid JSON payload"),
+        ),
+        pytest.raises(ResumeParsingError, match="Failed to validate LLM response"),
+    ):
         client.generate_structured(
             prompt="parse this",
             system_prompt="system",
@@ -94,11 +102,14 @@ def test_llm_client_invalid_json():
 
 def test_llm_client_api_failure():
     client = LLMClient(api_key="test-key")
-    with patch.object(
-        client.client.chat.completions,
-        "create",
-        side_effect=RuntimeError("Connection refused"),
-    ), pytest.raises(ResumeParsingError, match="LLM API request failed"):
+    with (
+        patch.object(
+            client.client.chat.completions,
+            "create",
+            side_effect=RuntimeError("Connection refused"),
+        ),
+        pytest.raises(ResumeParsingError, match="LLM API request failed"),
+    ):
         client.generate_structured(
             prompt="parse this",
             system_prompt="system",
@@ -123,9 +134,7 @@ def test_parse_resume_text_success_with_mock_client():
     )
     mock_client.generate_structured.return_value = expected_resume
 
-    sample_text = (
-        "Jane Doe\nEmail: jane@example.com\nSenior Backend Developer with 5 years experience in Python and Django."
-    )
+    sample_text = "Jane Doe\nEmail: jane@example.com\nSenior Backend Developer with 5 years experience in Python and Django."
     result = parse_resume_text(sample_text, llm_client=mock_client)
 
     assert result == expected_resume

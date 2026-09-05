@@ -1,4 +1,5 @@
 """Tests for resume text extraction service."""
+
 import io
 import zipfile
 
@@ -11,7 +12,9 @@ from talentwright.resume_analysis.exceptions import UnsupportedFileFormatError
 from talentwright.resume_analysis.services.text_extractor import extract_text_from_file
 
 
-def _create_sample_pdf_bytes(text: str = "John Doe\nSoftware Engineer\nPython, Django, AWS") -> bytes:
+def _create_sample_pdf_bytes(
+    text: str = "John Doe\nSoftware Engineer\nPython, Django, AWS",
+) -> bytes:
     doc = fitz.open()
     page = doc.new_page()
     page.insert_text((50, 50), text)
@@ -20,7 +23,9 @@ def _create_sample_pdf_bytes(text: str = "John Doe\nSoftware Engineer\nPython, D
     return pdf_bytes
 
 
-def _create_sample_docx_bytes(text: str = "Jane Smith\nDevOps Engineer\nDocker, Kubernetes") -> bytes:
+def _create_sample_docx_bytes(
+    text: str = "Jane Smith\nDevOps Engineer\nDocker, Kubernetes",
+) -> bytes:
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as z:
         xml_content = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>

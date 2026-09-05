@@ -55,7 +55,9 @@ def parse_resume_text(
         ResumeParsingError: If extraction or validation fails.
     """
     if not resume_text or len(resume_text.strip()) < 20:
-        raise EmptyResumeError("Resume text is empty or too short to extract meaningful data.")
+        raise EmptyResumeError(
+            "Resume text is empty or too short to extract meaningful data."
+        )
 
     if llm_client is None:
         llm_client = LLMClient()
