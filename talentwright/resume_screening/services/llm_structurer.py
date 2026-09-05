@@ -3,6 +3,7 @@
 Takes raw resume text and produces a StructuredResume by sending the
 text through an LLM with a predefined Pydantic schema.
 """
+
 from __future__ import annotations
 
 import json

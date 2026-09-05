@@ -1,4 +1,5 @@
 """API views for resume screening and candidate ranking."""
+
 from __future__ import annotations
 
 import logging
@@ -12,7 +13,6 @@ from rest_framework.views import APIView
 from talentwright.jobs.models import Job
 from talentwright.resume_screening.models import JobRankingSnapshot
 from talentwright.resume_screening.schemas import (
-    CopilotMessage,
     CopilotRequest,
     CopilotResponse,
     JobCriteriaResponse,
@@ -21,8 +21,7 @@ from talentwright.resume_screening.schemas import (
 from talentwright.resume_screening.services.copilot import execute_copilot_command
 from talentwright.resume_screening.services.pipeline import prepare_candidates_for_job
 from talentwright.resume_screening.services.ranker import rank_candidates
-from talentwright.resume_screening.services.weights import get_job_weights
-from talentwright.resume_screening.services.weights import save_job_weights
+from talentwright.resume_screening.services.weights import get_job_weights, save_job_weights
 from talentwright.users.api.permissions import IsVerifiedEmployer
 
 logger = logging.getLogger(__name__)
@@ -106,7 +105,11 @@ class JobScreeningCriteriaView(APIView):
     def _save_weights(self, request, job_id):
         job = _get_employer_job(request, job_id)
 
-        raw_weights = request.data.get("weights") if isinstance(request.data, dict) and "weights" in request.data else request.data
+        raw_weights = (
+            request.data.get("weights")
+            if isinstance(request.data, dict) and "weights" in request.data
+            else request.data
+        )
         if not isinstance(raw_weights, dict):
             raise ValidationError({"weights": "Must provide a dictionary of criteria to weights."})
 
@@ -149,7 +152,9 @@ class JobScreeningRankView(APIView):
         job = _get_employer_job(request, job_id)
 
         # ── 1. Determine weights to use ─────────────────────────────
-        custom_weights = request.data.get("weights") if isinstance(request.data, dict) and "weights" in request.data else None
+        custom_weights = (
+            request.data.get("weights") if isinstance(request.data, dict) and "weights" in request.data else None
+        )
         if custom_weights:
             _, weights = save_job_weights(job, custom_weights)
         else:
@@ -176,11 +181,7 @@ class JobScreeningRankView(APIView):
     def get(self, request, job_id):
         job = _get_employer_job(request, job_id)
 
-        latest_snapshot = (
-            JobRankingSnapshot.objects.filter(job=job)
-            .order_by("-created_at")
-            .first()
-        )
+        latest_snapshot = JobRankingSnapshot.objects.filter(job=job).order_by("-created_at").first()
 
         if not latest_snapshot:
             return Response(

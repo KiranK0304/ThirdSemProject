@@ -1,16 +1,23 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from talentwright.notifications.services import notify_employer_approved, notify_employer_rejected
+from talentwright.users.api.permissions import IsAdmin, IsSeeker
+from talentwright.users.models import EmployerProfile, Resume, VerificationStatus
+
 from .auth_serializers import (
     CustomTokenObtainPairSerializer,
+    EmployerProfileAdminSerializer,
     LogoutSerializer,
     RegisterSerializer,
+    ResumeSerializer,
     UserMeSerializer,
 )
 
@@ -19,6 +26,7 @@ class RegisterView(generics.CreateAPIView):
     """
     API view for registering a new user and returning immediate JWT access & refresh tokens.
     """
+
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
@@ -45,6 +53,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     """
     API view for authenticating user credentials and issuing JWT access & refresh tokens.
     """
+
     serializer_class = CustomTokenObtainPairSerializer
     permission_classes = [AllowAny]
 
@@ -53,6 +62,7 @@ class CustomTokenRefreshView(TokenRefreshView):
     """
     API view for refreshing expired access tokens using a valid refresh token.
     """
+
     permission_classes = [AllowAny]
 
 
@@ -60,6 +70,7 @@ class LogoutView(APIView):
     """
     API view for logging out a user by blacklisting their refresh token.
     """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -81,22 +92,11 @@ class LogoutView(APIView):
             )
 
 
-from talentwright.users.api.permissions import IsAdmin
-from talentwright.notifications.services import notify_employer_approved, notify_employer_rejected
-from talentwright.users.models import EmployerProfile, VerificationStatus
-from .auth_serializers import (
-    CustomTokenObtainPairSerializer,
-    EmployerProfileAdminSerializer,
-    LogoutSerializer,
-    RegisterSerializer,
-    UserMeSerializer,
-)
-
-
 class UserMeView(generics.RetrieveUpdateAPIView):
     """
     API View for retrieving and updating the current authenticated user's profile information.
     """
+
     serializer_class = UserMeSerializer
     permission_classes = [IsAuthenticated]
 
@@ -108,6 +108,7 @@ class AdminEmployerListView(generics.ListAPIView):
     """
     API View for admins to list all employer profiles (with optional ?status=PENDING filter).
     """
+
     serializer_class = EmployerProfileAdminSerializer
     permission_classes = [IsAdmin]
 
@@ -127,6 +128,7 @@ class AdminEmployerApproveView(APIView):
     """
     API View for admins to approve an employer profile.
     """
+
     permission_classes = [IsAdmin]
 
     def patch(self, request, pk):
@@ -147,6 +149,7 @@ class AdminEmployerRejectView(APIView):
     """
     API View for admins to reject an employer profile.
     """
+
     permission_classes = [IsAdmin]
 
     def patch(self, request, pk):
@@ -163,16 +166,11 @@ class AdminEmployerRejectView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from talentwright.users.api.permissions import IsSeeker
-from talentwright.users.models import Resume
-from .auth_serializers import ResumeSerializer
-
-
 class SeekerResumeListCreateView(generics.ListCreateAPIView):
     """
     API view for seekers to list their resumes and upload new resumes (up to 3 max).
     """
+
     serializer_class = ResumeSerializer
     permission_classes = [IsSeeker]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -188,6 +186,7 @@ class SeekerResumeDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     API view for seekers to retrieve, update, or delete an individual resume.
     """
+
     serializer_class = ResumeSerializer
     permission_classes = [IsSeeker]
 
@@ -202,6 +201,7 @@ class SeekerResumeSetPrimaryView(APIView):
     """
     API view to designate a specific resume as the seeker's primary resume.
     """
+
     permission_classes = [IsSeeker]
 
     def post(self, request, pk):
@@ -210,5 +210,3 @@ class SeekerResumeSetPrimaryView(APIView):
         resume.save()
         serializer = ResumeSerializer(resume, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-

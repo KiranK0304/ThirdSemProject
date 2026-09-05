@@ -1,5 +1,3 @@
-
-
 from typing import ClassVar
 
 from django.contrib.auth.models import AbstractUser
@@ -79,6 +77,7 @@ class EmployerProfile(models.Model):
     """
     Profile model for Employer accounts.
     """
+
     user = OneToOneField(User, on_delete=models.CASCADE, related_name="employer_profile")
     company_name = CharField(_("Company Name"), max_length=255, blank=True)
     website = URLField(_("Company Website"), blank=True)
@@ -100,6 +99,7 @@ class SeekerProfile(models.Model):
     """
     Profile model for Seeker accounts.
     """
+
     user = OneToOneField(User, on_delete=models.CASCADE, related_name="seeker_profile")
     phone = CharField(_("Phone Number"), max_length=30, blank=True)
     bio = TextField(_("Bio"), blank=True)
@@ -114,6 +114,7 @@ class Resume(models.Model):
     """
     Uploaded resume documents for a job seeker (maximum 3 per seeker).
     """
+
     seeker = ForeignKey(
         SeekerProfile,
         on_delete=CASCADE,
@@ -161,5 +162,3 @@ class Resume(models.Model):
 
     def __str__(self) -> str:
         return f"{self.title or self.file.name} ({self.seeker.user.email}){' [PRIMARY]' if self.is_primary else ''}"
-
-

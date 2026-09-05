@@ -3,9 +3,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from talentwright.jobs.models import Job, JobStatus, EmploymentType
 from talentwright.notifications.models import Notification, NotificationType
-from talentwright.users.models import EmployerProfile, SeekerProfile, User, VerificationStatus
+from talentwright.users.models import EmployerProfile, User, VerificationStatus
 
 pytestmark = pytest.mark.django_db
 

@@ -4,6 +4,7 @@ Seed the database with rich sample data for Hirely.
 Usage:
     python manage.py seed_data
 """
+
 import random
 from datetime import timedelta
 from decimal import Decimal
@@ -11,10 +12,9 @@ from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from talentwright.users.models import User, EmployerProfile, SeekerProfile, Resume, VerificationStatus
-from talentwright.jobs.models import Job, EmploymentType, JobStatus
 from talentwright.applications.models import Application, ApplicationStatus
-
+from talentwright.jobs.models import Job
+from talentwright.users.models import EmployerProfile, SeekerProfile, User, VerificationStatus
 
 COMPANIES = [
     {
@@ -522,7 +522,16 @@ class Command(BaseCommand):
             "This role resonates strongly with my career goals. I have hands-on experience with the technologies mentioned and am eager to bring my skills to your team.",
             "",  # Some applications without cover letters
         ]
-        fields = ["frontend development", "backend systems", "data analysis", "product design", "DevOps", "machine learning", "content strategy", "user research"]
+        fields = [
+            "frontend development",
+            "backend systems",
+            "data analysis",
+            "product design",
+            "DevOps",
+            "machine learning",
+            "content strategy",
+            "user research",
+        ]
 
         statuses = [
             ApplicationStatus.SUBMITTED,
@@ -543,7 +552,14 @@ class Command(BaseCommand):
                 cover = random.choice(cover_letters).format(field=random.choice(fields))
                 status = random.choice(statuses)
                 days_after_posting = random.randint(0, 3)
-                applied_at = now - timedelta(days=max(0, job.created_at.day - days_after_posting if hasattr(job.created_at, 'day') else random.randint(0, 5)))
+                _applied_at = now - timedelta(
+                    days=max(
+                        0,
+                        job.created_at.day - days_after_posting
+                        if hasattr(job.created_at, "day")
+                        else random.randint(0, 5),
+                    )
+                )
 
                 app, created = Application.objects.get_or_create(
                     job=job,
@@ -565,6 +581,5 @@ class Command(BaseCommand):
         self.stdout.write(f"  Seekers:   {User.objects.filter(seeker_profile__isnull=False).count()}")
         self.stdout.write(f"  Jobs:      {Job.objects.count()}")
         self.stdout.write(f"  Applications: {Application.objects.count()}")
-        self.stdout.write(f"\n  Demo login:  arjun.sharma@email.com / demo1234")
-        self.stdout.write(f"  Employer login: hr@acmecorp.com / demo1234")
-
+        self.stdout.write("\n  Demo login:  arjun.sharma@email.com / demo1234")
+        self.stdout.write("  Employer login: hr@acmecorp.com / demo1234")

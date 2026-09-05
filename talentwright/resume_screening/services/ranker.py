@@ -6,6 +6,7 @@ Calculates the final weighted score deterministically in Python (backend):
     Final Score = Σ (Criterion Score × Criterion Weight)
 Sorts and ranks candidates from highest to lowest score.
 """
+
 from __future__ import annotations
 
 import json
@@ -53,7 +54,7 @@ def evaluate_single_candidate(
         if candidate.processing.errors:
             reason_msg = "; ".join(candidate.processing.errors)
 
-        scores = {c: 0 for c in criteria}
+        scores = dict.fromkeys(criteria, 0)
         details = {c: CriterionDetail(score=0, reason=reason_msg) for c in criteria}
         return scores, details
 
@@ -107,22 +108,16 @@ def evaluate_single_candidate(
             "LLM evaluation failed for application %d",
             candidate.application.application_id,
         )
-        scores = {c: 0 for c in criteria}
-        details = {
-            c: CriterionDetail(score=0, reason=f"Evaluation error: {exc}")
-            for c in criteria
-        }
+        scores = dict.fromkeys(criteria, 0)
+        details = {c: CriterionDetail(score=0, reason=f"Evaluation error: {exc}") for c in criteria}
         return scores, details
-    except Exception as exc:
+    except Exception:
         logger.exception(
             "Unexpected error evaluating application %d",
             candidate.application.application_id,
         )
-        scores = {c: 0 for c in criteria}
-        details = {
-            c: CriterionDetail(score=0, reason="Unexpected evaluation failure")
-            for c in criteria
-        }
+        scores = dict.fromkeys(criteria, 0)
+        details = {c: CriterionDetail(score=0, reason="Unexpected evaluation failure") for c in criteria}
         return scores, details
 
     # ── Map LLM response items to the requested criteria ────────────
@@ -166,6 +161,7 @@ def evaluate_single_candidate(
     # ── Persist criteria evaluations to DB cache ────────────────────
     try:
         from talentwright.applications.models import Application
+
         if record:
             updated_evals = dict(record.criteria_evaluations or {})
             for c, detail in details.items():
@@ -245,20 +241,20 @@ def rank_candidates(
         scores, details = evaluate_single_candidate(job, candidate, criteria)
         final_score = calculate_final_score(scores, weights)
 
-        evaluated_list.append({
-            "candidate_id": candidate.application.candidate_id,
-            "application_id": candidate.application.application_id,
-            "candidate_name": candidate.application.candidate_name,
-            "candidate_email": candidate.application.candidate_email,
-            "criteria_scores": scores,
-            "criteria_details": details,
-            "final_score": final_score,
-        })
+        evaluated_list.append(
+            {
+                "candidate_id": candidate.application.candidate_id,
+                "application_id": candidate.application.application_id,
+                "candidate_name": candidate.application.candidate_name,
+                "candidate_email": candidate.application.candidate_email,
+                "criteria_scores": scores,
+                "criteria_details": details,
+                "final_score": final_score,
+            }
+        )
 
     # ── Sort descending by final_score (tie-breaker: application_id asc) ──
-    evaluated_list.sort(
-        key=lambda x: (-x["final_score"], x["application_id"])
-    )
+    evaluated_list.sort(key=lambda x: (-x["final_score"], x["application_id"]))
 
     # ── Assign rank positions ───────────────────────────────────────
     ranked_candidates: list[RankedCandidate] = []

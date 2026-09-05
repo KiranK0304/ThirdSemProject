@@ -9,16 +9,13 @@ from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.http import HttpRequest
-from django.http import HttpResponseRedirect
+from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from talentwright.users.forms import UserAdminChangeForm
 from talentwright.users.tests.factories import UserFactory
-from talentwright.users.views import UserRedirectView
-from talentwright.users.views import UserUpdateView
-from talentwright.users.views import user_detail_view
+from talentwright.users.views import UserRedirectView, UserUpdateView, user_detail_view
 
 if TYPE_CHECKING:
     from django.test import RequestFactory

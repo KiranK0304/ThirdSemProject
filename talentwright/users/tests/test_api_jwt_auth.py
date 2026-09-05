@@ -129,7 +129,9 @@ class TestJWTAuthenticationAPI:
         SeekerProfile.objects.create(user=seeker_user)
 
         # Create Admin
-        admin_user = User.objects.create_user(email="admin_perm@example.com", password="Pass", is_staff=True, is_active=True)
+        admin_user = User.objects.create_user(
+            email="admin_perm@example.com", password="Pass", is_staff=True, is_active=True
+        )
 
         class DummyRequest:
             def __init__(self, user):
@@ -158,12 +160,10 @@ class TestJWTAuthenticationAPI:
         assert a_perm.has_permission(DummyRequest(emp_user), None) is False
 
     def test_admin_employer_list_and_approve_reject_flow(self):
-        admin_user = User.objects.create_user(
+        _admin_user = User.objects.create_user(
             email="admin_api@example.com", password="AdminPassword123!", is_staff=True, is_active=True
         )
-        emp_user = User.objects.create_user(
-            email="emp_api@example.com", password="EmpPassword123!", is_active=True
-        )
+        emp_user = User.objects.create_user(email="emp_api@example.com", password="EmpPassword123!", is_active=True)
         emp_prof = EmployerProfile.objects.create(
             user=emp_user, company_name="Test Company", verification_status=VerificationStatus.PENDING
         )
@@ -195,7 +195,7 @@ class TestJWTAuthenticationAPI:
         assert reject_resp.data["verification_status"] == "REJECTED"
 
     def test_non_admin_forbidden_on_admin_endpoints(self):
-        normal_user = User.objects.create_user(
+        _normal_user = User.objects.create_user(
             email="normal@example.com", password="NormalPassword123!", is_active=True
         )
         login_url = reverse("auth_api:login")
@@ -210,7 +210,7 @@ class TestJWTAuthenticationAPI:
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_admin_employer_list_invalid_status_returns_400(self):
-        admin_user = User.objects.create_user(
+        _admin_user = User.objects.create_user(
             email="admin_invalid_status@example.com", password="AdminPassword123!", is_staff=True, is_active=True
         )
 
@@ -228,4 +228,3 @@ class TestJWTAuthenticationAPI:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert "status" in response.data
-

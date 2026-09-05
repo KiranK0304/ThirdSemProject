@@ -7,16 +7,19 @@ Coordinates the full screening pipeline for a job:
 
 This is the main entry point called by API views.
 """
+
 from __future__ import annotations
 
 import logging
 
 from talentwright.applications.models import Application
 from talentwright.jobs.models import Job
-from talentwright.resume_screening.schemas import CandidateScreeningData
-from talentwright.resume_screening.schemas import JobScreeningResponse
-from talentwright.resume_screening.schemas import ProcessingStatus
-from talentwright.resume_screening.schemas import StructuredResume
+from talentwright.resume_screening.schemas import (
+    CandidateScreeningData,
+    JobScreeningResponse,
+    ProcessingStatus,
+    StructuredResume,
+)
 from talentwright.resume_screening.services.candidate_builder import build_candidate_data
 from talentwright.resume_screening.services.llm_provider import LLMProviderError
 from talentwright.resume_screening.services.llm_structurer import structure_resume

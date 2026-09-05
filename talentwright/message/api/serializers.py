@@ -2,12 +2,8 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
-from talentwright.message.models import ChatRequest
-from talentwright.message.models import ChatRequestStatus
-from talentwright.message.models import Message
-from talentwright.users.models import EmployerProfile
-from talentwright.users.models import SeekerProfile
-from talentwright.users.models import VerificationStatus
+from talentwright.message.models import ChatRequest, ChatRequestStatus, Message
+from talentwright.users.models import EmployerProfile, SeekerProfile, VerificationStatus
 
 
 class ChatEmployerSerializer(serializers.ModelSerializer):
@@ -136,9 +132,7 @@ class ChatRequestCreateSerializer(serializers.ModelSerializer):
             ChatRequestStatus.PENDING,
             ChatRequestStatus.APPROVED,
         ]:
-            err_msg = (
-                f"You already have a request with this employer ({existing.status})."
-            )
+            err_msg = f"You already have a request with this employer ({existing.status})."
             raise serializers.ValidationError({"non_field_errors": [err_msg]})
 
         chat_request = ChatRequest(
@@ -189,9 +183,7 @@ class ChatRequestStatusUpdateSerializer(serializers.ModelSerializer):
             ChatRequestStatus.REJECTED,
         ]
         if value not in allowed_statuses:
-            err_msg = (
-                f"Invalid status update. Choose one of: {', '.join(allowed_statuses)}."
-            )
+            err_msg = f"Invalid status update. Choose one of: {', '.join(allowed_statuses)}."
             raise serializers.ValidationError(err_msg)
         return value
 

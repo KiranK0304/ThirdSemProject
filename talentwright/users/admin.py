@@ -4,10 +4,10 @@ from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from django.utils.translation import gettext_lazy as _
 
-from .forms import UserAdminChangeForm
-from .forms import UserAdminCreationForm
-from .models import EmployerProfile, SeekerProfile, User, VerificationStatus
 from talentwright.notifications.services import notify_employer_approved, notify_employer_rejected
+
+from .forms import UserAdminChangeForm, UserAdminCreationForm
+from .models import EmployerProfile, SeekerProfile, User, VerificationStatus
 
 if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
     # Force the `admin` sign in process to go through the `django-allauth` workflow:
@@ -81,4 +81,3 @@ class EmployerProfileAdmin(admin.ModelAdmin):
 class SeekerProfileAdmin(admin.ModelAdmin):
     list_display = ["user", "phone", "created_at"]
     search_fields = ["user__email", "phone"]
-

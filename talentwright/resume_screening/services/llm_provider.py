@@ -9,6 +9,7 @@ Configuration (environment variables or Django settings):
     SCREENING_LLM_BASE_URL  – API base URL         (default: https://openrouter.ai/api/v1)
     SCREENING_LLM_MODEL     – Model identifier     (default: openai/gpt-4o-mini)
 """
+
 from __future__ import annotations
 
 import logging

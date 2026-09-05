@@ -1,8 +1,8 @@
 from django.urls import path
 
 from talentwright.applications.api.views import (
-    EmployerApplicationStatusUpdateView,
     EmployerApplicationsListView,
+    EmployerApplicationStatusUpdateView,
     EmployerInterviewCreateView,
     EmployerInterviewListView,
     EmployerInterviewUpdateView,
@@ -39,4 +39,3 @@ urlpatterns = [
     path("seeker/applications/<int:pk>/", SeekerApplicationDetailView.as_view(), name="seeker-application-detail"),
     path("seeker/interviews/", SeekerInterviewListView.as_view(), name="seeker-interviews"),
 ]
-

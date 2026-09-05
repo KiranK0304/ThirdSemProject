@@ -1,4 +1,5 @@
 """Django app configuration for resume screening."""
+
 from django.apps import AppConfig
 
 
@@ -12,4 +13,3 @@ class ResumeScreeningConfig(AppConfig):
             import talentwright.resume_screening.signals  # noqa: F401
         except ImportError:
             pass
-

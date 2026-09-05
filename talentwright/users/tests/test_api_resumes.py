@@ -83,9 +83,7 @@ class TestSeekerResumeAPI:
             created_resumes.append(resp.data["id"])
 
         # Delete one resume
-        delete_resp = self.client.delete(
-            reverse("auth_api:seeker-resume-detail", kwargs={"pk": created_resumes[0]})
-        )
+        delete_resp = self.client.delete(reverse("auth_api:seeker-resume-detail", kwargs={"pk": created_resumes[0]}))
         assert delete_resp.status_code == status.HTTP_204_NO_CONTENT
         assert Resume.objects.filter(seeker=seeker).count() == 2
 
@@ -215,4 +213,3 @@ class TestSeekerResumeAPI:
 
         r2 = Resume.objects.get(pk=r2_id)
         assert r2.is_primary is True
-

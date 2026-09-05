@@ -3,15 +3,18 @@
 Combines structured resume data with application information from the
 database to create a complete CandidateScreeningData record.
 """
+
 from __future__ import annotations
 
 import logging
 
 from talentwright.applications.models import Application
-from talentwright.resume_screening.schemas import ApplicationInfo
-from talentwright.resume_screening.schemas import CandidateScreeningData
-from talentwright.resume_screening.schemas import ProcessingStatus
-from talentwright.resume_screening.schemas import StructuredResume
+from talentwright.resume_screening.schemas import (
+    ApplicationInfo,
+    CandidateScreeningData,
+    ProcessingStatus,
+    StructuredResume,
+)
 
 logger = logging.getLogger(__name__)
 

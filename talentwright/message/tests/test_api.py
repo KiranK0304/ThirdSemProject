@@ -4,13 +4,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from talentwright.message.models import ChatRequest
-from talentwright.message.models import ChatRequestStatus
-from talentwright.message.models import Message
-from talentwright.users.models import EmployerProfile
-from talentwright.users.models import SeekerProfile
-from talentwright.users.models import User
-from talentwright.users.models import VerificationStatus
+from talentwright.message.models import ChatRequest, ChatRequestStatus, Message
+from talentwright.users.models import EmployerProfile, SeekerProfile, User, VerificationStatus
 
 pytestmark = pytest.mark.django_db
 

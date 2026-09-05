@@ -1,8 +1,6 @@
 from django.db.models import Q
 
-from talentwright.jobs.models import Job
-from talentwright.jobs.models import JobAlert
-from talentwright.jobs.models import JobStatus
+from talentwright.jobs.models import Job, JobAlert, JobStatus
 from talentwright.users.models import VerificationStatus
 
 

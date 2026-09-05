@@ -82,6 +82,7 @@ js.indent_size = 2
 
 # ==== ruff ====
 [tool.ruff]
+line-length = 119
 # Exclude a variety of commonly ignored directories.
 extend-exclude = [
   "*/migrations/*.py",
@@ -89,64 +90,26 @@ extend-exclude = [
 ]
 
 lint.select = [
-  "A",
-  "ASYNC",
-  "B",
-  "BLE",
-  "C4",
-  "C90",
-  "COM",
-  "DJ",
-  "DTZ",
-  "E",
-  "EM",
-  "ERA",
-  "EXE",
-  "F",
-  "FA",
-  "FBT",
-  "FLY",
-  "G",
-  "I",
-  "ICN",
-  "INP",
-  "INT",
-  "ISC",
-  "N",
-  "PD",
-  "PERF",
-  "PGH",
-  "PIE",
-  "PL",
-  "PT",
-  "PTH",
-  "PYI",
-  "Q",
-  "RET",
-  "RSE",
-  "RUF",
-  "S",
-  "SIM",
-  "SLF",
-  "SLOT",
-  "T10",
-  "T20",
-  "TC",
-  "TID",
-  "TRY",
-  "UP",
-  "W",
-  "YTT",
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "B",   # flake8-bugbear
+  "C4",  # flake8-comprehensions
+  "UP",  # pyupgrade
+  "DJ",  # flake8-django
 ]
 lint.ignore = [
   "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
-  "S101",   # Use of assert detected https://docs.astral.sh/ruff/rules/assert/
-  "SIM102", # sometimes it's better to nest
-  # of types for comparison.
-  # Deactivated because it can make the code slow:
-  # https://github.com/astral-sh/ruff/issues/7871
+  "E501",   # Line length handled by formatter
+  "DJ012",  # Order of model's inner classes
 ]
-lint.isort.force-single-line = true
+lint.isort.force-single-line = false
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*" = ["S101", "PLR2004", "ARG001"]
+"tests/*" = ["S101", "PLR2004", "ARG001"]
+
 
 # ==== pyproject-fmt ====
 [tool.pyproject-fmt]
