@@ -2,9 +2,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 
-from talentwright.applications.api.serializers import ApplicationSerializer
-from talentwright.applications.api.serializers import ApplicationStatusUpdateSerializer
-from talentwright.applications.api.serializers import InterviewSerializer
+from talentwright.applications.api.serializers import (
+    ApplicationSerializer,
+    ApplicationStatusUpdateSerializer,
+    InterviewSerializer,
+    JobApplicantSerializer,
+)
 from talentwright.applications.models import Application
 from talentwright.applications.models import ApplicationStatus
 from talentwright.applications.models import Interview
@@ -43,7 +46,7 @@ class JobApplicationCreateView(generics.CreateAPIView):
 
 
 class JobApplicationsListView(generics.ListAPIView):
-    serializer_class = ApplicationSerializer
+    serializer_class = JobApplicantSerializer
     permission_classes = [IsVerifiedEmployer]
 
     def get_job(self):
@@ -58,8 +61,6 @@ class JobApplicationsListView(generics.ListAPIView):
         return (
             Application.objects.select_related(
                 "job",
-                "job__employer",
-                "job__employer__user",
                 "seeker",
                 "seeker__user",
                 "resume",
@@ -70,7 +71,7 @@ class JobApplicationsListView(generics.ListAPIView):
 
 
 class EmployerApplicationsListView(generics.ListAPIView):
-    serializer_class = ApplicationSerializer
+    serializer_class = JobApplicantSerializer
     permission_classes = [IsVerifiedEmployer]
 
     def get_queryset(self):
@@ -78,8 +79,6 @@ class EmployerApplicationsListView(generics.ListAPIView):
         return (
             Application.objects.select_related(
                 "job",
-                "job__employer",
-                "job__employer__user",
                 "seeker",
                 "seeker__user",
                 "resume",

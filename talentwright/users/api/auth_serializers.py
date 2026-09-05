@@ -18,14 +18,19 @@ class ResumeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Resume
-        fields = ["id", "title", "file", "file_url", "created_at", "updated_at"]
+        fields = ["id", "title", "file", "file_url", "is_primary", "created_at", "updated_at"]
         read_only_fields = ["id", "file_url", "created_at", "updated_at"]
 
     def get_file_url(self, obj) -> str | None:
         if obj.file:
             request = self.context.get("request")
             if request:
-                return request.build_absolute_uri(obj.file.url)
+                url = request.build_absolute_uri(obj.file.url)
+                if "://django:" in url:
+                    return url.replace("://django:", "://localhost:")
+                if "://django/" in url:
+                    return url.replace("://django/", "://localhost:8000/")
+                return url
             return obj.file.url
         return None
 

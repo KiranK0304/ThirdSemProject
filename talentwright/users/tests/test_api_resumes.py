@@ -144,3 +144,75 @@ class TestSeekerResumeAPI:
         seeker_data = response.data["seeker_profile"]
         assert len(seeker_data["resumes"]) == 1
         assert seeker_data["resumes"][0]["title"] == "Portfolio Resume"
+        assert seeker_data["resumes"][0]["is_primary"] is True
+
+    def test_first_resume_is_automatically_primary(self):
+        _, seeker = self._login_seeker()
+        pdf1 = SimpleUploadedFile("r1.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        resp1 = self.client.post(
+            reverse("auth_api:seeker-resumes"),
+            {"title": "Resume 1", "file": pdf1},
+            format="multipart",
+        )
+        assert resp1.status_code == status.HTTP_201_CREATED
+        assert resp1.data["is_primary"] is True
+
+        # Second resume is not primary by default
+        pdf2 = SimpleUploadedFile("r2.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        resp2 = self.client.post(
+            reverse("auth_api:seeker-resumes"),
+            {"title": "Resume 2", "file": pdf2},
+            format="multipart",
+        )
+        assert resp2.status_code == status.HTTP_201_CREATED
+        assert resp2.data["is_primary"] is False
+
+    def test_set_primary_resume_endpoint(self):
+        _, seeker = self._login_seeker()
+        pdf1 = SimpleUploadedFile("r1.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        r1_id = self.client.post(
+            reverse("auth_api:seeker-resumes"),
+            {"title": "Resume 1", "file": pdf1},
+            format="multipart",
+        ).data["id"]
+
+        pdf2 = SimpleUploadedFile("r2.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        r2_id = self.client.post(
+            reverse("auth_api:seeker-resumes"),
+            {"title": "Resume 2", "file": pdf2},
+            format="multipart",
+        ).data["id"]
+
+        # Call set-primary on Resume 2
+        set_resp = self.client.post(reverse("auth_api:seeker-resume-set-primary", kwargs={"pk": r2_id}))
+        assert set_resp.status_code == status.HTTP_200_OK
+        assert set_resp.data["is_primary"] is True
+
+        r1 = Resume.objects.get(pk=r1_id)
+        r2 = Resume.objects.get(pk=r2_id)
+        assert r1.is_primary is False
+        assert r2.is_primary is True
+
+    def test_deleting_primary_resume_promotes_remaining(self):
+        _, seeker = self._login_seeker()
+        pdf1 = SimpleUploadedFile("r1.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        r1_id = self.client.post(
+            reverse("auth_api:seeker-resumes"),
+            {"title": "Resume 1", "file": pdf1},
+            format="multipart",
+        ).data["id"]
+
+        pdf2 = SimpleUploadedFile("r2.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        r2_id = self.client.post(
+            reverse("auth_api:seeker-resumes"),
+            {"title": "Resume 2", "file": pdf2},
+            format="multipart",
+        ).data["id"]
+
+        # Delete Resume 1 (which is primary)
+        del_resp = self.client.delete(reverse("auth_api:seeker-resume-detail", kwargs={"pk": r1_id}))
+        assert del_resp.status_code == status.HTTP_204_NO_CONTENT
+
+        r2 = Resume.objects.get(pk=r2_id)
+        assert r2.is_primary is True
+
