@@ -138,3 +138,81 @@ class JobScreeningResponse(BaseModel):
     successfully_processed: int
     failed_processing: int
     candidates: list[CandidateScreeningData]
+
+
+# ── Scoring Criteria & Weights Schemas ──────────────────────────────────
+
+
+class JobCriteriaResponse(BaseModel):
+    """Current scoring criteria weights for a job."""
+
+    job_id: int
+    weights: dict[str, float]
+    is_custom: bool
+    available_criteria: list[str] = [
+        "experience",
+        "skills",
+        "projects",
+        "education",
+        "certifications",
+    ]
+
+
+# ── LLM Candidate Evaluation Schemas ───────────────────────────────────
+
+
+class CriterionEvaluationItem(BaseModel):
+    """Evaluation result for one criterion returned by LLM."""
+
+    criterion: str = Field(description="Name of the criterion, e.g. 'experience', 'skills'")
+    score: int = Field(ge=0, le=100, description="Score from 0 to 100")
+    reason: str = Field(description="Factual evidence and justification for the score")
+
+
+class CandidateEvaluationResponse(BaseModel):
+    """Raw structured output returned by LLM for one candidate."""
+
+    evaluations: list[CriterionEvaluationItem] = Field(default_factory=list)
+
+
+class CriterionDetail(BaseModel):
+    """Score and explanatory evidence for a specific criterion."""
+
+    score: int = Field(ge=0, le=100)
+    reason: str
+
+
+# ── Candidate Ranking Schemas ──────────────────────────────────────────
+
+
+class RankedCandidate(BaseModel):
+    """A candidate evaluated, scored, and assigned a rank position."""
+
+    rank: int = Field(ge=1, description="Ranking position (1 is top candidate)")
+    application_id: int
+    candidate_id: int
+    candidate_name: str
+    candidate_email: str
+    criteria_scores: dict[str, int] = Field(
+        default_factory=dict,
+        description="Individual criterion scores from 0 to 100, e.g. {'experience': 85, 'skills': 72}",
+    )
+    criteria_details: dict[str, CriterionDetail] = Field(
+        default_factory=dict,
+        description="Detailed evidence and explanation for each criterion",
+    )
+    final_score: float = Field(
+        description="Deterministic backend weighted final score from 0 to 100",
+    )
+
+
+class JobRankingResponse(BaseModel):
+    """Top-level response containing ranked candidates for a job."""
+
+    job_id: int
+    job_title: str
+    weights_used: dict[str, float]
+    total_candidates: int
+    ranked_candidates: list[RankedCandidate]
+    created_at: str | None = None
+
