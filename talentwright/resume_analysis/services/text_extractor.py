@@ -107,6 +107,12 @@ def _read_to_bytes(file_source: str | Path | BinaryIO | bytes) -> bytes:
     if isinstance(file_source, (str, Path)):
         return Path(file_source).read_bytes()
     if hasattr(file_source, "read"):
+        if (
+            hasattr(file_source, "closed")
+            and file_source.closed
+            and hasattr(file_source, "open")
+        ):
+            file_source.open("rb")
         if hasattr(file_source, "seek"):
             file_source.seek(0)
         content = file_source.read()
