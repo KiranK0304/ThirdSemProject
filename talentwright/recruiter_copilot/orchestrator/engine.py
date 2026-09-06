@@ -107,7 +107,7 @@ class CopilotOrchestrator:
                     )
 
                     # Attach candidate list directly to metadata for frontend rendering
-                    if tool_name == "get_top_candidates":
+                    if tool_name in ("get_top_candidates", "get_ranked_candidates"):
                         metadata["candidates"] = tool_output
 
                     # Append tool result to messages for the LLM

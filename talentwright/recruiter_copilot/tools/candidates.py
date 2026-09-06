@@ -11,17 +11,23 @@ from talentwright.resume_analysis.models import ResumeAnalysisRecord
 logger = logging.getLogger(__name__)
 
 
-def get_top_candidates(job_id: int, limit: int = 5) -> list[dict[str, Any]]:
-    """Retrieve the top-ranked candidates for a given job ordered by overall score.
+def get_ranked_candidates(
+    job_id: int,
+    limit: int = 5,
+    ranking: str = "highest_score",
+) -> list[dict[str, Any]]:
+    """Retrieve ranked candidates for a job ordered by overall score.
 
     Args:
         job_id: Primary key of the job posting.
         limit: Maximum number of candidates to return (clamped between 1 and 20).
+        ranking: 'highest_score' for top candidates, 'lowest_score' for bottom candidates.
 
     Returns:
         A list of structured candidate summaries.
     """
     safe_limit = max(1, min(int(limit), 20))
+    order_by_clause = "overall_score" if ranking == "lowest_score" else "-overall_score"
 
     records = (
         ResumeAnalysisRecord.objects.filter(
@@ -29,7 +35,7 @@ def get_top_candidates(job_id: int, limit: int = 5) -> list[dict[str, Any]]:
             status=AnalysisStatus.COMPLETED,
         )
         .select_related("application__seeker__user")
-        .order_by("-overall_score")[:safe_limit]
+        .order_by(order_by_clause)[:safe_limit]
     )
 
     candidates: list[dict[str, Any]] = []
@@ -67,5 +73,15 @@ def get_top_candidates(job_id: int, limit: int = 5) -> list[dict[str, Any]]:
             }
         )
 
-    logger.info("Retrieved %d top candidates for job #%d", len(candidates), job_id)
+    logger.info(
+        "Retrieved %d candidates for job #%d (ranking=%s)",
+        len(candidates),
+        job_id,
+        ranking,
+    )
     return candidates
+
+
+def get_top_candidates(job_id: int, limit: int = 5) -> list[dict[str, Any]]:
+    """Convenience alias for getting highest-score candidates."""
+    return get_ranked_candidates(job_id=job_id, limit=limit, ranking="highest_score")
