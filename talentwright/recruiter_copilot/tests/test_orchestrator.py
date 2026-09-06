@@ -135,6 +135,44 @@ def test_orchestrator_executes_tool_call_flow(copilot_session):
 
 
 @pytest.mark.django_db
+def test_orchestrator_parallel_repeat_tools_indexing(copilot_session):
+    mock_llm = MagicMock()
+    mock_llm.model = "test-model"
+
+    # Two parallel calls to search_candidates with different queries
+    tc1 = DummyToolCall("call_1", "search_candidates", '{"query": "PyTorch"}')
+    tc2 = DummyToolCall("call_2", "search_candidates", '{"query": "Kubernetes"}')
+
+    first_msg = DummyMessage(content=None, tool_calls=[tc1, tc2])
+    second_msg = DummyMessage(content="Found both PyTorch and K8s candidates.", tool_calls=None)
+
+    mock_llm.client.chat.completions.create.side_effect = [
+        DummyResponse(first_msg),
+        DummyResponse(second_msg),
+    ]
+
+    mock_registry = MagicMock(spec=ToolRegistry)
+    mock_registry.get_definitions.return_value = [{"type": "function"}]
+
+    def mock_exec(tool_name, arguments, context):
+        if arguments.get("query") == "PyTorch":
+            return [{"name": "Alice AI"}]
+        return [{"name": "Bob DevOps"}]
+
+    mock_registry.execute.side_effect = mock_exec
+
+    orchestrator = CopilotOrchestrator(llm_client=mock_llm, registry=mock_registry)
+    reply, metadata = orchestrator.run(copilot_session, "Find PyTorch and Kubernetes experts")
+
+    assert reply == "Found both PyTorch and K8s candidates."
+    assert len(metadata["tools_called"]) == 2
+    assert "search_candidates_1" in metadata["candidates"]
+    assert "search_candidates_2" in metadata["candidates"]
+    assert metadata["candidates"]["search_candidates_1"]["results"] == [{"name": "Alice AI"}]
+    assert metadata["candidates"]["search_candidates_2"]["results"] == [{"name": "Bob DevOps"}]
+
+
+@pytest.mark.django_db
 def test_orchestrator_handles_exception_gracefully(copilot_session):
     mock_llm = MagicMock()
     mock_llm.model = "test-model"

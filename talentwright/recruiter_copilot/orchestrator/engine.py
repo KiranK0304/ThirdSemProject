@@ -118,8 +118,15 @@ class CopilotOrchestrator:
             backwards compatibility.  When multiple tools are called, returns
             a dict keyed by tool name.
         """
+        # 1. Count occurrences of each tool name in this turn
+        tool_counts: dict[str, int] = {}
+        for tool_call in tool_calls:
+            name = tool_call.function.name
+            tool_counts[name] = tool_counts.get(name, 0) + 1
+
         tools_called_meta: list[dict[str, Any]] = []
         all_outputs: dict[str, Any] = {}
+        current_index: dict[str, int] = {}
 
         for tool_call in tool_calls:
             tool_name = tool_call.function.name
@@ -137,11 +144,22 @@ class CopilotOrchestrator:
                 arguments=tool_args,
                 context={"job_id": job_id},
             )
-            all_outputs[tool_name] = tool_output
 
-        # Single tool: return its output directly for backwards compatibility
-        if len(all_outputs) == 1:
-            return tools_called_meta, next(iter(all_outputs.values()))
+            # If tool is called multiple times, index it: tool_1, tool_2, ...
+            if tool_counts[tool_name] > 1:
+                current_index[tool_name] = current_index.get(tool_name, 0) + 1
+                key = f"{tool_name}_{current_index[tool_name]}"
+            else:
+                key = tool_name
+
+            all_outputs[key] = {
+                "arguments": tool_args,
+                "results": tool_output,
+            }
+
+        # Single tool call: return results directly for clean prompt formatting
+        if len(tool_calls) == 1:
+            return tools_called_meta, next(iter(all_outputs.values()))["results"]
 
         return tools_called_meta, all_outputs
 
