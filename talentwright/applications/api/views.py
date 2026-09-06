@@ -64,6 +64,7 @@ class JobApplicationsListView(generics.ListAPIView):
                 "seeker",
                 "seeker__user",
                 "resume",
+                "resume_analysis",
             )
             .filter(job=job)
             .order_by("-created_at")
@@ -82,6 +83,7 @@ class EmployerApplicationsListView(generics.ListAPIView):
                 "seeker",
                 "seeker__user",
                 "resume",
+                "resume_analysis",
             )
             .filter(job__employer=employer)
             .order_by("-created_at")

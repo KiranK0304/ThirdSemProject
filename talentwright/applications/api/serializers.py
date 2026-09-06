@@ -47,6 +47,7 @@ class JobApplicantSerializer(serializers.ModelSerializer):
     job = CompactJobSerializer(read_only=True)
     seeker = ApplicationSeekerSerializer(read_only=True)
     resume = ResumeSerializer(read_only=True)
+    analysis = serializers.SerializerMethodField()
 
     class Meta:
         model = Application
@@ -57,10 +58,28 @@ class JobApplicantSerializer(serializers.ModelSerializer):
             "resume",
             "cover_letter",
             "status",
+            "analysis",
             "created_at",
             "updated_at",
         ]
         read_only_fields = fields
+
+    def get_analysis(self, obj: Application) -> dict[str, Any] | None:
+        analysis = getattr(obj, "resume_analysis", None)
+        if not analysis:
+            return None
+        structured = analysis.structured_resume or {}
+        scorecard = analysis.evaluation_scorecard or {}
+        return {
+            "status": analysis.status,
+            "overall_score": float(analysis.overall_score) if analysis.overall_score is not None else None,
+            "recommendation": analysis.recommendation or "",
+            "summary": structured.get("summary") or scorecard.get("summary") or "",
+            "skills": (structured.get("skills") or [])[:10],
+            "total_years_experience": structured.get("total_years_experience", 0.0),
+            "strengths": scorecard.get("strengths", []),
+            "concerns": scorecard.get("concerns", []),
+        }
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
