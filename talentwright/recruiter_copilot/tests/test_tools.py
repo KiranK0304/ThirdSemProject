@@ -7,10 +7,9 @@ import pytest
 from talentwright.applications.models import Application
 from talentwright.jobs.models import Job
 from talentwright.jobs.models import JobStatus
-from talentwright.recruiter_copilot.tools.candidates import get_ranked_candidates
 from talentwright.recruiter_copilot.tools.candidates import get_top_candidates
 from talentwright.recruiter_copilot.tools.descriptions import (
-    RANKED_CANDIDATES_TOOL_DEFINITION,
+    TOP_CANDIDATES_TOOL_DEFINITION,
 )
 from talentwright.recruiter_copilot.tools.registry import get_default_registry
 from talentwright.resume_analysis.models import AnalysisStatus
@@ -98,11 +97,11 @@ def candidate_pool_setup(db):
 
 
 @pytest.mark.django_db
-def test_get_ranked_candidates_highest_score(candidate_pool_setup):
+def test_get_top_candidates_descending(candidate_pool_setup):
     job = candidate_pool_setup["job"]
 
     # Limit 2 highest
-    top2 = get_ranked_candidates(job_id=job.id, limit=2, ranking="highest_score")
+    top2 = get_top_candidates(job_id=job.id, limit=2)
     assert len(top2) == 2
     assert top2[0]["name"] == "Alice Smith"
     assert top2[0]["overall_score"] == 95.0
@@ -113,19 +112,6 @@ def test_get_ranked_candidates_highest_score(candidate_pool_setup):
     top_all = get_top_candidates(job_id=job.id, limit=5)
     assert len(top_all) == 3
     assert [c["name"] for c in top_all] == ["Alice Smith", "Charlie Brown", "Bob Jones"]
-
-
-@pytest.mark.django_db
-def test_get_ranked_candidates_lowest_score(candidate_pool_setup):
-    job = candidate_pool_setup["job"]
-
-    # Query weakest / lowest candidates
-    lowest = get_ranked_candidates(job_id=job.id, limit=2, ranking="lowest_score")
-    assert len(lowest) == 2
-    assert lowest[0]["name"] == "Bob Jones"
-    assert lowest[0]["overall_score"] == 70.0
-    assert lowest[1]["name"] == "Charlie Brown"
-    assert lowest[1]["overall_score"] == 88.0
 
 
 @pytest.mark.django_db
@@ -149,34 +135,16 @@ def test_tool_registry_execution(candidate_pool_setup):
 
     definitions = registry.get_definitions()
     assert len(definitions) >= 1
-    assert any(d["function"]["name"] == "get_ranked_candidates" for d in definitions)
+    assert any(d["function"]["name"] == "get_top_candidates" for d in definitions)
 
-    # Execute highest score via get_ranked_candidates
+    # Execute get_top_candidates via registry
     top_output = registry.execute(
-        tool_name="get_ranked_candidates",
-        arguments={"limit": 1, "ranking": "highest_score"},
-        context={"job_id": job.id},
-    )
-    assert len(top_output) == 1
-    assert top_output[0]["name"] == "Alice Smith"
-
-    # Execute lowest score via get_ranked_candidates
-    low_output = registry.execute(
-        tool_name="get_ranked_candidates",
-        arguments={"limit": 1, "ranking": "lowest_score"},
-        context={"job_id": job.id},
-    )
-    assert len(low_output) == 1
-    assert low_output[0]["name"] == "Bob Jones"
-
-    # Execute via legacy alias get_top_candidates
-    alias_output = registry.execute(
         tool_name="get_top_candidates",
         arguments={"limit": 1},
         context={"job_id": job.id},
     )
-    assert len(alias_output) == 1
-    assert alias_output[0]["name"] == "Alice Smith"
+    assert len(top_output) == 1
+    assert top_output[0]["name"] == "Alice Smith"
 
     # Execute unknown tool
     with pytest.raises(ValueError, match="is not registered"):

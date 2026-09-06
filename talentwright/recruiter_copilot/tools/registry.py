@@ -5,10 +5,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable
 
-from talentwright.recruiter_copilot.tools.candidates import get_ranked_candidates
 from talentwright.recruiter_copilot.tools.candidates import get_top_candidates
 from talentwright.recruiter_copilot.tools.descriptions import (
-    RANKED_CANDIDATES_TOOL_DEFINITION,
+    TOP_CANDIDATES_TOOL_DEFINITION,
 )
 
 logger = logging.getLogger(__name__)
@@ -69,17 +68,9 @@ def get_default_registry() -> ToolRegistry:
     """Build and return the default ToolRegistry with built-in tools."""
     registry = ToolRegistry()
 
-    # Register get_ranked_candidates (handles both highest and lowest scores)
-    registry.register(
-        name="get_ranked_candidates",
-        definition=RANKED_CANDIDATES_TOOL_DEFINITION,
-        handler=get_ranked_candidates,
-    )
-
-    # Legacy alias support if LLM emits get_top_candidates
     registry.register(
         name="get_top_candidates",
-        definition=RANKED_CANDIDATES_TOOL_DEFINITION,
+        definition=TOP_CANDIDATES_TOOL_DEFINITION,
         handler=get_top_candidates,
     )
 
