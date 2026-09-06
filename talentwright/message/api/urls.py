@@ -1,14 +1,16 @@
 from django.urls import path
 
-from talentwright.message.api.views import ConversationMarkAsReadView
-from talentwright.message.api.views import ConversationMessagesListCreateView
-from talentwright.message.api.views import EmployerApprovedConversationsListView
-from talentwright.message.api.views import EmployerChatRequestsListView
-from talentwright.message.api.views import EmployerChatRequestStatusUpdateView
-from talentwright.message.api.views import SeekerApprovedConversationsListView
-from talentwright.message.api.views import SeekerChatRequestCreateView
-from talentwright.message.api.views import SeekerChatRequestDetailView
-from talentwright.message.api.views import SeekerPendingRequestsListView
+from talentwright.message.api.views import (
+    ConversationMarkAsReadView,
+    ConversationMessagesListCreateView,
+    EmployerApprovedConversationsListView,
+    EmployerChatRequestsListView,
+    EmployerChatRequestStatusUpdateView,
+    SeekerApprovedConversationsListView,
+    SeekerChatRequestCreateView,
+    SeekerChatRequestDetailView,
+    SeekerPendingRequestsListView,
+)
 
 app_name = "message"
 

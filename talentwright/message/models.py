@@ -1,13 +1,15 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import CASCADE
-from django.db.models import BooleanField
-from django.db.models import CharField
-from django.db.models import DateTimeField
-from django.db.models import ForeignKey
-from django.db.models import TextChoices
-from django.db.models import TextField
-from django.db.models import UniqueConstraint
+from django.db.models import (
+    CASCADE,
+    BooleanField,
+    CharField,
+    DateTimeField,
+    ForeignKey,
+    TextChoices,
+    TextField,
+    UniqueConstraint,
+)
 from django.utils.translation import gettext_lazy as _
 
 from talentwright.users.models import VerificationStatus
@@ -33,7 +35,7 @@ class ChatRequest(models.Model):
     status = CharField(
         _("Status"),
         max_length=20,
-        choices=ChatRequestStatus.choices,
+        choices=ChatRequestStatus,
         default=ChatRequestStatus.PENDING,
     )
     initial_message = TextField(_("Initial message"), blank=True)
@@ -50,10 +52,7 @@ class ChatRequest(models.Model):
         ]
 
     def __str__(self) -> str:
-        return (
-            f"ChatRequest from {self.seeker_id} to {self.employer_id} "
-            f"[{self.status}]"
-        )
+        return f"ChatRequest from {self.seeker_id} to {self.employer_id} [{self.status}]"
 
     def clean(self):
         super().clean()

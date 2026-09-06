@@ -1,80 +1,105 @@
-name: CI
-
-# Enable Buildkit and let compose use it to speed up image building
-env:
-  DOCKER_BUILDKIT: 1
-  COMPOSE_DOCKER_CLI_BUILD: 1
+name: Backend CI
 
 on:
   pull_request:
     branches: ['main']
-    paths-ignore: ['docs/**']
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.gitignore'
 
   push:
     branches: ['main']
-    paths-ignore: ['docs/**']
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '.gitignore'
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  linter:
+  lint:
+    name: Code Quality & Linting
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version-file: '.python-version'
-      # Consider using pre-commit.ci for open source project
-      - name: Run pre-commit
-        uses: pre-commit/action@v3.0.1
+          enable-cache: true
 
-  # With no caching at all the entire ci process takes 3m to complete!
-  pytest:
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Check Code Formatting (Ruff)
+        run: uv run ruff format --check
+
+      - name: Run Linter (Ruff)
+        run: uv run ruff check
+
+  test:
+    name: Migrations & Pytest Suite
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: talentwright
+          POSTGRES_USER: talentwright
+          POSTGRES_PASSWORD: password123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://talentwright:password123@localhost:5432/talentwright
+      DJANGO_SECRET_KEY: ci-secret-key-for-testing-only-12345
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      SCREENING_LLM_API_KEY: ci-test-key
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Check for Uncreated Database Migrations
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: Run Database Migrations
+        run: uv run python manage.py migrate
+
+      - name: Run Test Suite (Pytest)
+        run: uv run pytest
+
+  docker-build:
+    name: Verify Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and cache local backend
-        uses: docker/bake-action@v6
+      - name: Build Docker Image (Dry run)
+        uses: docker/build-push-action@v6
         with:
+          context: .
+          file: ./compose/local/django/Dockerfile
           push: false
-          load: true
-          files: docker-compose.local.yml
-          targets: django
-          set: |
-            django.cache-from=type=gha,scope=django-cached-tests
-            django.cache-to=type=gha,scope=django-cached-tests,mode=max
-            postgres.cache-from=type=gha,scope=postgres-cached-tests
-            postgres.cache-to=type=gha,scope=postgres-cached-tests,mode=max
-
-      - name: Build and cache docs
-        uses: docker/bake-action@v6
-        with:
-          push: false
-          load: true
-          files: docker-compose.docs.yml
-          set: |
-            docs.cache-from=type=gha,scope=cached-docs
-            docs.cache-to=type=gha,scope=cached-docs,mode=max
-
-      - name: Check DB Migrations
-        run: docker compose -f docker-compose.local.yml run --rm django python manage.py makemigrations --check
-
-      - name: Run DB Migrations
-        run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
-
-      - name: Run Django Tests
-        run: docker compose -f docker-compose.local.yml run django pytest
-
-      - name: Tear down the Stack
-        run: docker compose -f docker-compose.local.yml down
+          tags: talentwright-backend:test

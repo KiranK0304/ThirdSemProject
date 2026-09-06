@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from factory import Faker
-from factory import post_generation
+from factory import Faker, post_generation
 from factory.django import DjangoModelFactory
 
 from talentwright.users.models import User

@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from talentwright.jobs.models import JobAlert
-from talentwright.jobs.models import SavedJob
+from talentwright.jobs.models import JobAlert, SavedJob
 
 
 @admin.register(SavedJob)

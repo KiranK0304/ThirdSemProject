@@ -10,4 +10,3 @@ class ApplicationAdmin(admin.ModelAdmin):
     search_fields = ["job__title", "seeker__user__email", "seeker__user__name"]
     readonly_fields = ["created_at", "updated_at"]
     ordering = ["-created_at"]
-

@@ -1,7 +1,7 @@
 volumes:
   talentwright_local_postgres_data: {}
   talentwright_local_postgres_data_backups: {}
-  
+
 
 services:
   django:

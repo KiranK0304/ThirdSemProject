@@ -14,13 +14,14 @@ Creates/Updates:
 Usage:
     python manage.py seed_agentic_demo
 """
+
 from decimal import Decimal
+
 from django.core.management.base import BaseCommand
 
-from talentwright.users.models import User, EmployerProfile, SeekerProfile, Resume, VerificationStatus
-from talentwright.jobs.models import Job, EmploymentType, JobStatus
 from talentwright.applications.models import Application, ApplicationStatus
-
+from talentwright.jobs.models import EmploymentType, Job, JobStatus
+from talentwright.users.models import EmployerProfile, Resume, SeekerProfile, User, VerificationStatus
 
 COMMON_PASSWORD = "Password123!"
 
@@ -225,7 +226,9 @@ class Command(BaseCommand):
             },
         )
         action_str = "Created" if job_created else "Updated"
-        self.stdout.write(self.style.SUCCESS(f"✓ Job {action_str}: '{job.title}' (ID: {job.id}, Status: {job.status})"))
+        self.stdout.write(
+            self.style.SUCCESS(f"✓ Job {action_str}: '{job.title}' (ID: {job.id}, Status: {job.status})")
+        )
 
         # 3. Create/Update Employees (Seekers) and link resumes
         self.stdout.write("\nUpdating Employee / Seeker accounts and resumes:")
@@ -289,10 +292,15 @@ class Command(BaseCommand):
                 },
             )
             action = "Created" if app_created else "Updated"
-            self.stdout.write(f"  ✓ {action} Application: {user.email} -> Job {job.id} (Resume: {resume.title if resume else 'None'})")
+            self.stdout.write(
+                f"  ✓ {action} Application: {user.email} -> Job {job.id} (Resume: {resume.title if resume else 'None'})"
+            )
 
         if kiran_user and hasattr(kiran_user, "seeker_profile"):
-            kiran_resume = kiran_user.seeker_profile.resumes.filter(is_primary=True).first() or kiran_user.seeker_profile.resumes.first()
+            kiran_resume = (
+                kiran_user.seeker_profile.resumes.filter(is_primary=True).first()
+                or kiran_user.seeker_profile.resumes.first()
+            )
             k_app, k_created = Application.objects.update_or_create(
                 job=job,
                 seeker=kiran_user.seeker_profile,
@@ -309,6 +317,8 @@ class Command(BaseCommand):
                 },
             )
             action = "Created" if k_created else "Updated"
-            self.stdout.write(f"  ✓ {action} Application: {kiran_user.email} -> Job {job.id} (Resume: {kiran_resume.title if kiran_resume else 'None'})")
+            self.stdout.write(
+                f"  ✓ {action} Application: {kiran_user.email} -> Job {job.id} (Resume: {kiran_resume.title if kiran_resume else 'None'})"
+            )
 
         self.stdout.write(self.style.SUCCESS("\n--- Complete ---"))

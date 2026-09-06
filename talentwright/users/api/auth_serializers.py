@@ -1,4 +1,5 @@
 import os
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
@@ -14,6 +15,7 @@ class ResumeSerializer(serializers.ModelSerializer):
     """
     Serializer for candidate uploaded resumes.
     """
+
     file_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -61,6 +63,7 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for EmployerProfile model.
     """
+
     class Meta:
         model = EmployerProfile
         fields = [
@@ -79,6 +82,7 @@ class SeekerProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for SeekerProfile model.
     """
+
     resumes = ResumeSerializer(many=True, read_only=True)
 
     class Meta:
@@ -87,12 +91,12 @@ class SeekerProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "resumes", "created_at", "updated_at"]
 
 
-
 class RegisterSerializer(serializers.ModelSerializer):
     """
     Minimal Registration Serializer: accepts strictly core credentials
     and creates the corresponding empty profile atomically.
     """
+
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -123,9 +127,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password_confirm"]:
-            raise serializers.ValidationError(
-                {"password_confirm": "Password fields do not match."}
-            )
+            raise serializers.ValidationError({"password_confirm": "Password fields do not match."})
         return attrs
 
     def create(self, validated_data):
@@ -150,6 +152,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Custom SimpleJWT login serializer returning user profile details and account type.
     """
+
     def validate(self, attrs):
         data = super().validate(attrs)
         data["user"] = {
@@ -165,6 +168,7 @@ class LogoutSerializer(serializers.Serializer):
     """
     Serializer for validating refresh token to be blacklisted.
     """
+
     refresh = serializers.CharField(required=True)
 
 
@@ -172,6 +176,7 @@ class UserMeSerializer(serializers.ModelSerializer):
     """
     Serializer for viewing and updating current user and profile details.
     """
+
     account_type = serializers.CharField(read_only=True)
     employer_profile = EmployerProfileSerializer(required=False, allow_null=True)
     seeker_profile = SeekerProfileSerializer(required=False, allow_null=True)
@@ -218,6 +223,7 @@ class EmployerProfileAdminSerializer(serializers.ModelSerializer):
     """
     Detailed serializer for Admin Employer Management.
     """
+
     user_email = serializers.EmailField(source="user.email", read_only=True)
     user_name = serializers.CharField(source="user.name", read_only=True)
 
@@ -236,4 +242,3 @@ class EmployerProfileAdminSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
-

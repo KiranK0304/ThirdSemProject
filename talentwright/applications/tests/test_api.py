@@ -6,17 +6,10 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from talentwright.applications.models import Application
-from talentwright.applications.models import ApplicationStatus
-from talentwright.applications.models import Interview
-from talentwright.applications.models import InterviewStatus
-from talentwright.jobs.models import Job
-from talentwright.jobs.models import JobStatus
-from talentwright.users.models import EmployerProfile
-from talentwright.users.models import Resume
-from talentwright.users.models import SeekerProfile
-from talentwright.users.models import User
-from talentwright.users.models import VerificationStatus
+from talentwright.applications.models import Application, ApplicationStatus, Interview, InterviewStatus
+from talentwright.jobs.models import Job, JobStatus
+from talentwright.notifications.models import Notification, NotificationType
+from talentwright.users.models import EmployerProfile, Resume, SeekerProfile, User, VerificationStatus
 
 pytestmark = pytest.mark.django_db
 
@@ -153,7 +146,9 @@ class TestJobApplicationAPI:
             employment_type="FULL_TIME",
             status=JobStatus.OPEN,
         )
-        seeker_user = User.objects.create_user(email="seeker1@example.com", password="StrongPassword123!", is_active=True)
+        seeker_user = User.objects.create_user(
+            email="seeker1@example.com", password="StrongPassword123!", is_active=True
+        )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         Application.objects.create(job=job, seeker=seeker_profile, cover_letter="First application.")
 
@@ -207,8 +202,12 @@ class TestJobApplicationAPI:
             status=JobStatus.OPEN,
         )
 
-        seeker_one = User.objects.create_user(email="seeker-one@example.com", password="StrongPassword123!", is_active=True)
-        seeker_two = User.objects.create_user(email="seeker-two@example.com", password="StrongPassword123!", is_active=True)
+        seeker_one = User.objects.create_user(
+            email="seeker-one@example.com", password="StrongPassword123!", is_active=True
+        )
+        seeker_two = User.objects.create_user(
+            email="seeker-two@example.com", password="StrongPassword123!", is_active=True
+        )
         profile_one = SeekerProfile.objects.create(user=seeker_one)
         profile_two = SeekerProfile.objects.create(user=seeker_two)
         Application.objects.create(job=job_one, seeker=profile_one, cover_letter="For job one.")
@@ -237,7 +236,9 @@ class TestJobApplicationAPI:
             employment_type="FULL_TIME",
             status=JobStatus.OPEN,
         )
-        seeker_user = User.objects.create_user(email="seeker-status@example.com", password="StrongPassword123!", is_active=True)
+        seeker_user = User.objects.create_user(
+            email="seeker-status@example.com", password="StrongPassword123!", is_active=True
+        )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
 
@@ -254,7 +255,9 @@ class TestJobApplicationAPI:
 
     def test_non_owner_cannot_update_application_status(self):
         job = self._create_approved_employer_job()
-        seeker_user = User.objects.create_user(email="seeker-other@example.com", password="StrongPassword123!", is_active=True)
+        seeker_user = User.objects.create_user(
+            email="seeker-other@example.com", password="StrongPassword123!", is_active=True
+        )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
 
@@ -270,7 +273,6 @@ class TestJobApplicationAPI:
         application.refresh_from_db()
         assert application.status == ApplicationStatus.SUBMITTED
 
-
     def test_invalid_status_rejected_for_employer_update(self):
         owner_user, owner_employer = self._login_verified_employer("status-invalid@example.com")
         job = Job.objects.create(
@@ -280,7 +282,9 @@ class TestJobApplicationAPI:
             employment_type="FULL_TIME",
             status=JobStatus.OPEN,
         )
-        seeker_user = User.objects.create_user(email="seeker-inv@example.com", password="StrongPassword123!", is_active=True)
+        seeker_user = User.objects.create_user(
+            email="seeker-inv@example.com", password="StrongPassword123!", is_active=True
+        )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
 
@@ -295,7 +299,9 @@ class TestJobApplicationAPI:
     def test_seeker_cannot_update_application_status(self):
         job = self._create_approved_employer_job()
         seeker_user = self._login_seeker()
-        application = Application.objects.create(job=job, seeker=seeker_user.seeker_profile, status=ApplicationStatus.SUBMITTED)
+        application = Application.objects.create(
+            job=job, seeker=seeker_user.seeker_profile, status=ApplicationStatus.SUBMITTED
+        )
 
         response = self.client.patch(
             reverse("applications_api:employer-application-status-update", kwargs={"pk": application.pk}),
@@ -316,7 +322,9 @@ class TestJobApplicationAPI:
         )
 
         seeker_user = self._login_seeker("my-applications@example.com")
-        other_user = User.objects.create_user(email="other-seeker@example.com", password="StrongPassword123!", is_active=True)
+        other_user = User.objects.create_user(
+            email="other-seeker@example.com", password="StrongPassword123!", is_active=True
+        )
         other_seeker = SeekerProfile.objects.create(user=other_user)
 
         app_one = Application.objects.create(job=job_one, seeker=seeker_user.seeker_profile, cover_letter="App 1")
@@ -333,9 +341,13 @@ class TestJobApplicationAPI:
     def test_seeker_can_retrieve_own_application_detail(self):
         job = self._create_approved_employer_job()
         seeker_user = self._login_seeker("seeker-detail@example.com")
-        application = Application.objects.create(job=job, seeker=seeker_user.seeker_profile, cover_letter="Detail check")
+        application = Application.objects.create(
+            job=job, seeker=seeker_user.seeker_profile, cover_letter="Detail check"
+        )
 
-        response = self.client.get(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+        response = self.client.get(
+            reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk})
+        )
 
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == application.id
@@ -345,25 +357,35 @@ class TestJobApplicationAPI:
     def test_seeker_can_withdraw_own_application(self):
         job = self._create_approved_employer_job()
         seeker_user = self._login_seeker("withdraw-seeker@example.com")
-        application = Application.objects.create(job=job, seeker=seeker_user.seeker_profile, cover_letter="To withdraw")
+        application = Application.objects.create(
+            job=job, seeker=seeker_user.seeker_profile, cover_letter="To withdraw"
+        )
 
-        response = self.client.delete(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+        response = self.client.delete(
+            reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk})
+        )
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not Application.objects.filter(pk=application.pk).exists()
 
     def test_seeker_cannot_retrieve_or_withdraw_other_seeker_application(self):
         job = self._create_approved_employer_job()
-        other_user = User.objects.create_user(email="other-person@example.com", password="StrongPassword123!", is_active=True)
+        other_user = User.objects.create_user(
+            email="other-person@example.com", password="StrongPassword123!", is_active=True
+        )
         other_seeker = SeekerProfile.objects.create(user=other_user)
         application = Application.objects.create(job=job, seeker=other_seeker, cover_letter="Other app")
 
         self._login_seeker("me-seeker@example.com")
 
-        get_resp = self.client.get(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+        get_resp = self.client.get(
+            reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk})
+        )
         assert get_resp.status_code == status.HTTP_404_NOT_FOUND
 
-        del_resp = self.client.delete(reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk}))
+        del_resp = self.client.delete(
+            reverse("applications_api:seeker-application-detail", kwargs={"pk": application.pk})
+        )
         assert del_resp.status_code == status.HTTP_404_NOT_FOUND
         assert Application.objects.filter(pk=application.pk).exists()
 
@@ -396,7 +418,9 @@ class TestJobApplicationAPI:
 
     def test_seeker_cannot_apply_with_another_users_resume(self):
         job = self._create_approved_employer_job()
-        other_user = User.objects.create_user(email="other-r@example.com", password="StrongPassword123!", is_active=True)
+        other_user = User.objects.create_user(
+            email="other-r@example.com", password="StrongPassword123!", is_active=True
+        )
         other_seeker = SeekerProfile.objects.create(user=other_user)
         other_resume = Resume.objects.create(
             seeker=other_seeker,
@@ -424,7 +448,9 @@ class TestJobApplicationAPI:
             employment_type="FULL_TIME",
             status=JobStatus.OPEN,
         )
-        seeker_user = User.objects.create_user(email="applicant-resume@example.com", password="StrongPassword123!", is_active=True)
+        seeker_user = User.objects.create_user(
+            email="applicant-resume@example.com", password="StrongPassword123!", is_active=True
+        )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         resume = Resume.objects.create(
             seeker=seeker_profile,
@@ -439,9 +465,6 @@ class TestJobApplicationAPI:
         assert len(response.data) == 1
         assert response.data[0]["resume"]["id"] == resume.id
         assert response.data[0]["resume"]["title"] == "Candidate Resume"
-
-
-from talentwright.notifications.models import Notification, NotificationType
 
 
 class TestInterviewSchedulingAPI:
@@ -616,7 +639,10 @@ class TestApplicationNotifications:
 
         assert response.status_code == status.HTTP_200_OK
         assert duplicate_response.status_code == status.HTTP_200_OK
-        assert Notification.objects.filter(
-            recipient=self.seeker_user,
-            notification_type=NotificationType.APPLICATION_STATUS_CHANGED,
-        ).count() == 1
+        assert (
+            Notification.objects.filter(
+                recipient=self.seeker_user,
+                notification_type=NotificationType.APPLICATION_STATUS_CHANGED,
+            ).count()
+            == 1
+        )

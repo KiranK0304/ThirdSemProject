@@ -5,8 +5,7 @@ from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from talentwright.jobs.models import AlertFrequency
-from talentwright.jobs.models import JobAlert
+from talentwright.jobs.models import AlertFrequency, JobAlert
 from talentwright.jobs.services import matching_jobs_for_alert
 
 
