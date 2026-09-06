@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
