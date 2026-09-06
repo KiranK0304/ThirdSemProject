@@ -122,6 +122,10 @@ def test_pipeline_full_success_with_mock_llm(sample_application):
             reasoning="5 years experience satisfies seniority requirements.",
             matched_evidence=["5 years at Acme Inc."],
         ),
+        education_evaluation=CriterionEvaluation(
+            score=90.0,
+            reasoning="Relevant degree.",
+        ),
         summary="Strong candidate with high technical match.",
         strengths=["Direct Django experience", "Strong relational DB experience"],
         concerns=[],
@@ -151,7 +155,13 @@ def test_pipeline_fallback_to_seeker_primary_resume(sample_application):
     mock_llm = MagicMock(spec=LLMClient)
     mock_llm.generate_structured.side_effect = [
         StructuredResume(summary="Developer"),
-        EvaluationScorecard(overall_score=70.0, recommendation="MODERATE_FIT"),
+        EvaluationScorecard(
+            overall_score=70.0,
+            recommendation="MODERATE_FIT",
+            skills_evaluation=CriterionEvaluation(score=70.0),
+            experience_evaluation=CriterionEvaluation(score=70.0),
+            education_evaluation=CriterionEvaluation(score=70.0),
+        ),
     ]
 
     record = analyze_application(app, llm_client=mock_llm)
@@ -180,7 +190,13 @@ def test_pipeline_triggers_rag_indexing(mock_index_rag, sample_application):
     mock_llm = MagicMock(spec=LLMClient)
     mock_llm.generate_structured.side_effect = [
         StructuredResume(summary="Developer with Python"),
-        EvaluationScorecard(overall_score=85.0, recommendation="STRONG_FIT"),
+        EvaluationScorecard(
+            overall_score=85.0,
+            recommendation="STRONG_FIT",
+            skills_evaluation=CriterionEvaluation(score=85.0),
+            experience_evaluation=CriterionEvaluation(score=85.0),
+            education_evaluation=CriterionEvaluation(score=85.0),
+        ),
     ]
 
     record = analyze_application(sample_application, llm_client=mock_llm)
@@ -196,7 +212,13 @@ def test_pipeline_succeeds_even_if_rag_fails(mock_index_rag, sample_application)
     mock_llm = MagicMock(spec=LLMClient)
     mock_llm.generate_structured.side_effect = [
         StructuredResume(summary="Developer with Python"),
-        EvaluationScorecard(overall_score=85.0, recommendation="STRONG_FIT"),
+        EvaluationScorecard(
+            overall_score=85.0,
+            recommendation="STRONG_FIT",
+            skills_evaluation=CriterionEvaluation(score=85.0),
+            experience_evaluation=CriterionEvaluation(score=85.0),
+            education_evaluation=CriterionEvaluation(score=85.0),
+        ),
     ]
 
     # Analysis must succeed and stay COMPLETED despite RAG exception

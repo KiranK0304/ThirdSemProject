@@ -20,14 +20,15 @@ EVALUATOR_SYSTEM_PROMPT = (
     "1. Strict Objectivity: Base every score and reasoning strictly on concrete facts and evidence in the resume.\n"
     "2. No Hallucinations: If a candidate does not explicitly list a required qualification, treat it as missing (gap).\n"
     "3. Dimensional Scoring (0.0 to 100.0):\n"
-    "   - skills_evaluation: Technical skills match against required and preferred technologies.\n"
-    "   - experience_evaluation: Total years and seniority relevance relative to the role.\n"
-    "   - education_evaluation: Educational pedigree, degree relevance, and certifications.\n"
-    "   - overall_score: Synthesized score reflecting holistic qualification match.\n"
+    "   - skills_evaluation (Weight: 50%): Technical skills match against required and preferred technologies.\n"
+    "   - experience_evaluation (Weight: 35%): Total years, seniority, and domain relevance relative to the role.\n"
+    "   - education_evaluation (Weight: 15%): Educational pedigree, degree relevance, and certifications.\n"
+    "   - overall_score: Weighted composite score computed as:\n"
+    "     (skills_score * 0.50) + (experience_score * 0.35) + (education_score * 0.15)\n"
     "4. Recommendation:\n"
-    "   - 'STRONG_FIT': overall_score >= 75\n"
-    "   - 'MODERATE_FIT': 50 <= overall_score < 75\n"
-    "   - 'WEAK_FIT': overall_score < 50\n"
+    "   - 'STRONG_FIT': overall_score >= 75.0\n"
+    "   - 'MODERATE_FIT': 50.0 <= overall_score < 75.0\n"
+    "   - 'WEAK_FIT': overall_score < 50.0\n"
     "5. Output must strictly adhere to the requested JSON schema."
 )
 
@@ -46,6 +47,34 @@ EVALUATOR_USER_PROMPT_TEMPLATE = """Evaluate the candidate's structured resume a
 {schema_json}
 
 Provide a comprehensive, objective baseline evaluation formatted strictly as JSON matching the schema above."""
+
+
+def calculate_composite_score(
+    skills_score: float,
+    experience_score: float,
+    education_score: float,
+) -> tuple[float, str]:
+    """Calculate deterministic composite overall score and recommendation tier.
+
+    Weights:
+        - Skills: 50%
+        - Experience: 35%
+        - Education: 15%
+    """
+    composite = round(
+        (skills_score * 0.50) + (experience_score * 0.35) + (education_score * 0.15),
+        2,
+    )
+    clamped_score = max(0.0, min(composite, 100.0))
+
+    if clamped_score >= 75.0:
+        recommendation = "STRONG_FIT"
+    elif clamped_score >= 50.0:
+        recommendation = "MODERATE_FIT"
+    else:
+        recommendation = "WEAK_FIT"
+
+    return clamped_score, recommendation
 
 
 def evaluate_resume(
@@ -94,9 +123,21 @@ def evaluate_resume(
     )
 
     logger.info("Evaluating candidate resume for job '%s'", job_title)
-    return llm_client.generate_structured(
+    scorecard = llm_client.generate_structured(
         prompt=prompt,
         system_prompt=EVALUATOR_SYSTEM_PROMPT,
         response_model=EvaluationScorecard,
         temperature=0.0,
     )
+
+    # Deterministically calculate composite overall_score and recommendation
+    # based on explicit dimension weights (50% skills, 35% experience, 15% education)
+    computed_score, computed_rec = calculate_composite_score(
+        skills_score=scorecard.skills_evaluation.score,
+        experience_score=scorecard.experience_evaluation.score,
+        education_score=scorecard.education_evaluation.score,
+    )
+    scorecard.overall_score = computed_score
+    scorecard.recommendation = computed_rec
+
+    return scorecard

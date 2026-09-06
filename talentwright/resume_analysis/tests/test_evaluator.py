@@ -99,11 +99,40 @@ def test_evaluate_resume_empty_job_context():
         evaluate_resume(resume, empty_context)
 
 
+def test_calculate_composite_score():
+    from talentwright.resume_analysis.services.evaluator import calculate_composite_score
+
+    # 90 * 0.50 + 80 * 0.35 + 70 * 0.15 = 45 + 28 + 10.5 = 83.5
+    score, rec = calculate_composite_score(
+        skills_score=90.0, experience_score=80.0, education_score=70.0
+    )
+    assert score == 83.5
+    assert rec == "STRONG_FIT"
+
+    # 60 * 0.50 + 60 * 0.35 + 60 * 0.15 = 60.0
+    score, rec = calculate_composite_score(
+        skills_score=60.0, experience_score=60.0, education_score=60.0
+    )
+    assert score == 60.0
+    assert rec == "MODERATE_FIT"
+
+    # 40 * 0.50 + 40 * 0.35 + 40 * 0.15 = 40.0
+    score, rec = calculate_composite_score(
+        skills_score=40.0, experience_score=40.0, education_score=40.0
+    )
+    assert score == 40.0
+    assert rec == "WEAK_FIT"
+
+
 def test_evaluate_resume_success_with_mock_client():
     mock_client = MagicMock(spec=LLMClient)
+    # Skills: 90 (45) + Exp: 80 (28) + Edu: 60 (9) = 82.0
     expected_scorecard = EvaluationScorecard(
         overall_score=82.0,
         recommendation="STRONG_FIT",
+        skills_evaluation=CriterionEvaluation(score=90.0),
+        experience_evaluation=CriterionEvaluation(score=80.0),
+        education_evaluation=CriterionEvaluation(score=60.0),
         summary="Candidate meets all baseline technical requirements.",
         strengths=["Strong Python depth"],
         concerns=["No cloud certification"],
@@ -123,6 +152,8 @@ def test_evaluate_resume_success_with_mock_client():
     result = evaluate_resume(resume, job_context, llm_client=mock_client)
 
     assert result == expected_scorecard
+    assert result.overall_score == 82.0
+    assert result.recommendation == "STRONG_FIT"
     mock_client.generate_structured.assert_called_once()
     prompt_used = mock_client.generate_structured.call_args.kwargs["prompt"]
     assert "Senior Backend Developer" in prompt_used

@@ -98,7 +98,6 @@ LOCAL_APPS = [
     "talentwright.applications",
     "talentwright.message",
     "talentwright.notifications",
-    "talentwright.resume_screening",
     "talentwright.resume_analysis",
     "talentwright.recruiter_copilot",
     "talentwright.candidate_rag",
