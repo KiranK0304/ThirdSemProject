@@ -48,7 +48,7 @@ class Application(models.Model):
     status = CharField(
         _("Status"),
         max_length=20,
-        choices=ApplicationStatus.choices,
+        choices=ApplicationStatus,
         default=ApplicationStatus.SUBMITTED,
     )
     created_at = DateTimeField(auto_now_add=True)
@@ -97,7 +97,7 @@ class Interview(models.Model):
     notes = TextField(blank=True)
     status = CharField(
         max_length=20,
-        choices=InterviewStatus.choices,
+        choices=InterviewStatus,
         default=InterviewStatus.SCHEDULED,
     )
     created_at = DateTimeField(auto_now_add=True)

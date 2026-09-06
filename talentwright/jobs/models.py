@@ -47,7 +47,7 @@ class Job(models.Model):
     employment_type = CharField(
         _("Employment type"),
         max_length=20,
-        choices=EmploymentType.choices,
+        choices=EmploymentType,
     )
     salary_min = DecimalField(_("Minimum salary"), max_digits=12, decimal_places=2, null=True, blank=True)
     salary_max = DecimalField(_("Maximum salary"), max_digits=12, decimal_places=2, null=True, blank=True)
@@ -55,7 +55,7 @@ class Job(models.Model):
     status = CharField(
         _("Status"),
         max_length=20,
-        choices=JobStatus.choices,
+        choices=JobStatus,
         default=JobStatus.OPEN,
     )
     created_at = DateTimeField(auto_now_add=True)
@@ -142,7 +142,7 @@ class JobAlert(models.Model):
     employment_type = CharField(
         _("Employment type"),
         max_length=20,
-        choices=EmploymentType.choices,
+        choices=EmploymentType,
         blank=True,
     )
     minimum_salary = DecimalField(
@@ -155,7 +155,7 @@ class JobAlert(models.Model):
     frequency = CharField(
         _("Alert frequency"),
         max_length=10,
-        choices=AlertFrequency.choices,
+        choices=AlertFrequency,
         default=AlertFrequency.DAILY,
     )
     is_active = models.BooleanField(_("Is active"), default=True)

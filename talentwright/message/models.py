@@ -35,7 +35,7 @@ class ChatRequest(models.Model):
     status = CharField(
         _("Status"),
         max_length=20,
-        choices=ChatRequestStatus.choices,
+        choices=ChatRequestStatus,
         default=ChatRequestStatus.PENDING,
     )
     initial_message = TextField(_("Initial message"), blank=True)

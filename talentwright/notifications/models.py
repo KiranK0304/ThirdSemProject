@@ -16,7 +16,7 @@ class Notification(models.Model):
         on_delete=models.CASCADE,
         related_name="notifications",
     )
-    notification_type = models.CharField(max_length=40, choices=NotificationType.choices)
+    notification_type = models.CharField(max_length=40, choices=NotificationType)
     title = models.CharField(max_length=255)
     message = models.TextField()
     related_url = models.CharField(max_length=500, blank=True)

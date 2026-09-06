@@ -16,6 +16,7 @@ Usage:
 """
 
 from decimal import Decimal
+
 from django.core.management.base import BaseCommand
 
 from talentwright.applications.models import Application, ApplicationStatus
