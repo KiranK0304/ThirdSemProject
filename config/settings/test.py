@@ -35,3 +35,7 @@ TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore[index]
 MEDIA_URL = "http://media.testserver/"
 # Your stuff...
 # ------------------------------------------------------------------------------
+OPENROUTER_API_KEY = env("OPENROUTER_API_KEY", default="test-dummy-openrouter-key")
+SCREENING_LLM_API_KEY = env("SCREENING_LLM_API_KEY", default="test-dummy-key")
+SCREENING_LLM_BASE_URL = env("SCREENING_LLM_BASE_URL", default="https://openrouter.ai/api/v1")
+SCREENING_LLM_MODEL = env("SCREENING_LLM_MODEL", default="openai/gpt-4o-mini")
