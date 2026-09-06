@@ -100,23 +100,23 @@ def search_candidate_chunks(
                 ),
                 "recommendation": record.recommendation or "N/A",
                 "years_experience": structured.get("total_years_experience", 0.0),
-                "skills": structured.get("skills", []),
+                "key_skills": (structured.get("skills") or [])[:10],
                 "summary": (
                     structured.get("summary")
                     or scorecard.get("summary")
                     or "No summary provided."
                 ),
-                "matched_evidence": [],
+                "relevant_evidence": [],
                 "_top_similarity": score,
             }
 
         # Keep up to 3 best matching evidence chunks per candidate
-        if len(candidates_map[app_id]["matched_evidence"]) < 3:
-            candidates_map[app_id]["matched_evidence"].append(
+        if len(candidates_map[app_id]["relevant_evidence"]) < 3:
+            section_title = chunk.chunk_type.replace("_", " ").title()
+            candidates_map[app_id]["relevant_evidence"].append(
                 {
-                    "chunk_type": chunk.chunk_type,
-                    "similarity_score": round(score, 3),
-                    "excerpt": chunk.content,
+                    "section": section_title,
+                    "details": chunk.content,
                 }
             )
 

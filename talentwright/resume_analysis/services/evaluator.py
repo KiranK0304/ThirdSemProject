@@ -82,8 +82,8 @@ def evaluate_resume(
     if llm_client is None:
         llm_client = LLMClient()
 
-    resume_json = json.dumps(resume.model_dump(), indent=2)
-    schema_json = json.dumps(EvaluationScorecard.model_json_schema(), indent=2)
+    resume_json = json.dumps(resume.model_dump(), separators=(",", ":"))
+    schema_json = json.dumps(EvaluationScorecard.model_json_schema(), separators=(",", ":"))
 
     prompt = EVALUATOR_USER_PROMPT_TEMPLATE.format(
         job_title=job_title or "Not specified",

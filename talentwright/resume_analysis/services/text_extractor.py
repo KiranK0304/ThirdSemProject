@@ -67,7 +67,7 @@ def extract_text_from_file(
             raise UnsupportedFileFormatError(
                 f"Handler not implemented for extension: {ext}"
             )
-    except UnsupportedFileFormatError, EmptyResumeError:
+    except (UnsupportedFileFormatError, EmptyResumeError):
         raise
     except Exception as exc:
         logger.exception("Text extraction failed for file '%s' (%s)", filename, ext)

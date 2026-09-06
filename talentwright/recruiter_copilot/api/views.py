@@ -179,6 +179,7 @@ class SessionMessageListCreateView(APIView):
         assistant_text, metadata = orchestrator.run(
             session=session,
             new_user_message=user_text,
+            exclude_message_id=user_message.id,
         )
 
         # 7. Save assistant reply in database

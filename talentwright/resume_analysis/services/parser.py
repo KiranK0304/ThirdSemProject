@@ -62,7 +62,7 @@ def parse_resume_text(
     if llm_client is None:
         llm_client = LLMClient()
 
-    schema_json = json.dumps(StructuredResume.model_json_schema(), indent=2)
+    schema_json = json.dumps(StructuredResume.model_json_schema(), separators=(",", ":"))
     prompt = PARSER_USER_PROMPT_TEMPLATE.format(
         schema_json=schema_json,
         resume_text=resume_text.strip(),

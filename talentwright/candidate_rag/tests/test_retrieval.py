@@ -129,10 +129,10 @@ def test_search_candidate_chunks_semantic_matching(retrieval_setup):
     top_candidate = results[0]
     assert top_candidate["name"] == "Alice AI"
     assert top_candidate["overall_score"] == 94.0
-    assert top_candidate["recommendation"] == "STRONG_FIT"
-    assert len(top_candidate["matched_evidence"]) == 1
-    assert "PyTorch" in top_candidate["matched_evidence"][0]["excerpt"]
-    assert top_candidate["matched_evidence"][0]["similarity_score"] > 0.9
+    assert len(top_candidate["relevant_evidence"]) == 1
+    assert "PyTorch" in top_candidate["relevant_evidence"][0]["details"]
+    assert top_candidate["relevant_evidence"][0]["section"] == "Work Experience"
+    assert "similarity_score" not in top_candidate["relevant_evidence"][0]
 
 
 @pytest.mark.django_db
