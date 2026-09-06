@@ -4,6 +4,7 @@ Handles validation, normalization, and persistence of scoring weights.
 Weights can be specified as decimals summing to 1.0 (e.g. 0.5, 0.3, 0.2)
 or as percentages summing to 100 (e.g. 50, 30, 20).
 """
+
 from __future__ import annotations
 
 import logging
@@ -12,8 +13,7 @@ from typing import Any
 from rest_framework.exceptions import ValidationError
 
 from talentwright.jobs.models import Job
-from talentwright.resume_screening.models import DEFAULT_CRITERIA_WEIGHTS
-from talentwright.resume_screening.models import JobScoringConfig
+from talentwright.resume_screening.models import DEFAULT_CRITERIA_WEIGHTS, JobScoringConfig
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +48,12 @@ def validate_and_normalize_weights(raw_weights: Any) -> dict[str, float]:
         criterion = key.strip().lower()
 
         if not isinstance(val, (int, float)) or isinstance(val, bool):
-            raise ValidationError({
-                "weights": f"Weight for criterion '{criterion}' must be a number, got {type(val).__name__}."
-            })
+            raise ValidationError(
+                {"weights": f"Weight for criterion '{criterion}' must be a number, got {type(val).__name__}."}
+            )
 
         if val < 0:
-            raise ValidationError({
-                "weights": f"Weight for criterion '{criterion}' must be non-negative, got {val}."
-            })
+            raise ValidationError({"weights": f"Weight for criterion '{criterion}' must be non-negative, got {val}."})
 
         cleaned[criterion] = float(val)
 
@@ -68,9 +66,9 @@ def validate_and_normalize_weights(raw_weights: Any) -> dict[str, float]:
 
     # Allow slight floating point tolerance around 1.0
     if abs(total - 1.0) > 0.01:
-        raise ValidationError({
-            "weights": f"Weights must sum exactly to 1.0 (or 100%). Current sum is {round(total, 4)}."
-        })
+        raise ValidationError(
+            {"weights": f"Weights must sum exactly to 1.0 (or 100%). Current sum is {round(total, 4)}."}
+        )
 
     # Exact normalization to avoid floating precision drift
     normalized = {k: round(v / total, 4) for k, v in cleaned.items()}

@@ -3,6 +3,7 @@
 Stores per-job scoring criteria weights and generated ranking snapshots
 so that employers can retrieve ranking results without re-running LLMs.
 """
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -119,4 +120,3 @@ class CandidateScreeningRecord(models.Model):
 
     def __str__(self) -> str:
         return f"ScreeningRecord for Application {self.application_id} (Job {self.job_id})"
-

@@ -118,4 +118,3 @@ def build_candidate_evaluation_prompt(
         criteria_list=criteria_formatted,
         schema=schema_json,
     )
-

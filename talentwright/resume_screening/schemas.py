@@ -5,11 +5,10 @@ These schemas serve as:
 2. Internal pipeline data types for passing data between stages.
 3. API response serialization.
 """
+
 from __future__ import annotations
 
-from pydantic import BaseModel
-from pydantic import Field
-
+from pydantic import BaseModel, Field
 
 # ── Resume Structuring Schema (LLM output) ──────────────────────────────
 
@@ -265,4 +264,3 @@ class CopilotResponse(BaseModel):
         default_factory=list,
         description="List of direct actions the user can execute with 1-click",
     )
-

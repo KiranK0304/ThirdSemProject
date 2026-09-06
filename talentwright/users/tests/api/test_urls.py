@@ -2,17 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from django.urls import resolve
-from django.urls import reverse
+from django.urls import resolve, reverse
 
 if TYPE_CHECKING:
     from talentwright.users.models import User
 
 
 def test_user_detail(user: User):
-    assert (
-        reverse("api:user-detail", kwargs={"pk": user.pk}) == f"/api/users/{user.pk}/"
-    )
+    assert reverse("api:user-detail", kwargs={"pk": user.pk}) == f"/api/users/{user.pk}/"
     assert resolve(f"/api/users/{user.pk}/").view_name == "api:user-detail"
 
 

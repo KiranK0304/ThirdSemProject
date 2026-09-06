@@ -5,6 +5,7 @@ structures, and evaluates the new candidate in a background thread.
 Updates the job's ranking snapshot so that employers immediately see the
 new candidate scored and placed in the leaderboard without waiting.
 """
+
 from __future__ import annotations
 
 import logging
@@ -96,6 +97,7 @@ def on_new_application_submitted(sender, instance: Application, created: bool, *
         return
 
     import os
+
     if "PYTEST_CURRENT_TEST" in os.environ:
         # Skip spawning background threads in isolated pytest test runner
         return

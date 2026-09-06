@@ -1,34 +1,22 @@
+from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import get_object_or_404
-from django.db.models import Case
-from django.db.models import IntegerField
-from django.db.models import Q
-from django.db.models import Value
-from django.db.models import When
-from rest_framework import filters
-from rest_framework import generics
-from rest_framework import status
-from rest_framework.generics import ListAPIView
-from rest_framework.generics import ListCreateAPIView
-from rest_framework.generics import RetrieveAPIView
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework import filters, generics, status
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from talentwright.jobs.api.serializers import JobAlertSerializer
-from talentwright.jobs.api.serializers import JobBookmarkSerializer
-from talentwright.jobs.api.serializers import JobCreateSerializer
-from talentwright.jobs.api.serializers import PublicJobSerializer
-from talentwright.jobs.api.serializers import RecommendedJobSerializer
-from talentwright.jobs.api.serializers import SavedJobSerializer
-from talentwright.jobs.models import Job
-from talentwright.jobs.models import JobAlert
-from talentwright.jobs.models import JobBookmark
-from talentwright.jobs.models import JobStatus
-from talentwright.jobs.models import SavedJob
+from talentwright.jobs.api.serializers import (
+    JobAlertSerializer,
+    JobBookmarkSerializer,
+    JobCreateSerializer,
+    PublicJobSerializer,
+    RecommendedJobSerializer,
+    SavedJobSerializer,
+)
+from talentwright.jobs.models import Job, JobAlert, JobBookmark, JobStatus, SavedJob
 from talentwright.jobs.services import matching_jobs_for_alert
-from talentwright.users.api.permissions import IsSeeker
-from talentwright.users.api.permissions import IsVerifiedEmployer
+from talentwright.users.api.permissions import IsSeeker, IsVerifiedEmployer
 from talentwright.users.models import VerificationStatus
 
 
@@ -84,26 +72,24 @@ class SeekerRecommendedJobListView(ListAPIView):
 
     def get_queryset(self):
         seeker = self.request.user.seeker_profile
-        base_queryset = Job.objects.select_related("employer", "employer__user").filter(
-            status=JobStatus.OPEN,
-            employer__verification_status=VerificationStatus.APPROVED,
-        ).exclude(applications__seeker=seeker)
-
-        employment_types = list(
-            seeker.applications.values_list("job__employment_type", flat=True).distinct()
+        base_queryset = (
+            Job.objects.select_related("employer", "employer__user")
+            .filter(
+                status=JobStatus.OPEN,
+                employer__verification_status=VerificationStatus.APPROVED,
+            )
+            .exclude(applications__seeker=seeker)
         )
+
+        employment_types = list(seeker.applications.values_list("job__employment_type", flat=True).distinct())
         locations = list(
-            seeker.applications.exclude(job__location="")
-            .values_list("job__location", flat=True)
-            .distinct()
+            seeker.applications.exclude(job__location="").values_list("job__location", flat=True).distinct()
         )
         bookmarked_employment_types = list(
             seeker.job_bookmarks.values_list("job__employment_type", flat=True).distinct()
         )
         bookmarked_locations = list(
-            seeker.job_bookmarks.exclude(job__location="")
-            .values_list("job__location", flat=True)
-            .distinct()
+            seeker.job_bookmarks.exclude(job__location="").values_list("job__location", flat=True).distinct()
         )
         employment_types = list(set(employment_types + bookmarked_employment_types))
         locations = list(set(locations + bookmarked_locations))
@@ -259,4 +245,3 @@ class JobAlertMatchesListView(generics.ListAPIView):
             seeker=self.request.user.seeker_profile,
         )
         return matching_jobs_for_alert(alert)
-

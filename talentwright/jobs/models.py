@@ -1,24 +1,22 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import CASCADE
-from django.db.models import CharField
-from django.db.models import CheckConstraint
-from django.db.models import DateTimeField
-from django.db.models import DecimalField
-from django.db.models import ForeignKey
-from django.db.models import Q
-from django.db.models import TextChoices
-from django.db.models import TextField
-from django.db.models import UniqueConstraint
+from django.db.models import (
+    CASCADE,
+    CharField,
+    CheckConstraint,
+    DateTimeField,
+    DecimalField,
+    ForeignKey,
+    Q,
+    TextChoices,
+    TextField,
+    UniqueConstraint,
+)
 from django.utils.translation import gettext_lazy as _
 
-from talentwright.users.models import EmployerProfile
-from talentwright.users.models import SeekerProfile
+from talentwright.users.models import EmployerProfile, SeekerProfile
 
-
-ALERT_CRITERIA_ERROR = _(
-    "Provide at least one of keyword, location, employment type, or minimum salary."
-)
+ALERT_CRITERIA_ERROR = _("Provide at least one of keyword, location, employment type, or minimum salary.")
 
 
 class EmploymentType(TextChoices):
@@ -72,7 +70,9 @@ class Job(models.Model):
         constraints = [
             CheckConstraint(
                 name="jobs_job_salary_range_valid",
-                condition=Q(salary_min__isnull=True) | Q(salary_max__isnull=True) | Q(salary_min__lte=models.F("salary_max")),
+                condition=Q(salary_min__isnull=True)
+                | Q(salary_max__isnull=True)
+                | Q(salary_min__lte=models.F("salary_max")),
             ),
         ]
 
@@ -182,4 +182,3 @@ class JobAlert(models.Model):
 
     def __str__(self) -> str:
         return f"Job alert for {self.seeker.user.email}"
-

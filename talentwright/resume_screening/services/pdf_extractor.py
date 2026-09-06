@@ -4,6 +4,7 @@ Extracts raw text from PDF resume files using PyMuPDF (fitz).
 Isolated so OCR or other document format support can be added later
 without touching other pipeline stages.
 """
+
 from __future__ import annotations
 
 import logging

@@ -1,5 +1,7 @@
 """Unit and integration tests for the candidate ranking system."""
+
 from unittest.mock import patch
+
 import pytest
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
@@ -16,7 +18,6 @@ from talentwright.resume_screening.schemas import (
     ApplicationInfo,
     CandidateEvaluationResponse,
     CandidateScreeningData,
-    ContactInfo,
     CriterionEvaluationItem,
     ProcessingStatus,
     StructuredResume,
@@ -27,8 +28,6 @@ from talentwright.resume_screening.services.ranker import (
     rank_candidates,
 )
 from talentwright.resume_screening.services.weights import (
-    get_job_weights,
-    save_job_weights,
     validate_and_normalize_weights,
 )
 from talentwright.users.models import (
@@ -272,6 +271,7 @@ class TestRankingAPI:
     @patch("talentwright.resume_screening.services.pipeline.extract_text_from_pdf")
     def test_post_rank_executes_ranking_and_get_retrieves_it(self, mock_pdf, mock_structure, mock_provider_getter):
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         from talentwright.resume_screening.services.pdf_extractor import ExtractionResult
         from talentwright.users.models import Resume
 
@@ -324,6 +324,7 @@ class TestRankingAPI:
     def test_ranking_uses_cached_evaluations_without_calling_llm(self):
         """Verify that when CandidateScreeningRecord is cached, ranking completes instantly without LLM calls."""
         from django.core.files.uploadedfile import SimpleUploadedFile
+
         from talentwright.resume_screening.models import CandidateScreeningRecord
         from talentwright.users.models import Resume
 
@@ -361,4 +362,3 @@ class TestRankingAPI:
         # 95*0.5 (47.5) + 90*0.3 (27.0) + 85*0.2 (17.0) = 91.5
         assert top_cand["final_score"] == 91.5
         assert top_cand["criteria_scores"]["experience"] == 95
-

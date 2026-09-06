@@ -1,4 +1,5 @@
 """URL patterns for resume screening and candidate ranking API."""
+
 from django.urls import path
 
 from talentwright.resume_screening.api.views import (

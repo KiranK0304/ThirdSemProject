@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from talentwright.message.models import ChatRequest
-from talentwright.message.models import Message
+from talentwright.message.models import ChatRequest, Message
 
 
 @admin.register(ChatRequest)

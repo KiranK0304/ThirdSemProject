@@ -1,5 +1,7 @@
 """Unit and integration tests for the resume_screening app."""
+
 from unittest.mock import patch
+
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -13,15 +15,12 @@ from talentwright.resume_screening.schemas import (
 )
 from talentwright.resume_screening.services.candidate_builder import (
     build_application_info,
-    build_candidate_data,
 )
 from talentwright.resume_screening.services.pdf_extractor import (
-    ExtractionResult,
     extract_text_from_pdf,
 )
 from talentwright.resume_screening.services.pipeline import (
     _is_degenerate,
-    prepare_candidates_for_job,
 )
 from talentwright.users.models import (
     EmployerProfile,

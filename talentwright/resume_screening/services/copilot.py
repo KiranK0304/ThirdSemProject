@@ -4,19 +4,16 @@ Provides context-aware candidate intelligence, side-by-side candidate comparison
 tailored interview question generation, outreach email drafts, and direct actionable
 shortcuts for recruiters.
 """
+
 from __future__ import annotations
 
 import logging
 import re
 from typing import TYPE_CHECKING
 
-from talentwright.resume_screening.models import CandidateScreeningRecord
-from talentwright.resume_screening.models import JobRankingSnapshot
-from talentwright.resume_screening.schemas import CopilotAction
-from talentwright.resume_screening.schemas import CopilotMessage
-from talentwright.resume_screening.schemas import CopilotResponse
-from talentwright.resume_screening.services.llm_provider import LLMProviderError
-from talentwright.resume_screening.services.llm_provider import get_llm_provider
+from talentwright.resume_screening.models import CandidateScreeningRecord, JobRankingSnapshot
+from talentwright.resume_screening.schemas import CopilotAction, CopilotMessage, CopilotResponse
+from talentwright.resume_screening.services.llm_provider import LLMProviderError, get_llm_provider
 from talentwright.resume_screening.services.weights import get_job_weights
 
 if TYPE_CHECKING:
@@ -29,11 +26,7 @@ def build_recruiter_agent_context(job: Job) -> dict:
     """Collect all job details, ranked candidates, and resume dossiers."""
     weights, _ = get_job_weights(job)
 
-    snapshot = (
-        JobRankingSnapshot.objects.filter(job=job)
-        .order_by("-created_at")
-        .first()
-    )
+    snapshot = JobRankingSnapshot.objects.filter(job=job).order_by("-created_at").first()
     ranked_candidates = snapshot.ranked_candidates if snapshot else []
 
     # Map screening records for deep resume details
@@ -56,20 +49,21 @@ def build_recruiter_agent_context(job: Job) -> dict:
             desc = exp.get("description", "")
             exp_summary.append(f"{role} at {comp}: {desc[:120]}..." if desc else f"{role} at {comp}")
 
-        candidates_context.append({
-            "rank": cand.get("rank"),
-            "application_id": app_id,
-            "name": cand.get("candidate_name"),
-            "email": cand.get("candidate_email"),
-            "final_score": cand.get("final_score"),
-            "criteria_scores": cand.get("criteria_scores", {}),
-            "reasons": {
-                crit: detail.get("reason", "")
-                for crit, detail in cand.get("criteria_details", {}).items()
-            },
-            "skills": skills[:10],
-            "experience_highlights": exp_summary,
-        })
+        candidates_context.append(
+            {
+                "rank": cand.get("rank"),
+                "application_id": app_id,
+                "name": cand.get("candidate_name"),
+                "email": cand.get("candidate_email"),
+                "final_score": cand.get("final_score"),
+                "criteria_scores": cand.get("criteria_scores", {}),
+                "reasons": {
+                    crit: detail.get("reason", "") for crit, detail in cand.get("criteria_details", {}).items()
+                },
+                "skills": skills[:10],
+                "experience_highlights": exp_summary,
+            }
+        )
 
     return {
         "job_id": job.id,
@@ -163,7 +157,10 @@ def _detect_suggested_actions(
 
     # 2. Detect if reply contains an email draft or interview questions to copy
     has_email = any(term in reply_text.lower() for term in ["subject:", "dear ", "hi ", "interview invitation"])
-    has_questions = any(term in reply_text.lower() for term in ["question 1", "interview questions", "probing question", "technical questions:"])
+    has_questions = any(
+        term in reply_text.lower()
+        for term in ["question 1", "interview questions", "probing question", "technical questions:"]
+    )
 
     if has_email:
         actions.append(
@@ -216,8 +213,18 @@ def _generate_fallback_response(user_query: str, context: dict) -> CopilotRespon
             f"**Recommendation:** {c1['name']} provides the strongest overall balance of hands-on architectural experience and verified project deliverables."
         )
         actions = [
-            CopilotAction(action_type="shortlist", label=f"Shortlist {c1['name']}", application_id=c1["application_id"], candidate_name=c1["name"]),
-            CopilotAction(action_type="shortlist", label=f"Shortlist {c2['name']}", application_id=c2["application_id"], candidate_name=c2["name"]),
+            CopilotAction(
+                action_type="shortlist",
+                label=f"Shortlist {c1['name']}",
+                application_id=c1["application_id"],
+                candidate_name=c1["name"],
+            ),
+            CopilotAction(
+                action_type="shortlist",
+                label=f"Shortlist {c2['name']}",
+                application_id=c2["application_id"],
+                candidate_name=c2["name"],
+            ),
         ]
     elif "question" in lower_query or "interview" in lower_query:
         reply = (
@@ -230,7 +237,12 @@ def _generate_fallback_response(user_query: str, context: dict) -> CopilotRespon
         )
         actions = [
             CopilotAction(action_type="copy_text", label="📋 Copy Questions", payload=reply),
-            CopilotAction(action_type="shortlist", label=f"Shortlist {top_name}", application_id=top_candidate["application_id"], candidate_name=top_name),
+            CopilotAction(
+                action_type="shortlist",
+                label=f"Shortlist {top_name}",
+                application_id=top_candidate["application_id"],
+                candidate_name=top_name,
+            ),
         ]
     elif "email" in lower_query or "outreach" in lower_query or "invite" in lower_query:
         reply = (
@@ -244,7 +256,12 @@ def _generate_fallback_response(user_query: str, context: dict) -> CopilotRespon
         )
         actions = [
             CopilotAction(action_type="copy_text", label="📋 Copy Email Draft", payload=reply),
-            CopilotAction(action_type="shortlist", label=f"Shortlist {top_name}", application_id=top_candidate["application_id"], candidate_name=top_name),
+            CopilotAction(
+                action_type="shortlist",
+                label=f"Shortlist {top_name}",
+                application_id=top_candidate["application_id"],
+                candidate_name=top_name,
+            ),
         ]
     else:
         top_3 = ", ".join(f"**{c['name']}** ({c['final_score']}%)" for c in candidates[:3])
@@ -257,7 +274,12 @@ def _generate_fallback_response(user_query: str, context: dict) -> CopilotRespon
             f"You can ask me to **compare specific candidates**, **generate tailored interview questions**, or **draft outreach emails**."
         )
         actions = [
-            CopilotAction(action_type="shortlist", label=f"Shortlist {top_name}", application_id=top_candidate["application_id"], candidate_name=top_name),
+            CopilotAction(
+                action_type="shortlist",
+                label=f"Shortlist {top_name}",
+                application_id=top_candidate["application_id"],
+                candidate_name=top_name,
+            ),
         ]
 
     return CopilotResponse(reply=reply, suggested_actions=actions)
@@ -299,6 +321,6 @@ def execute_copilot_command(
             exc,
         )
         return _generate_fallback_response(message, context)
-    except Exception as exc:
+    except Exception:
         logger.exception("Unexpected error in copilot execution")
         return _generate_fallback_response(message, context)
