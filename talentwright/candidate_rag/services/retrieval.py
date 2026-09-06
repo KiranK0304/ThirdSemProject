@@ -128,6 +128,7 @@ def search_candidate_chunks(
             )
             email = user.email if user else ""
 
+            skills_list = structured.get("skills", [])
             candidates_map[app_id] = {
                 "application_id": app_id,
                 "name": name,
@@ -139,12 +140,15 @@ def search_candidate_chunks(
                 ),
                 "recommendation": record.recommendation or "N/A",
                 "years_experience": structured.get("total_years_experience", 0.0),
-                "key_skills": (structured.get("skills") or [])[:10],
+                "skills": skills_list,
+                "key_skills": skills_list[:10],
                 "summary": (
                     structured.get("summary")
                     or scorecard.get("summary")
                     or "No summary provided."
                 ),
+                "strengths": scorecard.get("strengths", []),
+                "concerns": scorecard.get("concerns", []),
                 "relevant_evidence": [],
                 "_top_similarity": score,
             }

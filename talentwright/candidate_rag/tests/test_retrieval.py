@@ -129,6 +129,10 @@ def test_search_candidate_chunks_semantic_matching(retrieval_setup):
     top_candidate = results[0]
     assert top_candidate["name"] == "Alice AI"
     assert top_candidate["overall_score"] == 94.0
+    assert "PyTorch" in top_candidate["skills"]
+    assert "PyTorch" in top_candidate["key_skills"]
+    assert isinstance(top_candidate["strengths"], list)
+    assert isinstance(top_candidate["concerns"], list)
     assert len(top_candidate["relevant_evidence"]) == 1
     assert "PyTorch" in top_candidate["relevant_evidence"][0]["details"]
     assert top_candidate["relevant_evidence"][0]["section"] == "Work Experience"
