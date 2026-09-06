@@ -104,6 +104,19 @@ def analyze_application(
             record.recommendation,
         )
 
+        # Step E: Automatic Candidate RAG Indexing
+        try:
+            from talentwright.candidate_rag.services.indexer import index_resume_analysis
+
+            index_resume_analysis(record)
+        except Exception as rag_exc:  # noqa: BLE001
+            logger.warning(
+                "RAG indexing failed for Application #%d (Record #%d): %s",
+                application.id,
+                record.id,
+                rag_exc,
+            )
+
     except Exception as exc:
         logger.exception("Analysis failed for Application #%d: %s", application.id, exc)
         record.status = AnalysisStatus.FAILED

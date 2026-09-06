@@ -172,3 +172,17 @@ def test_pipeline_handles_corrupt_file(sample_application):
     record = analyze_application(sample_application)
     assert record.status == AnalysisStatus.FAILED
     assert "Unsupported resume file format '.xyz'" in record.error_message
+
+
+@pytest.mark.django_db
+@patch("talentwright.candidate_rag.services.indexer.index_resume_analysis")
+def test_pipeline_triggers_rag_indexing(mock_index_rag, sample_application):
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_llm.generate_structured.side_effect = [
+        StructuredResume(summary="Developer with Python"),
+        EvaluationScorecard(overall_score=85.0, recommendation="STRONG_FIT"),
+    ]
+
+    record = analyze_application(sample_application, llm_client=mock_llm)
+    assert record.status == AnalysisStatus.COMPLETED
+    mock_index_rag.assert_called_once_with(record)
