@@ -16,7 +16,7 @@ import zipfile
 from pathlib import Path
 from typing import BinaryIO
 
-import fitz  # PyMuPDF
+import pymupdf
 
 from talentwright.resume_analysis.exceptions import EmptyResumeError
 from talentwright.resume_analysis.exceptions import TextExtractionError
@@ -124,7 +124,7 @@ def _extract_from_pdf(pdf_bytes: bytes) -> str:
     """Extract plain text from PDF using PyMuPDF."""
     doc = None
     try:
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
         pages_text: list[str] = []
         for page_num in range(len(doc)):
             page = doc[page_num]

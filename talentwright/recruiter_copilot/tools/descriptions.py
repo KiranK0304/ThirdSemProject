@@ -30,17 +30,20 @@ SEARCH_CANDIDATES_TOOL_DEFINITION = {
     "function": {
         "name": "search_candidates",
         "description": (
-            "Search applicants for this job based on specific technical skills, domain "
-            "experience, technologies, tools, or qualifications (e.g. 'PyTorch or deep learning', "
-            "'Kubernetes in production', 'PostgreSQL performance tuning', 'payment gateways', 'AWS'). "
-            "Returns relevant candidate profiles with specific resume evidence excerpts."
+            "Search applicants for this job using semantic retrieval over their resumes. "
+            "Use this for specific technical skills, tools, frameworks, domain backgrounds, "
+            "as well as career stages or role titles (e.g. 'PyTorch or deep learning', "
+            "'junior or early career developer', 'startup backend engineer', "
+            "'PostgreSQL performance tuning', 'AWS infrastructure'). "
+            "Translates recruiter criteria into semantic resume concepts to return matching profiles "
+            "with verified evidence excerpts."
         ),
         "parameters": {
             "type": "object",
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "The specific technical skill, domain experience, framework, or qualification to search for.",
+                    "description": "The semantic search query: technical skills, frameworks, domain experience, or career stage / role seniority.",
                 },
                 "limit": {
                     "type": "integer",
