@@ -6,14 +6,8 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from talentwright.applications.models import Application
-from talentwright.jobs.models import Job
-from talentwright.jobs.models import JobAlert
-from talentwright.jobs.models import JobBookmark
-from talentwright.jobs.models import JobStatus
-from talentwright.users.models import EmployerProfile
-from talentwright.users.models import SeekerProfile
-from talentwright.users.models import User
-from talentwright.users.models import VerificationStatus
+from talentwright.jobs.models import Job, JobAlert, JobBookmark, JobStatus
+from talentwright.users.models import EmployerProfile, SeekerProfile, User, VerificationStatus
 
 pytestmark = pytest.mark.django_db
 
@@ -333,7 +327,6 @@ class TestSeekerRecommendationsAPI:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-
 class TestEmployerJobManagementAPI:
     def setup_method(self):
         self.client = APIClient()
@@ -533,7 +526,7 @@ class TestEmployerJobManagementAPI:
         assert Job.objects.filter(pk=job.pk).count() == 0
 
     def test_non_employer_cannot_create_job(self):
-        seeker_user = User.objects.create_user(
+        _seeker_user = User.objects.create_user(
             email="seeker@example.com",
             password="StrongPassword123!",
             is_active=True,
@@ -777,5 +770,3 @@ class TestJobBookmarksAPI:
         )
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
-
-

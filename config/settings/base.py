@@ -1,6 +1,8 @@
 # ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
+
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -62,7 +64,6 @@ else:
 
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -98,7 +99,9 @@ LOCAL_APPS = [
     "talentwright.applications",
     "talentwright.message",
     "talentwright.notifications",
-    "talentwright.resume_screening",
+    "talentwright.resume_analysis",
+    "talentwright.recruiter_copilot",
+    "talentwright.candidate_rag",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -266,8 +269,6 @@ REST_FRAMEWORK = {
 
 # django-rest-framework-simplejwt
 # -------------------------------------------------------------------------------
-from datetime import timedelta
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),

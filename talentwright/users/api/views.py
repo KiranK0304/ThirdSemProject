@@ -1,16 +1,13 @@
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
-from rest_framework.mixins import RetrieveModelMixin
-from rest_framework.mixins import UpdateModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from talentwright.users.models import User
 
 from .serializers import UserSerializer
-
-from rest_framework.permissions import AllowAny
 
 
 class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
@@ -38,11 +35,13 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     )
     def health(self, request):
         return Response({"status": "ok"})
-            
+
     @action(detail=False, methods=["get"])
     def whoami(self, request):
-        return Response({
-            "id": request.user.id,
-            "email": request.user.email,
-            "name": request.user.name,
-        })
+        return Response(
+            {
+                "id": request.user.id,
+                "email": request.user.email,
+                "name": request.user.name,
+            }
+        )

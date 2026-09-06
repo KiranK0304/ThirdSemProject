@@ -1,20 +1,17 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
-from rest_framework import permissions
-from rest_framework import status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from talentwright.message.api.serializers import ChatRequestCreateSerializer
-from talentwright.message.api.serializers import ChatRequestDetailSerializer
-from talentwright.message.api.serializers import ChatRequestStatusUpdateSerializer
-from talentwright.message.api.serializers import MessageCreateSerializer
-from talentwright.message.api.serializers import MessageSerializer
-from talentwright.message.models import ChatRequest
-from talentwright.message.models import ChatRequestStatus
-from talentwright.message.models import Message
-from talentwright.users.api.permissions import IsSeeker
-from talentwright.users.api.permissions import IsVerifiedEmployer
+from talentwright.message.api.serializers import (
+    ChatRequestCreateSerializer,
+    ChatRequestDetailSerializer,
+    ChatRequestStatusUpdateSerializer,
+    MessageCreateSerializer,
+    MessageSerializer,
+)
+from talentwright.message.models import ChatRequest, ChatRequestStatus, Message
+from talentwright.users.api.permissions import IsSeeker, IsVerifiedEmployer
 
 
 class SeekerChatRequestCreateView(generics.CreateAPIView):
@@ -176,11 +173,7 @@ class ConversationMessagesListCreateView(generics.GenericAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        messages = (
-            Message.objects.select_related("sender")
-            .filter(chat_request=chat_request)
-            .order_by("created_at")
-        )
+        messages = Message.objects.select_related("sender").filter(chat_request=chat_request).order_by("created_at")
         serializer = MessageSerializer(
             messages,
             many=True,

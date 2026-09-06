@@ -1,12 +1,9 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include
-from django.urls import path
+from django.urls import include, path
 from django.views import defaults as default_views
-from django.views.generic import TemplateView
-from drf_spectacular.views import SpectacularAPIView
-from drf_spectacular.views import SpectacularSwaggerView
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
 from talentwright.users.api.auth_views import UserMeView
@@ -26,7 +23,7 @@ urlpatterns += [
     path("api/", include("talentwright.applications.api.urls", namespace="applications_api")),
     path("api/messages/", include("talentwright.message.api.urls", namespace="message_api")),
     path("api/notifications/", include("talentwright.notifications.api.urls", namespace="notifications_api")),
-    path("api/screening/", include("talentwright.resume_screening.api.urls", namespace="resume_screening_api")),
+    path("api/copilot/", include("talentwright.recruiter_copilot.api.urls", namespace="recruiter_copilot_api")),
     # JWT Auth API
     path("api/auth/", include("talentwright.users.api.urls", namespace="auth_api")),
     path("api/me/", UserMeView.as_view(), name="api-me"),

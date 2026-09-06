@@ -63,91 +63,70 @@ dev = [
 
 # ==== djLint ====
 [tool.djlint]
-blank_line_after_tag = "load,extends"
-custom_blocks = "slot"
-close_void_tags = true
-format_css = true
-format_js = true
-# TODO: remove T002 when fixed https://github.com/djlint/djLint/issues/687
-ignore = "H006,H030,H031,T002"
+profile = "django"
 include = "H017,H035"
 indent = 2
 max_line_length = 119
-profile = "django"
+blank_line_after_tag = "load,extends"
+close_void_tags = true
+format_css = true
+format_js = true
+custom_blocks = "slot"
+# TODO: remove T002 when fixed https://github.com/djlint/djLint/issues/687
+ignore = "H006,H030,H031,T002"
 css.indent_size = 2
 js.indent_size = 2
 
 # ==== ruff ====
 [tool.ruff]
+line-length = 119
 # Exclude a variety of commonly ignored directories.
 extend-exclude = [
   "*/migrations/*.py",
   "staticfiles/*",
 ]
-
 lint.select = [
-  "A",
-  "ASYNC",
-  "B",
-  "BLE",
-  "C4",
-  "C90",
-  "COM",
-  "DJ",
-  "DTZ",
-  "E",
-  "EM",
-  "ERA",
-  "EXE",
-  "F",
-  "FA",
-  "FBT",
-  "FLY",
-  "G",
-  "I",
-  "ICN",
-  "INP",
-  "INT",
-  "ISC",
-  "N",
-  "PD",
-  "PERF",
-  "PGH",
-  "PIE",
-  "PL",
-  "PT",
-  "PTH",
-  "PYI",
-  "Q",
-  "RET",
-  "RSE",
-  "RUF",
-  "S",
-  "SIM",
-  "SLF",
-  "SLOT",
-  "T10",
-  "T20",
-  "TC",
-  "TID",
-  "TRY",
-  "UP",
-  "W",
-  "YTT",
+  "B",  # flake8-bugbear
+  "C4", # flake8-comprehensions
+  "DJ", # flake8-django
+  "E",  # pycodestyle errors
+  "F",  # pyflakes
+  "I",  # isort
+  "UP", # pyupgrade
+  "W",  # pycodestyle warnings
 ]
 lint.ignore = [
+  "DJ012",  # Order of model's inner classes
+  "E501",   # Line length handled by formatter
   "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
-  "S101",   # Use of assert detected https://docs.astral.sh/ruff/rules/assert/
-  "SIM102", # sometimes it's better to nest
-  # of types for comparison.
-  # Deactivated because it can make the code slow:
-  # https://github.com/astral-sh/ruff/issues/7871
 ]
-lint.isort.force-single-line = true
+lint.per-file-ignores."**/tests/*" = [ "ARG001", "PLR2004", "S101" ]
+lint.per-file-ignores."tests/*" = [ "ARG001", "PLR2004", "S101" ]
+lint.isort.force-single-line = false
 
 # ==== pyproject-fmt ====
 [tool.pyproject-fmt]
 keep_full_version = true
+
+# ==== mypy ====
+[tool.mypy]
+ignore_missing_imports = true
+python_version = "3.14"
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+plugins = [
+  "mypy_django_plugin.main",
+  "mypy_drf_plugin.main",
+]
+warn_unused_configs = true
+overrides = [
+  # Django migrations should not produce any errors:
+  { module = "*.migrations.*", ignore_errors = true },
+]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
 
 # ==== pytest ====
 [tool.pytest]
@@ -162,29 +141,8 @@ python_files = [
   "test_*.py",
 ]
 
+[tool.coverage]
 # ==== Coverage ====
-[tool.coverage.run]
-include = [ "talentwright/**" ]
-omit = [ "*/migrations/*", "*/tests/*" ]
-plugins = [ "django_coverage_plugin" ]
-
-# ==== mypy ====
-[tool.mypy]
-python_version = "3.14"
-check_untyped_defs = true
-ignore_missing_imports = true
-warn_unused_ignores = true
-warn_redundant_casts = true
-warn_unused_configs = true
-plugins = [
-  "mypy_django_plugin.main",
-  "mypy_drf_plugin.main",
-]
-
-[[tool.mypy.overrides]]
-# Django migrations should not produce any errors:
-module = "*.migrations.*"
-ignore_errors = true
-
-[tool.django-stubs]
-django_settings_module = "config.settings.test"
+run.include = [ "talentwright/**" ]
+run.omit = [ "*/migrations/*", "*/tests/*" ]
+run.plugins = [ "django_coverage_plugin" ]

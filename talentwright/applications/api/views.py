@@ -8,17 +8,13 @@ from talentwright.applications.api.serializers import (
     InterviewSerializer,
     JobApplicantSerializer,
 )
-from talentwright.applications.models import Application
-from talentwright.applications.models import ApplicationStatus
-from talentwright.applications.models import Interview
-from talentwright.jobs.models import Job
-from talentwright.jobs.models import JobStatus
+from talentwright.applications.models import Application, ApplicationStatus, Interview
+from talentwright.jobs.models import Job, JobStatus
 from talentwright.notifications.services import (
     notify_application_status_changed,
     notify_application_submitted,
 )
-from talentwright.users.api.permissions import IsSeeker
-from talentwright.users.api.permissions import IsVerifiedEmployer
+from talentwright.users.api.permissions import IsSeeker, IsVerifiedEmployer
 from talentwright.users.models import VerificationStatus
 
 
@@ -64,6 +60,7 @@ class JobApplicationsListView(generics.ListAPIView):
                 "seeker",
                 "seeker__user",
                 "resume",
+                "resume_analysis",
             )
             .filter(job=job)
             .order_by("-created_at")
@@ -82,6 +79,7 @@ class EmployerApplicationsListView(generics.ListAPIView):
                 "seeker",
                 "seeker__user",
                 "resume",
+                "resume_analysis",
             )
             .filter(job__employer=employer)
             .order_by("-created_at")
@@ -138,6 +136,7 @@ class SeekerApplicationDetailView(generics.RetrieveDestroyAPIView):
             "seeker__user",
             "resume",
         ).filter(seeker=seeker)
+
 
 class EmployerInterviewCreateView(generics.CreateAPIView):
     serializer_class = InterviewSerializer
@@ -203,4 +202,3 @@ class EmployerInterviewUpdateView(generics.UpdateAPIView):
         context = super().get_serializer_context()
         context["application"] = self.get_object().application
         return context
-

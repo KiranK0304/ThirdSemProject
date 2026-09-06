@@ -23,4 +23,3 @@ class UserAdminCreationForm(admin_forms.AdminUserCreationForm):
         error_messages = {
             "email": {"unique": _("This email has already been taken.")},
         }
-

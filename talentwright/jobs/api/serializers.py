@@ -2,11 +2,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
-from talentwright.jobs.models import ALERT_CRITERIA_ERROR
-from talentwright.jobs.models import Job
-from talentwright.jobs.models import JobAlert
-from talentwright.jobs.models import JobBookmark
-from talentwright.jobs.models import SavedJob
+from talentwright.jobs.models import ALERT_CRITERIA_ERROR, Job, JobAlert, JobBookmark, SavedJob
 from talentwright.users.models import EmployerProfile
 
 
@@ -169,10 +165,7 @@ class JobAlertSerializer(serializers.ModelSerializer):
             instance.minimum_salary if instance else None,
         )
 
-        has_criteria = any(
-            [keyword.strip(), location.strip(), employment_type, minimum_salary is not None]
-        )
+        has_criteria = any([keyword.strip(), location.strip(), employment_type, minimum_salary is not None])
         if not has_criteria:
             raise serializers.ValidationError(ALERT_CRITERIA_ERROR)
         return attrs
-
