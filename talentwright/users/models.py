@@ -75,7 +75,7 @@ class EmployerProfile(models.Model):
     verification_status = CharField(
         _("Verification Status"),
         max_length=20,
-        choices=VerificationStatus.choices,
+        choices=VerificationStatus,
         default=VerificationStatus.PENDING,
     )
     created_at = DateTimeField(auto_now_add=True)
