@@ -162,3 +162,39 @@ def test_tool_registry_execution(candidate_pool_setup):
             arguments={},
             context={"job_id": job.id},
         )
+
+
+@pytest.mark.django_db
+def test_tools_defensive_argument_coercion(candidate_pool_setup):
+    job = candidate_pool_setup["job"]
+    registry = get_default_registry()
+
+    # None and invalid string limits should safely fallback to default without raising
+    top_with_none = registry.execute(
+        tool_name="get_top_candidates",
+        arguments={"limit": None},
+        context={"job_id": job.id},
+    )
+    assert len(top_with_none) == 3
+
+    top_with_invalid = registry.execute(
+        tool_name="get_top_candidates",
+        arguments={"limit": "not_an_int"},
+        context={"job_id": job.id},
+    )
+    assert len(top_with_invalid) == 3
+
+    # search_candidates with missing or empty query should return empty list safely
+    search_missing_query = registry.execute(
+        tool_name="search_candidates",
+        arguments={},
+        context={"job_id": job.id},
+    )
+    assert search_missing_query == []
+
+    search_empty_query = registry.execute(
+        tool_name="search_candidates",
+        arguments={"query": "   ", "limit": None},
+        context={"job_id": job.id},
+    )
+    assert search_empty_query == []

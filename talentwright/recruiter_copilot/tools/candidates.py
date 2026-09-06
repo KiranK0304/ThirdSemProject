@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def get_top_candidates(
     job_id: int,
-    limit: int = 5,
+    limit: Any = 5,
 ) -> list[dict[str, Any]]:
     """Retrieve top-ranked candidates for a job ordered by overall score.
 
@@ -24,7 +24,11 @@ def get_top_candidates(
     Returns:
         A list of structured candidate summaries.
     """
-    safe_limit = max(1, min(int(limit), 20))
+    try:
+        raw_limit = int(limit) if limit is not None else 5
+    except (ValueError, TypeError):
+        raw_limit = 5
+    safe_limit = max(1, min(raw_limit, 20))
 
     records = (
         ResumeAnalysisRecord.objects.filter(
