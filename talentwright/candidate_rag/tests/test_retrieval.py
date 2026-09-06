@@ -159,3 +159,48 @@ def test_search_candidate_chunks_empty_query(retrieval_setup):
     job1 = retrieval_setup["job1"]
     assert search_candidate_chunks(job_id=job1.id, query="") == []
     assert search_candidate_chunks(job_id=job1.id, query="   ") == []
+
+
+@pytest.mark.django_db
+def test_search_candidate_chunks_self_healing_cold_start(db):
+    employer_user = User.objects.create_user(email="cold_emp@example.com")
+    employer = EmployerProfile.objects.create(
+        user=employer_user, verification_status=VerificationStatus.APPROVED
+    )
+    job = Job.objects.create(employer=employer, title="Data Scientist", status=JobStatus.OPEN)
+
+    user = User.objects.create_user(email="david@ai.com", name="David Data")
+    seeker = SeekerProfile.objects.create(user=user)
+    app = Application.objects.create(job=job, seeker=seeker)
+    ResumeAnalysisRecord.objects.create(
+        application=app,
+        status=AnalysisStatus.COMPLETED,
+        overall_score=Decimal("88.00"),
+        recommendation="STRONG_FIT",
+        structured_resume={
+            "skills": ["Python", "Pandas", "Scikit-Learn"],
+            "summary": "Data scientist with strong Python machine learning background.",
+        },
+    )
+
+    # Note: CandidateResumeChunk objects are NOT created initially (cold-start scenario)
+    assert CandidateResumeChunk.objects.filter(job=job).count() == 0
+
+    mock_client = MagicMock()
+    mock_client.get_embedding.return_value = [1.0, 0.0, 0.0]
+    # Return batch embeddings for indexer when it runs on-demand
+    mock_client.get_embeddings_batch.return_value = [[1.0, 0.0, 0.0]]
+
+    results = search_candidate_chunks(
+        job_id=job.id,
+        query="Machine Learning",
+        limit=5,
+        min_similarity=0.5,
+        embedding_client=mock_client,
+    )
+
+    # Chunks should now be self-healed and created!
+    assert CandidateResumeChunk.objects.filter(job=job).count() > 0
+    assert len(results) == 1
+    assert results[0]["name"] == "David Data"
+    assert results[0]["application_id"] == app.id

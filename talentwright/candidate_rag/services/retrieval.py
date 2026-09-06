@@ -54,6 +54,45 @@ def search_candidate_chunks(
         .select_related("resume_analysis", "application__seeker__user")
     )
     chunks = list(chunks_qs)
+
+    # Self-healing cold-start: if no chunks exist, check for completed records that need indexing
+    if not chunks:
+        from talentwright.candidate_rag.services.indexer import index_resume_analysis
+        from talentwright.resume_analysis.models import AnalysisStatus
+        from talentwright.resume_analysis.models import ResumeAnalysisRecord
+
+        unindexed_records = list(
+            ResumeAnalysisRecord.objects.filter(
+                application__job_id=job_id,
+                status=AnalysisStatus.COMPLETED,
+            )
+            .exclude(chunks__isnull=False)
+            .distinct()
+        )
+
+        if unindexed_records:
+            logger.info(
+                "Self-healing: Found %d completed unindexed candidate records for Job #%d. Indexing on-demand.",
+                len(unindexed_records),
+                job_id,
+            )
+            for record in unindexed_records:
+                try:
+                    index_resume_analysis(record, embedding_client=client)
+                except Exception as index_exc:  # noqa: BLE001
+                    logger.warning(
+                        "Self-healing indexing failed for Record #%d: %s",
+                        record.id,
+                        index_exc,
+                    )
+
+            # Re-fetch newly created chunks
+            chunks = list(
+                CandidateResumeChunk.objects.filter(job_id=job_id).select_related(
+                    "resume_analysis", "application__seeker__user"
+                )
+            )
+
     if not chunks:
         logger.info("No indexed candidate chunks found for Job #%d", job_id)
         return []
