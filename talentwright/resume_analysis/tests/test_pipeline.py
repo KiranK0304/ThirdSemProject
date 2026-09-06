@@ -186,3 +186,21 @@ def test_pipeline_triggers_rag_indexing(mock_index_rag, sample_application):
     record = analyze_application(sample_application, llm_client=mock_llm)
     assert record.status == AnalysisStatus.COMPLETED
     mock_index_rag.assert_called_once_with(record)
+
+
+@pytest.mark.django_db
+@patch("talentwright.candidate_rag.services.indexer.index_resume_analysis")
+def test_pipeline_succeeds_even_if_rag_fails(mock_index_rag, sample_application):
+    mock_index_rag.side_effect = RuntimeError("OpenAI Embedding API Timeout")
+
+    mock_llm = MagicMock(spec=LLMClient)
+    mock_llm.generate_structured.side_effect = [
+        StructuredResume(summary="Developer with Python"),
+        EvaluationScorecard(overall_score=85.0, recommendation="STRONG_FIT"),
+    ]
+
+    # Analysis must succeed and stay COMPLETED despite RAG exception
+    record = analyze_application(sample_application, llm_client=mock_llm)
+    assert record.status == AnalysisStatus.COMPLETED
+    assert record.overall_score == Decimal("85.00")
+    assert record.error_message == ""

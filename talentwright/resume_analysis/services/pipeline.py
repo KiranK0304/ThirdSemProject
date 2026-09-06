@@ -104,17 +104,20 @@ def analyze_application(
             record.recommendation,
         )
 
-        # Step E: Automatic Candidate RAG Indexing
+        # Step E: Automatic Candidate RAG Indexing (Non-blocking: analysis stays COMPLETED if RAG fails)
         try:
             from talentwright.candidate_rag.services.indexer import index_resume_analysis
 
             index_resume_analysis(record)
         except Exception as rag_exc:  # noqa: BLE001
-            logger.warning(
-                "RAG indexing failed for Application #%d (Record #%d): %s",
+            logger.error(
+                "RAG indexing failed for Application #%d (Record #%d): %s. "
+                "The analysis record remains successfully saved and can be retried via "
+                "'manage.py index_candidate_resumes --unindexed-only'.",
                 application.id,
                 record.id,
                 rag_exc,
+                exc_info=True,
             )
 
     except Exception as exc:

@@ -27,16 +27,25 @@ class Command(BaseCommand):
             action="store_true",
             help="Re-index applications even if chunks already exist.",
         )
+        parser.add_argument(
+            "--unindexed-only",
+            action="store_true",
+            help="Target only completed applications that currently have no chunks (retry failed indexing).",
+        )
 
     def handle(self, *args, **options):
         job_id = options.get("job_id")
         force = options.get("force", False)
+        unindexed_only = options.get("unindexed_only", False)
 
         records_qs = (
             ResumeAnalysisRecord.objects.filter(status=AnalysisStatus.COMPLETED)
             .select_related("application__job", "application__seeker__user")
             .order_by("application__job_id", "application_id")
         )
+
+        if unindexed_only:
+            records_qs = records_qs.filter(chunks__isnull=True)
 
         if job_id:
             records_qs = records_qs.filter(application__job_id=job_id)
