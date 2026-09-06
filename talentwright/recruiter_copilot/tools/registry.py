@@ -7,8 +7,10 @@ from typing import Any, Callable
 
 from talentwright.recruiter_copilot.tools.candidates import get_top_candidates
 from talentwright.recruiter_copilot.tools.descriptions import (
+    SEARCH_CANDIDATES_TOOL_DEFINITION,
     TOP_CANDIDATES_TOOL_DEFINITION,
 )
+from talentwright.recruiter_copilot.tools.search import search_candidates
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +74,12 @@ def get_default_registry() -> ToolRegistry:
         name="get_top_candidates",
         definition=TOP_CANDIDATES_TOOL_DEFINITION,
         handler=get_top_candidates,
+    )
+
+    registry.register(
+        name="search_candidates",
+        definition=SEARCH_CANDIDATES_TOOL_DEFINITION,
+        handler=search_candidates,
     )
 
     return registry

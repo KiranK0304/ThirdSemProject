@@ -134,8 +134,9 @@ def test_tool_registry_execution(candidate_pool_setup):
     registry = get_default_registry()
 
     definitions = registry.get_definitions()
-    assert len(definitions) >= 1
+    assert len(definitions) >= 2
     assert any(d["function"]["name"] == "get_top_candidates" for d in definitions)
+    assert any(d["function"]["name"] == "search_candidates" for d in definitions)
 
     # Execute get_top_candidates via registry
     top_output = registry.execute(
@@ -145,6 +146,14 @@ def test_tool_registry_execution(candidate_pool_setup):
     )
     assert len(top_output) == 1
     assert top_output[0]["name"] == "Alice Smith"
+
+    # Execute search_candidates via registry
+    search_output = registry.execute(
+        tool_name="search_candidates",
+        arguments={"query": "Django and AWS"},
+        context={"job_id": job.id},
+    )
+    assert isinstance(search_output, list)
 
     # Execute unknown tool
     with pytest.raises(ValueError, match="is not registered"):

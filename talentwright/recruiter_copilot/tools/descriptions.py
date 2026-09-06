@@ -24,3 +24,31 @@ TOP_CANDIDATES_TOOL_DEFINITION = {
         },
     },
 }
+
+SEARCH_CANDIDATES_TOOL_DEFINITION = {
+    "type": "function",
+    "function": {
+        "name": "search_candidates",
+        "description": (
+            "Search applicants for this job based on specific technical skills, domain "
+            "experience, technologies, tools, or qualifications (e.g. 'PyTorch or deep learning', "
+            "'Kubernetes in production', 'PostgreSQL performance tuning', 'payment gateways', 'AWS'). "
+            "Returns relevant candidate profiles with specific resume evidence excerpts."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The specific technical skill, domain experience, framework, or qualification to search for.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Maximum number of candidate matches to return (default: 5, max: 10).",
+                    "default": 5,
+                },
+            },
+            "required": ["query"],
+        },
+    },
+}
