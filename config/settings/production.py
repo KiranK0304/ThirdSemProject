@@ -9,7 +9,18 @@ REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure-production-key-change-in-env")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["talentwright.ai", "talentwright.duckdns.org"])
+ALLOWED_HOSTS = env.list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=[
+        "talentwright.ai",
+        ".talentwright.ai",
+        "talentwright.duckdns.org",
+        "talentcraft.duckdns.org",
+        "django",
+        "localhost",
+        "127.0.0.1",
+    ],
+)
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -72,10 +83,27 @@ CORS_ALLOWED_ORIGINS = env.list(
         "http://127.0.0.1:5173",
         "https://talentcraft.duckdns.org",
         "http://talentcraft.duckdns.org",
+        "https://talentwright.duckdns.org",
+        "http://talentwright.duckdns.org",
     ],
 )
 # If using credentials (cookies/auth headers) across domains:
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF configuration for HTTPS trusted origins
+# ------------------------------------------------------------------------------
+CSRF_TRUSTED_ORIGINS = env.list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    default=[
+        "https://talentwright.ai",
+        "https://talentwright.duckdns.org",
+        "https://talentcraft.duckdns.org",
+        "http://talentwright.duckdns.org",
+        "http://talentcraft.duckdns.org",
+        "http://localhost",
+        "http://127.0.0.1",
+    ],
+)
 
 
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
