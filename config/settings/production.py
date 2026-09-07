@@ -1,11 +1,13 @@
 # ruff: noqa: E501
 from .base import *  # noqa: F403
-from .base import DATABASES, INSTALLED_APPS, REDIS_URL, SPECTACULAR_SETTINGS, env
+from .base import DATABASES, INSTALLED_APPS, SPECTACULAR_SETTINGS, env
+
+REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = env("DJANGO_SECRET_KEY")
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure-production-key-change-in-env")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["talentwright.ai", "talentwright.duckdns.org"])
 
@@ -77,11 +79,11 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
-AWS_ACCESS_KEY_ID = env("DJANGO_AWS_ACCESS_KEY_ID")
+AWS_ACCESS_KEY_ID = env("DJANGO_AWS_ACCESS_KEY_ID", default=None)
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
-AWS_SECRET_ACCESS_KEY = env("DJANGO_AWS_SECRET_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = env("DJANGO_AWS_SECRET_ACCESS_KEY", default=None)
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
-AWS_STORAGE_BUCKET_NAME = env("DJANGO_AWS_STORAGE_BUCKET_NAME")
+AWS_STORAGE_BUCKET_NAME = env("DJANGO_AWS_STORAGE_BUCKET_NAME", default=None)
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#settings
 AWS_QUERYSTRING_AUTH = False
 # DO NOT change these unless you know what you're doing.
@@ -99,27 +101,29 @@ AWS_S3_MAX_MEMORY_SIZE = env.int(
 AWS_S3_REGION_NAME = env("DJANGO_AWS_S3_REGION_NAME", default=None)
 # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html#cloudfront
 AWS_S3_CUSTOM_DOMAIN = env("DJANGO_AWS_S3_CUSTOM_DOMAIN", default=None)
-aws_s3_domain = AWS_S3_CUSTOM_DOMAIN or f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-# STATIC & MEDIA
-# ------------------------
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {
-            "location": "media",
-            "file_overwrite": False,
+
+if AWS_STORAGE_BUCKET_NAME:
+    aws_s3_domain = AWS_S3_CUSTOM_DOMAIN or f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    # STATIC & MEDIA
+    # ------------------------
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "location": "media",
+                "file_overwrite": False,
+            },
         },
-    },
-    "staticfiles": {
-        "BACKEND": "storages.backends.s3.S3Storage",
-        "OPTIONS": {
-            "location": "static",
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3.S3Storage",
+            "OPTIONS": {
+                "location": "static",
+            },
         },
-    },
-}
-MEDIA_URL = f"https://{aws_s3_domain}/media/"
-COLLECTFASTA_STRATEGY = "collectfasta.strategies.boto3.Boto3Strategy"
-STATIC_URL = f"https://{aws_s3_domain}/static/"
+    }
+    MEDIA_URL = f"https://{aws_s3_domain}/media/"
+    COLLECTFASTA_STRATEGY = "collectfasta.strategies.boto3.Boto3Strategy"
+    STATIC_URL = f"https://{aws_s3_domain}/static/"
 
 # EMAIL
 # ------------------------------------------------------------------------------
@@ -140,7 +144,7 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
 # ADMIN
 # ------------------------------------------------------------------------------
 # Django Admin URL regex.
-ADMIN_URL = env("DJANGO_ADMIN_URL")
+ADMIN_URL = env("DJANGO_ADMIN_URL", default="admin/")
 
 # Anymail
 # ------------------------------------------------------------------------------

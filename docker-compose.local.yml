@@ -19,8 +19,8 @@ services:
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
-    ports:
-      - '8000:8000'
+    expose:
+      - '8000'
     command: /start
 
   postgres:
