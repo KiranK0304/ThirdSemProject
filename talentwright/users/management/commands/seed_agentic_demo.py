@@ -15,15 +15,55 @@ Usage:
     python manage.py seed_agentic_demo
 """
 
+import json
+from pathlib import Path
+import shutil
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from talentwright.applications.models import Application, ApplicationStatus
+from talentwright.candidate_rag.models import CandidateResumeChunk
+from talentwright.candidate_rag.services.indexer import index_resume_analysis
 from talentwright.jobs.models import EmploymentType, Job, JobStatus
+from talentwright.resume_analysis.models import AnalysisStatus, ResumeAnalysisRecord
+from talentwright.resume_analysis.services.pipeline import analyze_application
 from talentwright.users.models import EmployerProfile, Resume, SeekerProfile, User, VerificationStatus
 
 COMMON_PASSWORD = "Password123!"
+
+
+def ensure_resume_file(filename: str, candidate_name: str, bio: str) -> str:
+    """Ensure the resume PDF exists on disk in MEDIA_ROOT.
+
+    Copies from talentwright/fixtures/resumes if present, or generates a minimal PDF with pymupdf.
+    """
+    target_rel_path = f"resumes/2026/09/{filename}"
+    media_root = Path(settings.MEDIA_ROOT)
+    target_full_path = media_root / target_rel_path
+
+    if not (target_full_path.exists() and target_full_path.stat().st_size > 0):
+        target_full_path.parent.mkdir(parents=True, exist_ok=True)
+        # 1. Check tracked fixtures
+        fixture_path = Path(settings.APPS_DIR) / "fixtures" / "resumes" / filename
+        if fixture_path.exists() and fixture_path.stat().st_size > 0:
+            shutil.copyfile(fixture_path, target_full_path)
+        else:
+            # 2. Generate minimal valid PDF with PyMuPDF
+            try:
+                import pymupdf
+
+                doc = pymupdf.open()
+                page = doc.new_page()
+                content = f"{candidate_name}\n\nSummary:\n{bio}"
+                page.insert_text((50, 72), content, fontsize=11)
+                doc.save(str(target_full_path))
+                doc.close()
+            except Exception:
+                target_full_path.write_text(f"{candidate_name}\n{bio}")
+
+    return target_rel_path
 
 EMPLOYEES = [
     {
@@ -253,11 +293,16 @@ class Command(BaseCommand):
                 },
             )
 
+            file_rel_path = ensure_resume_file(
+                filename=f"Employee_{idx}_Resume.pdf",
+                candidate_name=emp_data["name"],
+                bio=emp_data["bio"],
+            )
             resume, _ = Resume.objects.update_or_create(
                 seeker=seeker_profile,
                 title=f"Employee {idx} Resume",
                 defaults={
-                    "file": f"resumes/2026/09/Employee_{idx}_Resume.pdf",
+                    "file": file_rel_path,
                     "is_primary": True,
                 },
             )
@@ -266,11 +311,16 @@ class Command(BaseCommand):
         # 4. If kiran@gmail.com exists, link KiranKuruvilaCV.pdf as their resume
         kiran_user = User.objects.filter(email="kiran@gmail.com").first()
         if kiran_user and hasattr(kiran_user, "seeker_profile"):
+            kiran_file = ensure_resume_file(
+                filename="KiranKuruvilaCV.pdf",
+                candidate_name=kiran_user.name or "Kiran Kuruvila",
+                bio="Machine Learning Engineer specializing in AI pipelines, deep learning, and backend architectures.",
+            )
             kiran_resume, _ = Resume.objects.update_or_create(
                 seeker=kiran_user.seeker_profile,
                 title="Kiran Kuruvila CV",
                 defaults={
-                    "file": "resumes/2026/09/KiranKuruvilaCV.pdf",
+                    "file": kiran_file,
                     "is_primary": True,
                 },
             )
@@ -321,4 +371,82 @@ class Command(BaseCommand):
                 f"  ✓ {action} Application: {kiran_user.email} -> Job {job.id} (Resume: {kiran_resume.title if kiran_resume else 'None'})"
             )
 
-        self.stdout.write(self.style.SUCCESS("\n--- Complete ---"))
+        # 6. Seed/Verify Resume Analyses and Candidate RAG Chunks
+        self.stdout.write("\n--- Processing Resume Analyses and Vector Indexing ---")
+        fixtures_dir = Path(settings.APPS_DIR) / "fixtures"
+        demo_analyses = {}
+        demo_analyses_file = fixtures_dir / "demo_analyses.json"
+        if demo_analyses_file.exists():
+            try:
+                with open(demo_analyses_file, "r") as f:
+                    demo_analyses = json.load(f)
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f"  Could not load demo_analyses.json: {e}"))
+
+        demo_chunks = []
+        demo_chunks_file = fixtures_dir / "demo_chunks.json"
+        if demo_chunks_file.exists():
+            try:
+                with open(demo_chunks_file, "r") as f:
+                    demo_chunks = json.load(f)
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f"  Could not load demo_chunks.json: {e}"))
+
+        all_apps = Application.objects.filter(job=job).select_related("seeker__user")
+        for app in all_apps:
+            email = app.seeker.user.email
+            record, _ = ResumeAnalysisRecord.objects.get_or_create(application=app)
+
+            if record.status != AnalysisStatus.COMPLETED and email in demo_analyses:
+                c_data = demo_analyses[email]
+                record.raw_text = c_data.get("raw_text", "")
+                record.structured_resume = c_data.get("structured_resume", {})
+                record.evaluation_scorecard = c_data.get("evaluation_scorecard", {})
+                record.overall_score = Decimal(str(c_data.get("overall_score", "70.0")))
+                record.recommendation = c_data.get("recommendation", "MODERATE_FIT")
+                record.status = AnalysisStatus.COMPLETED
+                record.error_message = ""
+                record.save()
+                self.stdout.write(f"  ✓ Seeded Analysis for {email} (Score: {record.overall_score}, Status: {record.status})")
+            elif record.status != AnalysisStatus.COMPLETED:
+                try:
+                    record = analyze_application(app)
+                    self.stdout.write(f"  ✓ Analyzed {email} via LLM (Score: {record.overall_score})")
+                except Exception as e:
+                    self.stdout.write(self.style.WARNING(f"  ⚠ LLM analysis failed for {email}: {e}"))
+
+            # Vector Indexing
+            chunks_count = CandidateResumeChunk.objects.filter(application=app).count()
+            if chunks_count == 0 and record.status == AnalysisStatus.COMPLETED:
+                indexed_success = False
+                try:
+                    indexed = index_resume_analysis(record)
+                    if indexed:
+                        indexed_success = True
+                        self.stdout.write(f"  ✓ Indexed {len(indexed)} vector chunks for {email}")
+                except Exception as index_exc:
+                    self.stdout.write(self.style.WARNING(f"  Live embedding failed for {email} ({index_exc}). Trying precomputed chunks..."))
+
+                if not indexed_success:
+                    user_chunks = [c for c in demo_chunks if c.get("candidate_email") == email]
+                    if user_chunks:
+                        chunks_to_create = [
+                            CandidateResumeChunk(
+                                application=app,
+                                job=job,
+                                resume_analysis=record,
+                                candidate_name=c.get("candidate_name", email),
+                                chunk_type=c.get("chunk_type", "summary"),
+                                content=c.get("content", ""),
+                                metadata=c.get("metadata", {}),
+                                embedding=c.get("embedding", []),
+                            )
+                            for c in user_chunks
+                        ]
+                        CandidateResumeChunk.objects.bulk_create(chunks_to_create)
+                        self.stdout.write(f"  ✓ Seeded {len(chunks_to_create)} precomputed vector chunks for {email}")
+            else:
+                self.stdout.write(f"  ✓ {email} has {chunks_count} vector chunks")
+
+        total_chunks = CandidateResumeChunk.objects.filter(job=job).count()
+        self.stdout.write(self.style.SUCCESS(f"\n--- Complete: Job #{job.id} has {total_chunks} indexed chunks ready for Copilot ---"))

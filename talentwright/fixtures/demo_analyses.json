@@ -1,0 +1,1126 @@
+{
+  "kiran@gmail.com": {
+    "raw_text": "Kiran Kuruvila\nkirankuruvila03@gmail.com | +91 73060 75537 | github.com/KiranK0304 | Portfolio\nProfessional Summary\nMachine Learning Engineer focused on building AI systems, quantitative pipelines, and computer-vision based automation workflows.\nExperienced in transformers, deep learning architectures, agentic LLM systems, RAG and real-time data pipelines. Hands-on experience\ndeploying containerized applications on AWS infrastructure using Docker, EC2, Nginx, Linux, and Amazon ECR.\nEducation\nMarian College, Kuttikkanam, Kerala\n2025 \u2013 2027\nMaster of Computer Applications (MCA)\nMG University, Kottayam, Kerala\n2022 \u2013 2025\nBachelor of Arts in Economics\nProjects\nAgentic Trading System | Python, LangGraph, Pydantic\n\u2022 Designed a modular multi-agent workflow system using LangGraph for financial signal processing and decision orchestration\n\u2022 Implemented typed state management and validation pipelines using Pydantic for deterministic execution reliability\n\u2022 Built structured data ingestion and feature-engineering workflows for quantitative analysis pipelines\nQuantaire: Stock Market Pattern Detection | Python, YOLOv8, Playwright, NumPy, Docker, AWS ECR\n\u2022 Built a computer-vision pipeline for automated detection of technical stock-chart patterns using a custom YOLOv8 model\n\u2022 Automated TradingView chart capture using Playwright with headless browser orchestration and retry-based session recovery\n\u2022 Containerized inference services using Docker and deployed images through Amazon Elastic Container Registry (ECR)\nGPT-Style Transformer for Algorithmic Reasoning | PyTorch, NumPy\n\u2022 Built a decoder-only Transformer model for arithmetic sequence prediction tasks\n\u2022 Designed synthetic datasets and preprocessing pipelines for supervised learning workflows\n\u2022 Implemented evaluation and optimization workflows for training stability and performance analysis\nNanoGPT: Character-Level Language Model | PyTorch\n\u2022 Implemented a GPT-style architecture with causal self-attention and token embedding workflows\n\u2022 Trained language models on structured text datasets using AdamW optimization and learning-rate scheduling\nGap Scanner Telegram Bot | Python, yfinance, python-telegram-bot, Cron\n\u2022 Built an automated market gap scanner that fetches live stock data daily at 9:17 AM via a cron job and analyzes price gaps across\na watchlist\n\u2022 Implemented gap detection logic to flag stocks exceeding \u00b11% threshold, filtering actionable signals from noise\n\u2022 Delivered structured gap reports to a private Telegram group using the Telegram Bot API, restricted to authorized members\nCloud Deployment & Backend Infrastructure | Django, MySQL, AWS, Linux, Docker, Nginx\n\u2022 Deployed containerized applications on AWS EC2 instances with Nginx reverse proxy configuration\n\u2022 Worked with Linux server environments, deployment pipelines, process management, and remote infrastructure administration\n\u2022 Managed relational database workflows using MySQL and AWS RDS\nRecruitment Platform | Django, MySQL, AWS EC2, Linux, Nginx, Gunicorn\n\u2022 Built a recruitment platform backend using Django with JWT-based authentication and MySQL\n\u2022 Implemented job and application management functionality for job seekers and employers\n\u2022 Deployed the application on AWS EC2 using Gunicorn and Nginx\nNeural Network Foundations | Python, PyTorch\n\u2022 Implemented deep learning architectures from first principles including autograd engines, RNNs, Transformers, and CNNs\nTeaching & Knowledge Sharing\nNeural Networks Fundamentals Session\n\u2022 Conducted peer-level sessions explaining neural network fundamentals from first principles\n\u2022 Taught gradient descent, backpropagation, optimization dynamics, and neural computation using mathematical intuition\nTechnical Skills\nLanguages: Python, SQL, Java\nBackend Frameworks: Django, FastAPI, REST APIs\nML / AI: PyTorch, Transformers, CNNs, RNNs (GRUs, LSTM), Reinforcement Learning, LangGraph, RAG\nData & ML Libraries: NumPy, Pandas, scikit-learn\nCloud & DevOps: AWS (EC2, RDS, ECR, EFS), Docker, Gunicorn, Linux, Nginx, Git\nConcepts: OOP, JWT Authentication, RESTful API Design, Feature Engineering, Agent Workflows, Data Pipelines, Model\nDeployment\nMathematics: Probability, Statistics, Linear Algebra, Calculus",
+    "structured_resume": {
+      "skills": [
+        "Python",
+        "SQL",
+        "Java",
+        "Django",
+        "FastAPI",
+        "REST APIs",
+        "PyTorch",
+        "Transformers",
+        "CNNs",
+        "RNNs (GRUs, LSTM)",
+        "Reinforcement Learning",
+        "LangGraph",
+        "RAG",
+        "NumPy",
+        "Pandas",
+        "scikit-learn",
+        "AWS (EC2, RDS, ECR, EFS)",
+        "Docker",
+        "Gunicorn",
+        "Linux",
+        "Nginx",
+        "Git",
+        "OOP",
+        "JWT Authentication",
+        "RESTful API Design",
+        "Feature Engineering",
+        "Agent Workflows",
+        "Data Pipelines",
+        "Model Deployment",
+        "Probability",
+        "Statistics",
+        "Linear Algebra",
+        "Calculus"
+      ],
+      "contact": {
+        "name": "Kiran Kuruvila",
+        "email": "kirankuruvila03@gmail.com",
+        "phone": "+91 73060 75537",
+        "location": "",
+        "github_url": "github.com/KiranK0304",
+        "linkedin_url": "",
+        "portfolio_url": "Portfolio"
+      },
+      "summary": "Machine Learning Engineer focused on building AI systems, quantitative pipelines, and computer-vision based automation workflows. Experienced in transformers, deep learning architectures, agentic LLM systems, RAG and real-time data pipelines. Hands-on experience deploying containerized applications on AWS infrastructure using Docker, EC2, Nginx, Linux, and Amazon ECR.",
+      "projects": [
+        {
+          "link": "",
+          "title": "Agentic Trading System",
+          "description": "Designed a modular multi-agent workflow system using LangGraph for financial signal processing and decision orchestration. Implemented typed state management and validation pipelines using Pydantic for deterministic execution reliability. Built structured data ingestion and feature-engineering workflows for quantitative analysis pipelines.",
+          "technologies": [
+            "Python",
+            "LangGraph",
+            "Pydantic"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Quantaire: Stock Market Pattern Detection",
+          "description": "Built a computer-vision pipeline for automated detection of technical stock-chart patterns using a custom YOLOv8 model. Automated TradingView chart capture using Playwright with headless browser orchestration and retry-based session recovery. Containerized inference services using Docker and deployed images through Amazon Elastic Container Registry (ECR).",
+          "technologies": [
+            "Python",
+            "YOLOv8",
+            "Playwright",
+            "NumPy",
+            "Docker",
+            "AWS ECR"
+          ]
+        },
+        {
+          "link": "",
+          "title": "GPT-Style Transformer for Algorithmic Reasoning",
+          "description": "Built a decoder-only Transformer model for arithmetic sequence prediction tasks. Designed synthetic datasets and preprocessing pipelines for supervised learning workflows. Implemented evaluation and optimization workflows for training stability and performance analysis.",
+          "technologies": [
+            "PyTorch",
+            "NumPy"
+          ]
+        },
+        {
+          "link": "",
+          "title": "NanoGPT: Character-Level Language Model",
+          "description": "Implemented a GPT-style architecture with causal self-attention and token embedding workflows. Trained language models on structured text datasets using AdamW optimization and learning-rate scheduling.",
+          "technologies": [
+            "PyTorch"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Gap Scanner Telegram Bot",
+          "description": "Built an automated market gap scanner that fetches live stock data daily at 9:17 AM via a cron job and analyzes price gaps across a watchlist. Implemented gap detection logic to flag stocks exceeding \u00b11% threshold, filtering actionable signals from noise. Delivered structured gap reports to a private Telegram group using the Telegram Bot API, restricted to authorized members.",
+          "technologies": [
+            "Python",
+            "yfinance",
+            "python-telegram-bot",
+            "Cron"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Cloud Deployment & Backend Infrastructure",
+          "description": "Deployed containerized applications on AWS EC2 instances with Nginx reverse proxy configuration. Worked with Linux server environments, deployment pipelines, process management, and remote infrastructure administration. Managed relational database workflows using MySQL and AWS RDS.",
+          "technologies": [
+            "Django",
+            "MySQL",
+            "AWS",
+            "Linux",
+            "Docker",
+            "Nginx"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Recruitment Platform",
+          "description": "Built a recruitment platform backend using Django with JWT-based authentication and MySQL. Implemented job and application management functionality for job seekers and employers. Deployed the application on AWS EC2 using Gunicorn and Nginx.",
+          "technologies": [
+            "Django",
+            "MySQL",
+            "AWS EC2",
+            "Linux",
+            "Nginx",
+            "Gunicorn"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Neural Network Foundations",
+          "description": "Implemented deep learning architectures from first principles including autograd engines, RNNs, Transformers, and CNNs.",
+          "technologies": [
+            "Python",
+            "PyTorch"
+          ]
+        }
+      ],
+      "education": [
+        {
+          "gpa": "",
+          "degree": "Master of Computer Applications (MCA)",
+          "institution": "Marian College, Kuttikkanam, Kerala",
+          "field_of_study": "",
+          "graduation_year": "2027"
+        },
+        {
+          "gpa": "",
+          "degree": "Bachelor of Arts in Economics",
+          "institution": "MG University, Kottayam, Kerala",
+          "field_of_study": "",
+          "graduation_year": "2025"
+        }
+      ],
+      "certifications": [],
+      "work_experience": [],
+      "total_years_experience": 0.0
+    },
+    "evaluation_scorecard": {
+      "summary": "Kiran Kuruvila is a Machine Learning Engineer with a focus on AI systems and backend architectures. While they possess relevant skills in Python and containerization, the lack of professional experience and specific qualifications for the role presents significant gaps.",
+      "concerns": [
+        "No professional work experience listed",
+        "Missing experience with LLM APIs and PostgreSQL",
+        "No relevant certifications to enhance qualifications"
+      ],
+      "strengths": [
+        "Proficient in Python and backend frameworks like Django and FastAPI",
+        "Experience with Docker and cloud deployment",
+        "Knowledge of AI systems and machine learning architectures"
+      ],
+      "overall_score": 45.0,
+      "recommendation": "WEAK_FIT",
+      "skills_evaluation": {
+        "gaps": [
+          "Experience integrating LLM APIs (e.g. OpenAI GPT-4)",
+          "Proficiency with PostgreSQL and relational database design",
+          "Experience with Git workflows"
+        ],
+        "score": 60.0,
+        "reasoning": "The candidate has listed relevant skills such as Python, Django, FastAPI, and Docker, which are essential for the role. However, there is no explicit mention of experience with LLM APIs or PostgreSQL, which are critical for the position.",
+        "matched_evidence": [
+          "Python",
+          "Django",
+          "FastAPI",
+          "Docker"
+        ]
+      },
+      "education_evaluation": {
+        "gaps": [
+          "Relevant certifications"
+        ],
+        "score": 50.0,
+        "reasoning": "The candidate holds a Master's degree in Computer Applications, which is relevant to the role. However, there are no certifications listed that would enhance their qualifications for this specific position.",
+        "matched_evidence": [
+          "Master of Computer Applications (MCA)"
+        ]
+      },
+      "experience_evaluation": {
+        "gaps": [
+          "4+ years of professional backend software development experience"
+        ],
+        "score": 0.0,
+        "reasoning": "The candidate has no listed work experience, which is a significant gap given the requirement of 4+ years of professional backend software development experience.",
+        "matched_evidence": []
+      }
+    },
+    "overall_score": "45.00",
+    "recommendation": "WEAK_FIT",
+    "status": "COMPLETED"
+  },
+  "employee5@example.com": {
+    "raw_text": "Employee 5\nSenior Backend & Machine Learning Engineer\nPune, India \u2022 employee5@example.com \u2022 +91 90000 00005 \u2022 github.com/employee5\nPROFESSIONAL SUMMARY\nBackend and Machine Learning Engineer with 5+ years of experience designing production APIs, data-processing\nsystems, and machine learning services. Strong expertise in Python, FastAPI, PostgreSQL, distributed processing, deep\nlearning, NLP, and cloud infrastructure. Experienced in building end-to-end ML systems from data preparation and\nmodel training through API deployment and monitoring. No frontend specialization; focused on backend, ML, and\ninfrastructure.\nTECHNICAL SKILLS\nLanguages\nPython, SQL, Bash, Java\nBackend\nFastAPI, Django, Flask, REST APIs, Celery, asynchronous services\nMachine Learning\nScikit-learn, PyTorch, TensorFlow, model evaluation, feature engineering\nDeep Learning\nNeural networks, CNNs, RNNs, Transformers, transfer learning, fine-tuning\nAI / NLP\nNLP, text classification, embeddings, tokenization, semantic search, LLM integration\nData\nPandas, NumPy, PostgreSQL, Redis, Elasticsearch\nCloud / DevOps\nAWS (EC2, S3, RDS, ECR), Docker, Kubernetes, GitHub Actions, Linux, Nginx\nTools\nGit, MLflow, Pytest, Jupyter, OpenAPI\nPROFESSIONAL EXPERIENCE\nSenior Backend & ML Engineer | DataForge Technologies | 2022\u2013Present\n\u2022 Designed Python and FastAPI services for machine learning inference, document processing, and high-volume data\nworkflows.\n\u2022 Built production NLP pipelines for document classification, entity extraction, semantic search, and candidate-profile\nmatching.\n\u2022 Developed and fine-tuned PyTorch deep learning models, including Transformer-based text classifiers, and evaluated\nthem using precision, recall, F1, and confusion matrices.\n\u2022 Containerized ML and backend services with Docker and deployed workloads on AWS using EC2, ECR, S3, and RDS.\n\u2022 Implemented asynchronous processing with Celery and Redis for large document and inference workloads.\n\u2022 Established model experiment tracking and reproducibility practices using MLflow, Git, and automated test pipelines.\n\u2022 Optimized PostgreSQL queries and backend services to support high-volume API traffic.\nBackend Engineer | CloudMetric Labs | 2021\u20132022\n\u2022 Developed Django and FastAPI REST services for analytics and data-processing applications.\n\u2022 Designed PostgreSQL schemas and APIs for customer, transaction, and reporting workflows.\n\u2022 Built Docker-based development environments and contributed to CI/CD pipelines using GitHub Actions.\n\u2022 Created Python data-processing scripts using Pandas and NumPy for internal analytics workflows.\nSELECTED PROJECTS\nDeep Learning Resume Intelligence Platform\nBuilt an end-to-end resume analysis platform that extracts text from PDF documents, generates structured candidate\ninformation, and ranks profiles against job requirements. Used Python, PyTorch, Transformer models, embeddings,\nFastAPI, PostgreSQL, Redis, Docker, and AWS. Designed batch-processing and inference APIs for large candidate\ndatasets.\nTransformer-Based Document Classification System\nDeveloped and fine-tuned a Transformer model to classify business documents into multiple categories. Built the\npreprocessing pipeline, training and evaluation workflow, model-serving API, and confidence-based prediction logic.\nAchieved strong validation performance and packaged inference as a containerized FastAPI service.\n\nScalable ML Inference Service\nDesigned a backend service for serving machine learning models through REST APIs. Added asynchronous job\nprocessing, Redis caching, request validation, structured logging, health checks, and Docker-based deployment.\nEDUCATION\nM.Tech in Artificial Intelligence | Indian Institute of Information Technology | 2019\u20132021\nB.Tech in Computer Science and Engineering | Savitribai Phule Pune University | 2015\u20132019\nCERTIFICATIONS\nAWS Certified Developer \u2013 Associate \u2022 Deep Learning Specialization \u2022 Machine Learning Engineering with Python",
+    "structured_resume": {
+      "skills": [
+        "Python",
+        "SQL",
+        "Bash",
+        "Java",
+        "FastAPI",
+        "Django",
+        "Flask",
+        "REST APIs",
+        "Celery",
+        "asynchronous services",
+        "Scikit-learn",
+        "PyTorch",
+        "TensorFlow",
+        "model evaluation",
+        "feature engineering",
+        "Neural networks",
+        "CNNs",
+        "RNNs",
+        "Transformers",
+        "transfer learning",
+        "fine-tuning",
+        "NLP",
+        "text classification",
+        "embeddings",
+        "tokenization",
+        "semantic search",
+        "LLM integration",
+        "Pandas",
+        "NumPy",
+        "PostgreSQL",
+        "Redis",
+        "Elasticsearch",
+        "AWS (EC2, S3, RDS, ECR)",
+        "Docker",
+        "Kubernetes",
+        "GitHub Actions",
+        "Linux",
+        "Nginx",
+        "Git",
+        "MLflow",
+        "Pytest",
+        "Jupyter",
+        "OpenAPI"
+      ],
+      "contact": {
+        "name": "Employee 5",
+        "email": "employee5@example.com",
+        "phone": "+91 90000 00005",
+        "location": "Pune, India",
+        "github_url": "github.com/employee5",
+        "linkedin_url": "",
+        "portfolio_url": ""
+      },
+      "summary": "Backend and Machine Learning Engineer with 5+ years of experience designing production APIs, data-processing systems, and machine learning services. Strong expertise in Python, FastAPI, PostgreSQL, distributed processing, deep learning, NLP, and cloud infrastructure. Experienced in building end-to-end ML systems from data preparation and model training through API deployment and monitoring. No frontend specialization; focused on backend, ML, and infrastructure.",
+      "projects": [
+        {
+          "link": "",
+          "title": "Deep Learning Resume Intelligence Platform",
+          "description": "Built an end-to-end resume analysis platform that extracts text from PDF documents, generates structured candidate information, and ranks profiles against job requirements.",
+          "technologies": [
+            "Python",
+            "PyTorch",
+            "Transformer models",
+            "embeddings",
+            "FastAPI",
+            "PostgreSQL",
+            "Redis",
+            "Docker",
+            "AWS"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Transformer-Based Document Classification System",
+          "description": "Developed and fine-tuned a Transformer model to classify business documents into multiple categories. Built the preprocessing pipeline, training and evaluation workflow, model-serving API, and confidence-based prediction logic. Achieved strong validation performance and packaged inference as a containerized FastAPI service.",
+          "technologies": []
+        },
+        {
+          "link": "",
+          "title": "Scalable ML Inference Service",
+          "description": "Designed a backend service for serving machine learning models through REST APIs. Added asynchronous job processing, Redis caching, request validation, structured logging, health checks, and Docker-based deployment.",
+          "technologies": []
+        }
+      ],
+      "education": [
+        {
+          "gpa": "",
+          "degree": "M.Tech",
+          "institution": "Indian Institute of Information Technology",
+          "field_of_study": "Artificial Intelligence",
+          "graduation_year": "2021"
+        },
+        {
+          "gpa": "",
+          "degree": "B.Tech",
+          "institution": "Savitribai Phule Pune University",
+          "field_of_study": "Computer Science and Engineering",
+          "graduation_year": "2019"
+        }
+      ],
+      "certifications": [
+        {
+          "name": "AWS Certified Developer \u2013 Associate",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "Deep Learning Specialization",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "Machine Learning Engineering with Python",
+          "issuer": "",
+          "issue_date": ""
+        }
+      ],
+      "work_experience": [
+        {
+          "title": "Senior Backend & ML Engineer",
+          "company": "DataForge Technologies",
+          "end_date": "Present",
+          "is_current": true,
+          "start_date": "2022",
+          "description": "Designed Python and FastAPI services for machine learning inference, document processing, and high-volume data workflows. Built production NLP pipelines for document classification, entity extraction, semantic search, and candidate-profile matching. Developed and fine-tuned PyTorch deep learning models, including Transformer-based text classifiers, and evaluated them using precision, recall, F1, and confusion matrices. Containerized ML and backend services with Docker and deployed workloads on AWS using EC2, ECR, S3, and RDS. Implemented asynchronous processing with Celery and Redis for large document and inference workloads. Established model experiment tracking and reproducibility practices using MLflow, Git, and automated test pipelines. Optimized PostgreSQL queries and backend services to support high-volume API traffic.",
+          "technologies": [
+            "Python",
+            "FastAPI",
+            "NLP",
+            "PyTorch",
+            "Docker",
+            "AWS",
+            "Celery",
+            "Redis",
+            "PostgreSQL"
+          ]
+        },
+        {
+          "title": "Backend Engineer",
+          "company": "CloudMetric Labs",
+          "end_date": "2022",
+          "is_current": false,
+          "start_date": "2021",
+          "description": "Developed Django and FastAPI REST services for analytics and data-processing applications. Designed PostgreSQL schemas and APIs for customer, transaction, and reporting workflows. Built Docker-based development environments and contributed to CI/CD pipelines using GitHub Actions. Created Python data-processing scripts using Pandas and NumPy for internal analytics workflows.",
+          "technologies": [
+            "Django",
+            "FastAPI",
+            "PostgreSQL",
+            "Docker",
+            "GitHub Actions",
+            "Pandas",
+            "NumPy"
+          ]
+        }
+      ],
+      "total_years_experience": 5.0
+    },
+    "evaluation_scorecard": {
+      "summary": "The candidate has over 5 years of experience in backend development and machine learning, with strong skills in Python, FastAPI, and PostgreSQL. They have worked on LLM integration and have experience with Docker, making them a suitable candidate for the Senior Python & AI Engineer role.",
+      "concerns": [
+        "Slightly below the required years of experience",
+        "Missing specific experience with Django REST Framework and LLM APIs"
+      ],
+      "strengths": [
+        "Strong expertise in Python and FastAPI",
+        "Experience with PostgreSQL and Docker",
+        "Background in machine learning and AI systems"
+      ],
+      "overall_score": 73.5,
+      "recommendation": "MODERATE_FIT",
+      "skills_evaluation": {
+        "gaps": [
+          "Django REST Framework experience",
+          "Specific LLM API experience (OpenAI, Anthropic)"
+        ],
+        "score": 80.0,
+        "reasoning": "The candidate has strong skills in Python, FastAPI, and PostgreSQL, which are essential for the role. They also have experience with Docker and LLM integration, matching many of the required technologies. However, there is no explicit mention of experience with Django REST Framework or specific LLM APIs like OpenAI or Anthropic.",
+        "matched_evidence": [
+          "Python",
+          "FastAPI",
+          "PostgreSQL",
+          "Docker",
+          "LLM integration"
+        ]
+      },
+      "education_evaluation": {
+        "gaps": [
+          "No additional relevant certifications"
+        ],
+        "score": 70.0,
+        "reasoning": "The candidate holds a Master's degree in Artificial Intelligence, which is relevant to the role. However, there are no additional certifications listed that are specifically aligned with the job requirements.",
+        "matched_evidence": [
+          "M.Tech in Artificial Intelligence",
+          "B.Tech in Computer Science and Engineering"
+        ]
+      },
+      "experience_evaluation": {
+        "gaps": [
+          "Explicit senior-level experience in architecting backend microservices"
+        ],
+        "score": 70.0,
+        "reasoning": "The candidate has 5 years of experience, which is slightly below the 4+ years required. Their experience includes relevant roles in backend and machine learning engineering, but they do not explicitly state experience in architecting backend microservices at a senior level.",
+        "matched_evidence": [
+          "5 years of backend software development experience",
+          "Experience in architecting Python backend services"
+        ]
+      }
+    },
+    "overall_score": "73.50",
+    "recommendation": "MODERATE_FIT",
+    "status": "COMPLETED"
+  },
+  "employee4@example.com": {
+    "raw_text": "Employee 4\nSoftware Developer\nChennai, India \u2022 employee4@example.com \u2022 +91 90000 00004 \u2022 github.com/employee4\nPROFESSIONAL SUMMARY\nSoftware Developer with about 2 years of experience working on web applications and backend services. Familiar with\nJava, Spring Boot, Python, SQL, Git, and basic cloud concepts. Has practical experience developing CRUD APIs and\nworking with relational databases. Comfortable learning new technologies and contributing to small development\nteams.\nTECHNICAL SKILLS\nLanguages\nJava, Python, SQL, JavaScript\nBackend\nSpring Boot, REST APIs, basic Flask\nDatabases\nMySQL, PostgreSQL\nWeb\nHTML, CSS, basic React\nTools\nGit, Maven, Postman, IntelliJ IDEA\nCloud / DevOps\nBasic AWS concepts, Docker fundamentals, Linux basics\nPROFESSIONAL EXPERIENCE\nSoftware Developer | SoftLine Solutions | 2024\u2013Present\n\u2022 Developed and maintained Spring Boot REST APIs for internal business applications.\n\u2022 Created database queries and basic data-access components using MySQL and PostgreSQL.\n\u2022 Implemented API validation, exception handling, and simple authentication flows.\n\u2022 Used Git for version control and Postman for API testing and debugging.\n\u2022 Participated in bug fixing, code reviews, and routine application maintenance.\nGraduate Developer Trainee | TechBridge Services | 2023\u20132024\n\u2022 Assisted developers with Java-based application development and database updates.\n\u2022 Created small utility scripts in Python to simplify repetitive data-processing tasks.\n\u2022 Learned basic Docker usage and Linux command-line operations while supporting development environments.\nSELECTED PROJECT\nEmployee Leave Management System\nDeveloped a basic web application for managing employee leave requests using Spring Boot, MySQL, HTML, CSS,\nand JavaScript. Implemented employee login, leave submission, approval, and leave-history features.\nEDUCATION\nB.Sc. in Information Technology | University of Madras | 2020\u20132023\nCERTIFICATIONS\nJava and Spring Boot Fundamentals \u2022 SQL Fundamentals \u2022 Introduction to AWS Cloud",
+    "structured_resume": {
+      "skills": [
+        "Java",
+        "Python",
+        "SQL",
+        "JavaScript",
+        "Spring Boot",
+        "REST APIs",
+        "Flask",
+        "MySQL",
+        "PostgreSQL",
+        "HTML",
+        "CSS",
+        "React",
+        "Git",
+        "Maven",
+        "Postman",
+        "AWS",
+        "Docker",
+        "Linux"
+      ],
+      "contact": {
+        "name": "Employee 4",
+        "email": "employee4@example.com",
+        "phone": "+91 90000 00004",
+        "location": "Chennai, India",
+        "github_url": "github.com/employee4",
+        "linkedin_url": "",
+        "portfolio_url": ""
+      },
+      "summary": "Software Developer with about 2 years of experience working on web applications and backend services. Familiar with Java, Spring Boot, Python, SQL, Git, and basic cloud concepts. Has practical experience developing CRUD APIs and working with relational databases. Comfortable learning new technologies and contributing to small development teams.",
+      "projects": [
+        {
+          "link": "",
+          "title": "Employee Leave Management System",
+          "description": "Developed a basic web application for managing employee leave requests using Spring Boot, MySQL, HTML, CSS, and JavaScript. Implemented employee login, leave submission, approval, and leave-history features.",
+          "technologies": [
+            "Spring Boot",
+            "MySQL",
+            "HTML",
+            "CSS",
+            "JavaScript"
+          ]
+        }
+      ],
+      "education": [
+        {
+          "gpa": "",
+          "degree": "B.Sc.",
+          "institution": "University of Madras",
+          "field_of_study": "Information Technology",
+          "graduation_year": "2023"
+        }
+      ],
+      "certifications": [
+        {
+          "name": "Java and Spring Boot Fundamentals",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "SQL Fundamentals",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "Introduction to AWS Cloud",
+          "issuer": "",
+          "issue_date": ""
+        }
+      ],
+      "work_experience": [
+        {
+          "title": "Software Developer",
+          "company": "SoftLine Solutions",
+          "end_date": "Present",
+          "is_current": true,
+          "start_date": "2024",
+          "description": "Developed and maintained Spring Boot REST APIs for internal business applications. Created database queries and basic data-access components using MySQL and PostgreSQL. Implemented API validation, exception handling, and simple authentication flows. Used Git for version control and Postman for API testing and debugging. Participated in bug fixing, code reviews, and routine application maintenance.",
+          "technologies": [
+            "Spring Boot",
+            "MySQL",
+            "PostgreSQL",
+            "Git",
+            "Postman"
+          ]
+        },
+        {
+          "title": "Graduate Developer Trainee",
+          "company": "TechBridge Services",
+          "end_date": "2024",
+          "is_current": false,
+          "start_date": "2023",
+          "description": "Assisted developers with Java-based application development and database updates. Created small utility scripts in Python to simplify repetitive data-processing tasks. Learned basic Docker usage and Linux command-line operations while supporting development environments.",
+          "technologies": [
+            "Java",
+            "Python",
+            "Docker",
+            "Linux"
+          ]
+        }
+      ],
+      "total_years_experience": 2.0
+    },
+    "evaluation_scorecard": {
+      "summary": "The candidate has 2 years of experience in software development with a focus on backend services, primarily using Java and Spring Boot. They possess some knowledge of Python and PostgreSQL but lack the required experience and skills in Django, FastAPI, and AI integration necessary for the Senior Python & AI Engineer role.",
+      "concerns": [
+        "Insufficient years of experience (only 2 years)",
+        "Lack of experience with required frameworks (Django, FastAPI)",
+        "No experience with LLM APIs or AI features"
+      ],
+      "strengths": [
+        "Basic knowledge of Python and PostgreSQL",
+        "Experience with Docker and containerization",
+        "Ability to learn new technologies"
+      ],
+      "overall_score": 36.0,
+      "recommendation": "WEAK_FIT",
+      "skills_evaluation": {
+        "gaps": [
+          "Django or FastAPI experience",
+          "Experience integrating LLM APIs",
+          "Experience building AI-powered features"
+        ],
+        "score": 30.0,
+        "reasoning": "The candidate has experience with Python and PostgreSQL, but lacks direct experience with Django or FastAPI, which are critical for the role. Additionally, there is no evidence of integrating LLM APIs or building AI-powered features.",
+        "matched_evidence": [
+          "Python",
+          "PostgreSQL",
+          "Docker"
+        ]
+      },
+      "education_evaluation": {
+        "gaps": [
+          "Advanced degrees",
+          "Relevant certifications in Python or AI"
+        ],
+        "score": 60.0,
+        "reasoning": "The candidate holds a B.Sc. in Information Technology, which is relevant to the field. However, there are no advanced degrees or relevant certifications that would enhance their qualifications for this senior role.",
+        "matched_evidence": [
+          "B.Sc. in Information Technology"
+        ]
+      },
+      "experience_evaluation": {
+        "gaps": [
+          "4+ years of professional backend software development experience",
+          "Experience specifically in Python backend development"
+        ],
+        "score": 20.0,
+        "reasoning": "The candidate has only 2 years of experience, which is below the required 4+ years for the role. The experience is primarily in developing Spring Boot applications, which is not directly relevant to the Python & AI Engineer position.",
+        "matched_evidence": [
+          "2 years of software development experience"
+        ]
+      }
+    },
+    "overall_score": "36.00",
+    "recommendation": "WEAK_FIT",
+    "status": "COMPLETED"
+  },
+  "employee3@example.com": {
+    "raw_text": "Employee 3\nBackend Developer\nKochi, India \u2022 employee3@example.com \u2022 +91 90000 00003 \u2022 github.com/employee3\nPROFESSIONAL SUMMARY\nJunior Backend Developer with around 1.5 years of professional experience building web APIs and database-backed\napplications. Hands-on experience with Node.js, Express.js, Python, PostgreSQL, MongoDB, and basic Docker.\nStrong interest in backend architecture and API development, with practical exposure to frontend integration. Seeking\nopportunities to grow into a full-time backend engineering role.\nTECHNICAL SKILLS\nLanguages\nJavaScript, TypeScript, Python, SQL\nBackend\nNode.js, Express.js, REST APIs, FastAPI (basic)\nDatabases\nPostgreSQL, MongoDB, MySQL\nFrontend\nReact, HTML, CSS, JavaScript\nDevOps\nDocker (basic), GitHub Actions (basic), Linux\nTools\nGit, Postman, npm, VS Code\nPROFESSIONAL EXPERIENCE\nJunior Software Developer | WebCraft Systems | 2024\u2013Present\n\u2022 Developed REST APIs using Node.js and Express.js for customer and order-management features.\n\u2022 Designed PostgreSQL tables, relationships, queries, and basic database migrations.\n\u2022 Implemented authentication, request validation, pagination, filtering, and centralized error handling.\n\u2022 Integrated backend APIs with React interfaces and collaborated with frontend developers during feature\ndevelopment.\n\u2022 Used Git-based workflows, code reviews, Postman testing, and basic Docker containers during development.\nSoftware Development Intern | AppForge Technologies | 2023\u20132024\n\u2022 Assisted in developing Express.js APIs and maintaining existing Node.js services.\n\u2022 Created reusable React components and connected them to REST endpoints.\n\u2022 Wrote SQL queries and helped investigate application bugs involving database records and API responses.\nSELECTED PROJECTS\nTask Management Platform\nBuilt a full-stack task management application using Node.js, Express.js, PostgreSQL, React, and Docker.\nImplemented user authentication, role-based permissions, task assignment, filtering, and REST APIs.\nExpense Tracker API\nDeveloped a Python/FastAPI service for recording and categorizing personal expenses. Added PostgreSQL\npersistence, input validation, API documentation, and basic automated tests.\nEDUCATION\nB.Sc. in Computer Science | Mahatma Gandhi University | 2020\u20132023\nCERTIFICATIONS\nNode.js Backend Development \u2022 PostgreSQL Fundamentals \u2022 Docker Essentials",
+    "structured_resume": {
+      "skills": [
+        "JavaScript",
+        "TypeScript",
+        "Python",
+        "SQL",
+        "Node.js",
+        "Express.js",
+        "REST APIs",
+        "FastAPI",
+        "PostgreSQL",
+        "MongoDB",
+        "MySQL",
+        "React",
+        "HTML",
+        "CSS",
+        "Docker",
+        "GitHub Actions",
+        "Linux",
+        "Git",
+        "Postman",
+        "npm",
+        "VS Code"
+      ],
+      "contact": {
+        "name": "Employee 3",
+        "email": "employee3@example.com",
+        "phone": "+91 90000 00003",
+        "location": "Kochi, India",
+        "github_url": "github.com/employee3",
+        "linkedin_url": "",
+        "portfolio_url": ""
+      },
+      "summary": "Junior Backend Developer with around 1.5 years of professional experience building web APIs and database-backed applications. Hands-on experience with Node.js, Express.js, Python, PostgreSQL, MongoDB, and basic Docker. Strong interest in backend architecture and API development, with practical exposure to frontend integration. Seeking opportunities to grow into a full-time backend engineering role.",
+      "projects": [
+        {
+          "link": "",
+          "title": "Task Management Platform",
+          "description": "Built a full-stack task management application using Node.js, Express.js, PostgreSQL, React, and Docker. Implemented user authentication, role-based permissions, task assignment, filtering, and REST APIs.",
+          "technologies": [
+            "Node.js",
+            "Express.js",
+            "PostgreSQL",
+            "React",
+            "Docker"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Expense Tracker API",
+          "description": "Developed a Python/FastAPI service for recording and categorizing personal expenses. Added PostgreSQL persistence, input validation, API documentation, and basic automated tests.",
+          "technologies": [
+            "Python",
+            "FastAPI",
+            "PostgreSQL"
+          ]
+        }
+      ],
+      "education": [
+        {
+          "gpa": "",
+          "degree": "B.Sc.",
+          "institution": "Mahatma Gandhi University",
+          "field_of_study": "Computer Science",
+          "graduation_year": "2023"
+        }
+      ],
+      "certifications": [
+        {
+          "name": "Node.js Backend Development",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "PostgreSQL Fundamentals",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "Docker Essentials",
+          "issuer": "",
+          "issue_date": ""
+        }
+      ],
+      "work_experience": [
+        {
+          "title": "Junior Software Developer",
+          "company": "WebCraft Systems",
+          "end_date": "Present",
+          "is_current": true,
+          "start_date": "2024",
+          "description": "Developed REST APIs using Node.js and Express.js for customer and order-management features. Designed PostgreSQL tables, relationships, queries, and basic database migrations. Implemented authentication, request validation, pagination, filtering, and centralized error handling. Integrated backend APIs with React interfaces and collaborated with frontend developers during feature development. Used Git-based workflows, code reviews, Postman testing, and basic Docker containers during development.",
+          "technologies": [
+            "Node.js",
+            "Express.js",
+            "PostgreSQL",
+            "React",
+            "Git",
+            "Postman",
+            "Docker"
+          ]
+        },
+        {
+          "title": "Software Development Intern",
+          "company": "AppForge Technologies",
+          "end_date": "2024",
+          "is_current": false,
+          "start_date": "2023",
+          "description": "Assisted in developing Express.js APIs and maintaining existing Node.js services. Created reusable React components and connected them to REST endpoints. Wrote SQL queries and helped investigate application bugs involving database records and API responses.",
+          "technologies": [
+            "Express.js",
+            "Node.js",
+            "React",
+            "SQL"
+          ]
+        }
+      ],
+      "total_years_experience": 1.5
+    },
+    "evaluation_scorecard": {
+      "summary": "The candidate has foundational skills in Python and FastAPI with limited experience in backend development. They are still early in their career and lack the seniority and specific experience required for the Senior Python & AI Engineer role.",
+      "concerns": [
+        "Insufficient years of experience (1.5 years vs. 4+ years required)",
+        "Lack of experience with Django and LLM APIs",
+        "Limited exposure to advanced database optimization techniques"
+      ],
+      "strengths": [
+        "Familiarity with Python and FastAPI",
+        "Experience with PostgreSQL",
+        "Basic knowledge of Docker"
+      ],
+      "overall_score": 45.0,
+      "recommendation": "WEAK_FIT",
+      "skills_evaluation": {
+        "gaps": [
+          "Django or Django REST Framework experience",
+          "Experience integrating LLM APIs",
+          "Experience with PostgreSQL optimization",
+          "Experience with Git workflows in a professional setting"
+        ],
+        "score": 50.0,
+        "reasoning": "The candidate has experience with Python and FastAPI, which are relevant to the role. However, they lack experience with Django, LLM APIs, and PostgreSQL optimization, which are critical for the position.",
+        "matched_evidence": [
+          "Python",
+          "FastAPI",
+          "PostgreSQL",
+          "Docker"
+        ]
+      },
+      "education_evaluation": {
+        "gaps": [
+          "Advanced degree or specialized certifications in AI or Python development"
+        ],
+        "score": 60.0,
+        "reasoning": "The candidate holds a B.Sc. in Computer Science, which is relevant to the role. They also have certifications in PostgreSQL and Docker, but lack any advanced degrees or specialized certifications in AI or Python development.",
+        "matched_evidence": [
+          "B.Sc. in Computer Science",
+          "PostgreSQL Fundamentals certification",
+          "Docker Essentials certification"
+        ]
+      },
+      "experience_evaluation": {
+        "gaps": [
+          "4+ years of professional backend software development experience"
+        ],
+        "score": 30.0,
+        "reasoning": "The candidate has only 1.5 years of experience, which is significantly below the required 4+ years for the role. Their experience is primarily as a Junior Developer and Intern, which does not meet the seniority level expected.",
+        "matched_evidence": [
+          "1.5 years of experience in backend development"
+        ]
+      }
+    },
+    "overall_score": "45.00",
+    "recommendation": "WEAK_FIT",
+    "status": "COMPLETED"
+  },
+  "employee2@example.com": {
+    "raw_text": "Employee 2\nAI / Backend Engineer\nHyderabad, India \u2022 employee2@example.com \u2022 +91 90000 00002 \u2022 github.com/employee2\nPROFESSIONAL SUMMARY\nBackend and AI Engineer with 3+ years of experience developing Python services and integrating machine learning\nand natural language processing into production applications. Strong in FastAPI, Python, PostgreSQL, NLP, LLM\nAPIs, vector search, and asynchronous backend systems. Experienced in turning AI prototypes into reliable APIs and\ncollaborating with product and frontend teams.\nTECHNICAL SKILLS\nLanguages\nPython, SQL, JavaScript\nBackend\nFastAPI, Flask, Django, REST APIs, Pydantic\nAI / NLP\nNLP, LLM APIs, LangChain, embeddings, vector search, text classification, prompt engineering\nDatabases\nPostgreSQL, MongoDB, Redis\nCloud & DevOps\nAWS (EC2, S3), Docker, GitHub Actions, Linux\nTools\nGit, Pytest, Postman, OpenAPI, Jupyter\nPROFESSIONAL EXPERIENCE\nAI Backend Engineer | NeuralWorks Technologies | 2024\u2013Present\n\u2022 Built FastAPI services that expose NLP and LLM-powered features to web applications.\n\u2022 Developed document-processing pipelines for extracting text, generating embeddings, and retrieving relevant\ninformation from candidate documents.\n\u2022 Implemented semantic search using embeddings and a vector database, with PostgreSQL used for application and\nmetadata storage.\n\u2022 Integrated third-party LLM APIs with structured prompts, validation, retry handling, and logging.\n\u2022 Designed asynchronous processing workflows for large document batches using Python workers and Redis.\n\u2022 Created automated tests for API endpoints and core text-processing components using Pytest.\nSoftware Engineer | ByteBridge Solutions | 2023\u20132024\n\u2022 Developed REST APIs using Flask and FastAPI for internal analytics and customer applications.\n\u2022 Built a text-classification prototype for automatically categorizing customer support messages.\n\u2022 Optimized PostgreSQL queries and implemented Redis caching for frequently requested API data.\n\u2022 Worked with frontend developers to integrate backend APIs into React applications.\nSELECTED PROJECTS\nIntelligent Resume Screening System\nDeveloped a prototype that extracts resume text, identifies skills and experience, generates candidate embeddings,\nand compares candidates against a job description. Used Python, FastAPI, NLP techniques, LLM APIs, PostgreSQL,\nand vector search.\nCustomer Support Intent Classifier\nCreated an NLP service that classifies incoming support messages into predefined intent categories and exposes\npredictions through a REST API. Evaluated multiple text-processing approaches and added confidence thresholds for\nuncertain predictions.\nEDUCATION\nB.Tech in Computer Science and Engineering | Jawaharlal Nehru Technological University | 2019\u20132023\nCERTIFICATIONS\n\nApplied Natural Language Processing \u2022 AWS Cloud Practitioner Essentials \u2022 Python for Data Science",
+    "structured_resume": {
+      "skills": [
+        "Python",
+        "SQL",
+        "JavaScript",
+        "FastAPI",
+        "Flask",
+        "Django",
+        "REST APIs",
+        "Pydantic",
+        "NLP",
+        "LLM APIs",
+        "LangChain",
+        "embeddings",
+        "vector search",
+        "text classification",
+        "prompt engineering",
+        "PostgreSQL",
+        "MongoDB",
+        "Redis",
+        "AWS (EC2, S3)",
+        "Docker",
+        "GitHub Actions",
+        "Linux",
+        "Git",
+        "Pytest",
+        "Postman",
+        "OpenAPI",
+        "Jupyter"
+      ],
+      "contact": {
+        "name": "Employee 2",
+        "email": "employee2@example.com",
+        "phone": "+91 90000 00002",
+        "location": "Hyderabad, India",
+        "github_url": "github.com/employee2",
+        "linkedin_url": "",
+        "portfolio_url": ""
+      },
+      "summary": "Backend and AI Engineer with 3+ years of experience developing Python services and integrating machine learning and natural language processing into production applications. Strong in FastAPI, Python, PostgreSQL, NLP, LLM APIs, vector search, and asynchronous backend systems. Experienced in turning AI prototypes into reliable APIs and collaborating with product and frontend teams.",
+      "projects": [
+        {
+          "link": "",
+          "title": "Intelligent Resume Screening System",
+          "description": "Developed a prototype that extracts resume text, identifies skills and experience, generates candidate embeddings, and compares candidates against a job description.",
+          "technologies": [
+            "Python",
+            "FastAPI",
+            "NLP techniques",
+            "LLM APIs",
+            "PostgreSQL",
+            "vector search"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Customer Support Intent Classifier",
+          "description": "Created an NLP service that classifies incoming support messages into predefined intent categories and exposes predictions through a REST API. Evaluated multiple text-processing approaches and added confidence thresholds for uncertain predictions.",
+          "technologies": []
+        }
+      ],
+      "education": [
+        {
+          "gpa": "",
+          "degree": "B.Tech",
+          "institution": "Jawaharlal Nehru Technological University",
+          "field_of_study": "Computer Science and Engineering",
+          "graduation_year": "2023"
+        }
+      ],
+      "certifications": [
+        {
+          "name": "Applied Natural Language Processing",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "AWS Cloud Practitioner Essentials",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "Python for Data Science",
+          "issuer": "",
+          "issue_date": ""
+        }
+      ],
+      "work_experience": [
+        {
+          "title": "AI Backend Engineer",
+          "company": "NeuralWorks Technologies",
+          "end_date": "Present",
+          "is_current": true,
+          "start_date": "2024",
+          "description": "Built FastAPI services that expose NLP and LLM-powered features to web applications. Developed document-processing pipelines for extracting text, generating embeddings, and retrieving relevant information from candidate documents. Implemented semantic search using embeddings and a vector database, with PostgreSQL used for application and metadata storage. Integrated third-party LLM APIs with structured prompts, validation, retry handling, and logging. Designed asynchronous processing workflows for large document batches using Python workers and Redis. Created automated tests for API endpoints and core text-processing components using Pytest.",
+          "technologies": [
+            "FastAPI",
+            "NLP",
+            "LLM APIs",
+            "PostgreSQL",
+            "Python",
+            "Redis",
+            "Pytest"
+          ]
+        },
+        {
+          "title": "Software Engineer",
+          "company": "ByteBridge Solutions",
+          "end_date": "2024",
+          "is_current": false,
+          "start_date": "2023",
+          "description": "Developed REST APIs using Flask and FastAPI for internal analytics and customer applications. Built a text-classification prototype for automatically categorizing customer support messages. Optimized PostgreSQL queries and implemented Redis caching for frequently requested API data. Worked with frontend developers to integrate backend APIs into React applications.",
+          "technologies": [
+            "Flask",
+            "FastAPI",
+            "PostgreSQL",
+            "Redis"
+          ]
+        }
+      ],
+      "total_years_experience": 3.0
+    },
+    "evaluation_scorecard": {
+      "summary": "The candidate has 3 years of experience in backend development with a focus on AI and LLM integrations. They possess strong skills in Python and FastAPI, but lack the required years of experience and some specific technologies mentioned in the job description.",
+      "concerns": [
+        "Does not meet the minimum experience requirement of 4 years",
+        "Lacks experience with Django or Django REST Framework",
+        "Missing specific LLM API integration experience"
+      ],
+      "strengths": [
+        "Strong skills in Python and FastAPI",
+        "Experience with LLM APIs and AI-powered features",
+        "Familiarity with PostgreSQL and vector search"
+      ],
+      "overall_score": 62.5,
+      "recommendation": "MODERATE_FIT",
+      "skills_evaluation": {
+        "gaps": [
+          "Django or Django REST Framework experience",
+          "Experience with integrating specific LLM APIs like OpenAI GPT-4",
+          "Experience with vector databases (Chroma, Pinecone, pgvector)"
+        ],
+        "score": 70.0,
+        "reasoning": "The candidate has strong skills in Python, FastAPI, PostgreSQL, and LLM APIs, which are essential for the role. However, while they have experience with Docker, it is not emphasized as a primary skill. The candidate also lists LangChain, which is a nice-to-have but not a requirement.",
+        "matched_evidence": [
+          "Python",
+          "FastAPI",
+          "PostgreSQL",
+          "LLM APIs",
+          "Docker"
+        ]
+      },
+      "education_evaluation": {
+        "gaps": [
+          "Advanced degrees or specialized certifications in AI or software engineering"
+        ],
+        "score": 70.0,
+        "reasoning": "The candidate holds a B.Tech in Computer Science and Engineering, which is relevant to the role. However, there are no advanced degrees or specialized certifications listed that would enhance their qualifications.",
+        "matched_evidence": [
+          "B.Tech in Computer Science and Engineering"
+        ]
+      },
+      "experience_evaluation": {
+        "gaps": [
+          "1+ years of required experience"
+        ],
+        "score": 50.0,
+        "reasoning": "The candidate has 3 years of experience, which is below the required 4+ years. While the experience is relevant to backend development and AI, it does not meet the minimum requirement for the role.",
+        "matched_evidence": [
+          "3 years of experience in backend software development",
+          "Experience with FastAPI and LLM integrations"
+        ]
+      }
+    },
+    "overall_score": "62.50",
+    "recommendation": "MODERATE_FIT",
+    "status": "COMPLETED"
+  },
+  "employee1@example.com": {
+    "raw_text": "Employee 1\nBackend Engineer\nBengaluru, India \u2022 employee1@example.com \u2022 +91 90000 00001 \u2022 github.com/employee1\nPROFESSIONAL SUMMARY\nBackend Engineer with 4+ years of experience building scalable REST APIs and data-driven services using Python.\nStrong background in FastAPI, Django, PostgreSQL, Redis, Docker, and AWS. Experienced in API design, database\noptimization, authentication, asynchronous processing, testing, and production deployment. Comfortable working\nacross the full backend lifecycle.\nTECHNICAL SKILLS\nLanguages\nPython, SQL, JavaScript\nBackend\nFastAPI, Django, Django REST Framework, REST APIs, Celery\nDatabases\nPostgreSQL, MySQL, Redis\nCloud & DevOps\nAWS (EC2, S3, RDS), Docker, GitHub Actions, Nginx, Linux\nTools\nGit, Postman, Pytest, Swagger/OpenAPI\nPROFESSIONAL EXPERIENCE\nBackend Engineer | NovaStack Technologies | 2023\u2013Present\n\u2022 Designed and maintained FastAPI and Django services supporting customer-facing web applications.\n\u2022 Built REST APIs for authentication, job management, user profiles, notifications, and reporting workflows.\n\u2022 Optimized PostgreSQL queries and indexes, reducing average response times for high-traffic endpoints.\n\u2022 Implemented Redis caching and Celery background jobs for asynchronous email and data-processing tasks.\n\u2022 Containerized backend services with Docker and deployed applications on AWS using EC2, RDS, and S3.\n\u2022 Added automated unit and API tests with Pytest and integrated CI checks using GitHub Actions.\nJunior Backend Developer | CodeHarbor Labs | 2022\u20132023\n\u2022 Developed Django REST APIs and integrated PostgreSQL databases for internal business applications.\n\u2022 Implemented JWT-based authentication, role-based access control, validation, and error handling.\n\u2022 Collaborated with frontend developers to integrate APIs with React-based interfaces.\nSELECTED PROJECTS\nRecruitment Management API\nBuilt a backend platform for managing jobs, candidates, applications, and interview workflows. Used FastAPI,\nPostgreSQL, Redis, Docker, and AWS. Implemented role-based access control and documented APIs with OpenAPI.\nOrder Processing Service\nCreated an asynchronous order-processing service using Django, Celery, Redis, and PostgreSQL. Added retry\nhandling, structured logging, and automated tests for core workflows.\nEDUCATION\nB.Tech in Computer Science and Engineering | APJ Abdul Kalam Technological University | 2018\u20132022\nCERTIFICATIONS\nAWS Certified Cloud Practitioner \u2022 Python Programming Certificate \u2022 REST API Development",
+    "structured_resume": {
+      "skills": [
+        "Python",
+        "SQL",
+        "JavaScript",
+        "FastAPI",
+        "Django",
+        "Django REST Framework",
+        "REST APIs",
+        "Celery",
+        "PostgreSQL",
+        "MySQL",
+        "Redis",
+        "AWS (EC2, S3, RDS)",
+        "Docker",
+        "GitHub Actions",
+        "Nginx",
+        "Linux",
+        "Git",
+        "Postman",
+        "Pytest",
+        "Swagger/OpenAPI"
+      ],
+      "contact": {
+        "name": "Employee 1",
+        "email": "employee1@example.com",
+        "phone": "+91 90000 00001",
+        "location": "Bengaluru, India",
+        "github_url": "github.com/employee1",
+        "linkedin_url": "",
+        "portfolio_url": ""
+      },
+      "summary": "Backend Engineer with 4+ years of experience building scalable REST APIs and data-driven services using Python. Strong background in FastAPI, Django, PostgreSQL, Redis, Docker, and AWS. Experienced in API design, database optimization, authentication, asynchronous processing, testing, and production deployment. Comfortable working across the full backend lifecycle.",
+      "projects": [
+        {
+          "link": "",
+          "title": "Recruitment Management API",
+          "description": "Built a backend platform for managing jobs, candidates, applications, and interview workflows.",
+          "technologies": [
+            "FastAPI",
+            "PostgreSQL",
+            "Redis",
+            "Docker",
+            "AWS"
+          ]
+        },
+        {
+          "link": "",
+          "title": "Order Processing Service",
+          "description": "Created an asynchronous order-processing service using Django, Celery, Redis, and PostgreSQL. Added retry handling, structured logging, and automated tests for core workflows.",
+          "technologies": [
+            "Django",
+            "Celery",
+            "Redis",
+            "PostgreSQL"
+          ]
+        }
+      ],
+      "education": [
+        {
+          "gpa": "",
+          "degree": "B.Tech",
+          "institution": "APJ Abdul Kalam Technological University",
+          "field_of_study": "Computer Science and Engineering",
+          "graduation_year": "2022"
+        }
+      ],
+      "certifications": [
+        {
+          "name": "AWS Certified Cloud Practitioner",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "Python Programming Certificate",
+          "issuer": "",
+          "issue_date": ""
+        },
+        {
+          "name": "REST API Development",
+          "issuer": "",
+          "issue_date": ""
+        }
+      ],
+      "work_experience": [
+        {
+          "title": "Backend Engineer",
+          "company": "NovaStack Technologies",
+          "end_date": "Present",
+          "is_current": true,
+          "start_date": "2023",
+          "description": "Designed and maintained FastAPI and Django services supporting customer-facing web applications. Built REST APIs for authentication, job management, user profiles, notifications, and reporting workflows. Optimized PostgreSQL queries and indexes, reducing average response times for high-traffic endpoints. Implemented Redis caching and Celery background jobs for asynchronous email and data-processing tasks. Containerized backend services with Docker and deployed applications on AWS using EC2, RDS, and S3. Added automated unit and API tests with Pytest and integrated CI checks using GitHub Actions.",
+          "technologies": [
+            "FastAPI",
+            "Django",
+            "PostgreSQL",
+            "Redis",
+            "Docker",
+            "AWS (EC2, RDS, S3)",
+            "Pytest",
+            "GitHub Actions"
+          ]
+        },
+        {
+          "title": "Junior Backend Developer",
+          "company": "CodeHarbor Labs",
+          "end_date": "2023",
+          "is_current": false,
+          "start_date": "2022",
+          "description": "Developed Django REST APIs and integrated PostgreSQL databases for internal business applications. Implemented JWT-based authentication, role-based access control, validation, and error handling. Collaborated with frontend developers to integrate APIs with React-based interfaces.",
+          "technologies": [
+            "Django",
+            "PostgreSQL",
+            "JWT",
+            "React"
+          ]
+        }
+      ],
+      "total_years_experience": 4.0
+    },
+    "evaluation_scorecard": {
+      "summary": "The candidate has over 4 years of backend development experience with a strong focus on Python, Django, and cloud infrastructure. They have demonstrated skills in building scalable APIs and optimizing databases, but lack specific experience with LLM APIs and AI features, which are crucial for the Senior Python & AI Engineer role.",
+      "concerns": [
+        "Lack of experience with LLM APIs and AI-powered features",
+        "No advanced degrees or specialized certifications in AI"
+      ],
+      "strengths": [
+        "Strong backend development experience with Python and Django",
+        "Proficient in building REST APIs and optimizing PostgreSQL databases",
+        "Experience with Docker and cloud deployment"
+      ],
+      "overall_score": 72.0,
+      "recommendation": "MODERATE_FIT",
+      "skills_evaluation": {
+        "gaps": [
+          "Experience integrating LLM APIs (e.g. OpenAI GPT-4)",
+          "Experience with LangChain, LlamaIndex, or agentic frameworks",
+          "Experience with vector databases (Chroma, Pinecone, pgvector)",
+          "Familiarity with React / TypeScript"
+        ],
+        "score": 80.0,
+        "reasoning": "The candidate has strong skills in Python, Django, FastAPI, PostgreSQL, and Docker, which are all required for the role. They have also demonstrated experience in building REST APIs and optimizing databases, aligning well with the job description.",
+        "matched_evidence": [
+          "Python",
+          "Django",
+          "FastAPI",
+          "PostgreSQL",
+          "Docker"
+        ]
+      },
+      "education_evaluation": {
+        "gaps": [
+          "No advanced degrees",
+          "No certifications in AI or advanced Python"
+        ],
+        "score": 60.0,
+        "reasoning": "The candidate holds a B.Tech in Computer Science and Engineering, which is relevant. However, they do not have any advanced degrees or specialized certifications directly related to AI or advanced Python development.",
+        "matched_evidence": [
+          "B.Tech in Computer Science and Engineering"
+        ]
+      },
+      "experience_evaluation": {
+        "gaps": [
+          "No experience mentioned with LLM APIs",
+          "No experience mentioned in AI-powered features"
+        ],
+        "score": 70.0,
+        "reasoning": "The candidate has 4 years of professional experience, which meets the minimum requirement. However, they lack seniority and specific experience in integrating LLM APIs and building AI-powered features, which are critical for the role.",
+        "matched_evidence": [
+          "4 years of backend development experience",
+          "Experience with Django and FastAPI",
+          "Experience with PostgreSQL and Docker"
+        ]
+      }
+    },
+    "overall_score": "72.00",
+    "recommendation": "MODERATE_FIT",
+    "status": "COMPLETED"
+  }
+}
