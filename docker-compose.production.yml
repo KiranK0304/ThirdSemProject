@@ -1,0 +1,42 @@
+services:
+  django:
+    image: kirank03/talentwright-backend:latest
+    container_name: talentwright_production_django
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    volumes:
+      - talentwright_media:/app/talentwright/media
+    env_file:
+      - ./.envs/.production/.django
+      - ./.envs/.production/.postgres
+    expose:
+      - "8000"
+    command: /start
+
+  postgres:
+    image: postgres:18-bookworm
+    container_name: talentwright_production_postgres
+    restart: unless-stopped
+    volumes:
+      - talentwright_production_postgres_data:/var/lib/postgresql/18/docker
+      - talentwright_production_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.production/.postgres
+
+  frontend:
+    image: kirank03/talentwright-frontend:latest
+    container_name: talentwright_production_frontend
+    restart: unless-stopped
+    depends_on:
+      - django
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+
+volumes:
+  talentwright_production_postgres_data: {}
+  talentwright_production_postgres_data_backups: {}
+  talentwright_media: {}
