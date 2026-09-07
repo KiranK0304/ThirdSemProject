@@ -87,6 +87,47 @@ def test_orchestrator_direct_conversational_reply(copilot_session):
 
 
 @pytest.mark.django_db
+def test_orchestrator_prompt_contains_scope_boundary(copilot_session):
+    from talentwright.recruiter_copilot.prompts.copilot import build_orchestrator_prompt
+    from talentwright.recruiter_copilot.prompts.copilot import build_synthesis_prompt
+
+    orch_prompt = build_orchestrator_prompt(copilot_session.job)
+    assert "Strict Scope & Domain Boundary" in orch_prompt
+    assert "You MUST ONLY assist with hiring" in orch_prompt
+    assert "creative writing" in orch_prompt
+
+    synth_prompt = build_synthesis_prompt(copilot_session.job)
+    assert "Strict Scope & Domain Boundary" in synth_prompt
+    assert "outside of recruiting" in synth_prompt
+
+
+@pytest.mark.django_db
+def test_orchestrator_out_of_scope_direct_refusal(copilot_session):
+    mock_llm = MagicMock()
+    mock_llm.model = "test-model"
+
+    refusal_msg = DummyMessage(
+        content=(
+            "I apologize, but as the AI Recruiter for Staff Data Engineer, "
+            "I can only assist with candidate screening, applicant evaluation, "
+            "and hiring-related inquiries for this role. How can I help you "
+            "with your applicants today?"
+        ),
+        tool_calls=None,
+    )
+    mock_llm.client.chat.completions.create.return_value = DummyResponse(refusal_msg)
+
+    orchestrator = CopilotOrchestrator(llm_client=mock_llm)
+    reply, metadata = orchestrator.run(
+        copilot_session, "Write me a poem about sunny days"
+    )
+
+    assert "only assist with candidate screening" in reply
+    assert metadata["tools_called"] == []
+    mock_llm.client.chat.completions.create.assert_called_once()
+
+
+@pytest.mark.django_db
 def test_orchestrator_executes_tool_call_flow(copilot_session):
     mock_llm = MagicMock()
     mock_llm.model = "test-model"
