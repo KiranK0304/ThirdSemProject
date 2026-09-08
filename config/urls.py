@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django.views import defaults as default_views
+from django.views.static import serve
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -11,9 +11,14 @@ from talentwright.users.api.auth_views import UserMeView
 urlpatterns = [
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
-    # Media files
-    *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
+
+# Media files: serve uploaded documents when not offloaded to an external S3 bucket
+if not getattr(settings, "AWS_STORAGE_BUCKET_NAME", None):
+    urlpatterns += [
+        re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    ]
+
 
 # API URLS
 urlpatterns += [
