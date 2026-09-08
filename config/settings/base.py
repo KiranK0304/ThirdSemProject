@@ -314,6 +314,6 @@ SPECTACULAR_SETTINGS = {
 
 # RESUME SCREENING
 # ------------------------------------------------------------------------------
-SCREENING_LLM_API_KEY = env.str("SCREENING_LLM_API_KEY", default=env.str("OPENROUTER_API_KEY", default=""))
+SCREENING_LLM_API_KEY = env.str("SCREENING_LLM_API_KEY", default=env.str("OPENROUTER_API_KEY", default=env.str("OPENAI_API_KEY", default="")))
 SCREENING_LLM_BASE_URL = env.str("SCREENING_LLM_BASE_URL", default="https://openrouter.ai/api/v1")
 SCREENING_LLM_MODEL = env.str("SCREENING_LLM_MODEL", default="openai/gpt-4o-mini")
