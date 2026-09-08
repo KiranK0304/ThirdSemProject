@@ -39,17 +39,24 @@ class EmbeddingClient:
     ) -> None:
         self.api_key = (
             api_key
-            or _get_setting("OPENROUTER_API_KEY")
             or _get_setting("SCREENING_LLM_API_KEY")
+            or _get_setting("OPENROUTER_API_KEY")
+            or _get_setting("OPENAI_API_KEY")
         )
         if not self.api_key:
-            msg = "Neither OPENROUTER_API_KEY nor SCREENING_LLM_API_KEY is configured."
+            msg = "Neither OPENROUTER_API_KEY nor SCREENING_LLM_API_KEY nor OPENAI_API_KEY is configured."
             raise LLMConfigurationError(msg)
 
+        default_base_url = (
+            "https://api.openai.com/v1"
+            if _get_setting("OPENAI_API_KEY")
+            and not (_get_setting("SCREENING_LLM_BASE_URL") or _get_setting("OPENROUTER_API_KEY") or _get_setting("SCREENING_LLM_API_KEY"))
+            else "https://openrouter.ai/api/v1"
+        )
         self.base_url = (
             base_url
             or _get_setting("SCREENING_LLM_BASE_URL")
-            or "https://openrouter.ai/api/v1"
+            or default_base_url
         )
         self.model = (
             model

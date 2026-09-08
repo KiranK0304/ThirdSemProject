@@ -1,5 +1,7 @@
 """Tests for Recruiter Copilot API endpoints."""
 
+from unittest.mock import patch
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -204,3 +206,67 @@ def test_message_send_returns_orchestrator_candidate_cards(api_client, employer_
             post_res.data["assistant_message"]["metadata"]["candidates"]
             == mock_candidates
         )
+
+
+@pytest.mark.django_db
+def test_admin_staff_can_access_and_send_messages(api_client, employer_setup):
+    job = employer_setup["job"]
+    employer = employer_setup["employer"]
+    session = CopilotSession.objects.create(
+        job=job, employer=employer, title="Admin Test Chat"
+    )
+
+    admin_user = User.objects.create_superuser(
+        email="admin_tester@talentwright.org",
+        password="AdminPassword123!",
+    )
+    api_client.force_authenticate(user=admin_user)
+
+    # 1. Admin can list sessions for the job
+    list_res = api_client.get(f"/api/copilot/jobs/{job.id}/sessions/")
+    assert list_res.status_code == 200
+    assert len(list_res.data) == 1
+
+    # 2. Admin can send a message
+    with patch(
+        "talentwright.recruiter_copilot.orchestrator.engine.CopilotOrchestrator.run",
+        return_value=("Admin tested successfully.", {}),
+    ):
+        post_res = api_client.post(
+            f"/api/copilot/sessions/{session.id}/messages/",
+            data={"message": "Admin hello"},
+            format="json",
+        )
+        assert post_res.status_code == 201
+        assert post_res.data["assistant_message"]["content"] == "Admin tested successfully."
+
+
+@pytest.mark.django_db
+def test_message_send_handles_llm_configuration_error_gracefully(
+    api_client, employer_setup
+):
+    from talentwright.resume_analysis.exceptions import LLMConfigurationError
+
+    user = employer_setup["user"]
+    job = employer_setup["job"]
+    employer = employer_setup["employer"]
+    session = CopilotSession.objects.create(
+        job=job, employer=employer, title="Config Error Chat"
+    )
+
+    api_client.force_authenticate(user=user)
+
+    with patch(
+        "talentwright.recruiter_copilot.api.views.CopilotOrchestrator",
+        side_effect=LLMConfigurationError("Neither OPENROUTER_API_KEY nor SCREENING_LLM_API_KEY is configured."),
+    ):
+        post_res = api_client.post(
+            f"/api/copilot/sessions/{session.id}/messages/",
+            data={"message": "Hello copilot"},
+            format="json",
+        )
+        assert post_res.status_code == 201
+        assert "AI Service Configuration Notice" in post_res.data["assistant_message"]["content"]
+        assert post_res.data["assistant_message"]["metadata"]["error_type"] == "configuration"
+
+

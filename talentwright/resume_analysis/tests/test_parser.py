@@ -26,6 +26,7 @@ class DummyResponse:
 def test_llm_client_missing_api_key(monkeypatch):
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.delenv("SCREENING_LLM_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     with patch(
         "talentwright.resume_analysis.services.llm_client._get_setting", return_value=""
     ):
