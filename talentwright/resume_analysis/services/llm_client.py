@@ -97,6 +97,7 @@ class LLMClient:
                 ],
                 response_format={"type": "json_object"},
                 temperature=temperature,
+                max_tokens=2500,
             )
         except Exception as exc:
             logger.exception("LLM API call failed")
