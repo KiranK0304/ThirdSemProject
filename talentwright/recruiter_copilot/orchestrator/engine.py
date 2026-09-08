@@ -98,6 +98,7 @@ class CopilotOrchestrator:
             messages=messages,
             tools=tools if tools else None,
             temperature=0.2,
+            max_tokens=800,
         )
 
         message = response.choices[0].message
@@ -189,6 +190,7 @@ class CopilotOrchestrator:
             model=self.llm_client.model,
             messages=synthesis_messages,
             temperature=0.3,
+            max_tokens=1500,
         )
         return response.choices[0].message.content or ""
 
