@@ -63,14 +63,20 @@ class UserAdmin(auth_admin.UserAdmin):
     @admin.display(description=_("Role"))
     def role_badge(self, obj):
         if obj.is_superuser:
-            return format_html('<span style="background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">Superuser</span>')
-        if obj.is_staff:
-            return format_html('<span style="background-color: #8b5cf6; color: white; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">Staff</span>')
-        if obj.is_employer:
-            return format_html('<span style="background-color: #3b82f6; color: white; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">Employer</span>')
-        if obj.is_seeker:
-            return format_html('<span style="background-color: #10b981; color: white; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">Seeker</span>')
-        return format_html('<span style="background-color: #6b7280; color: white; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">User</span>')
+            role, bg = "Superuser", "#ef4444"
+        elif obj.is_staff:
+            role, bg = "Staff", "#8b5cf6"
+        elif obj.is_employer:
+            role, bg = "Employer", "#3b82f6"
+        elif obj.is_seeker:
+            role, bg = "Seeker", "#10b981"
+        else:
+            role, bg = "User", "#6b7280"
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600;">{}</span>',
+            bg,
+            role,
+        )
 
 
 @admin.action(description=_("Approve selected employers"))

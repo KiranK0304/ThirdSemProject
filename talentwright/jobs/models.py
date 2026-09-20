@@ -7,6 +7,7 @@ from django.db.models import (
     DateTimeField,
     DecimalField,
     ForeignKey,
+    JSONField,
     Q,
     TextChoices,
     TextField,
@@ -26,6 +27,20 @@ class EmploymentType(TextChoices):
     INTERNSHIP = "INTERNSHIP", _("Internship")
     TEMPORARY = "TEMPORARY", _("Temporary")
     FREELANCE = "FREELANCE", _("Freelance")
+
+
+class WorkplaceType(TextChoices):
+    ON_SITE = "ON_SITE", _("On-site")
+    HYBRID = "HYBRID", _("Hybrid")
+    REMOTE = "REMOTE", _("Remote")
+
+
+class ExperienceLevel(TextChoices):
+    ENTRY_LEVEL = "ENTRY_LEVEL", _("Entry Level")
+    MID_LEVEL = "MID_LEVEL", _("Mid Level")
+    SENIOR = "SENIOR", _("Senior")
+    LEAD = "LEAD", _("Lead / Staff")
+    EXECUTIVE = "EXECUTIVE", _("Executive")
 
 
 class JobStatus(TextChoices):
@@ -48,7 +63,25 @@ class Job(models.Model):
         _("Employment type"),
         max_length=20,
         choices=EmploymentType,
+        default=EmploymentType.FULL_TIME,
     )
+    workplace_type = CharField(
+        _("Workplace type"),
+        max_length=20,
+        choices=WorkplaceType,
+        default=WorkplaceType.ON_SITE,
+    )
+    experience_level = CharField(
+        _("Experience level"),
+        max_length=20,
+        choices=ExperienceLevel,
+        default=ExperienceLevel.MID_LEVEL,
+    )
+    department = CharField(_("Department"), max_length=100, blank=True)
+    skills = JSONField(_("Required skills"), default=list, blank=True)
+    responsibilities = TextField(_("Key responsibilities"), blank=True)
+    requirements = TextField(_("Requirements and qualifications"), blank=True)
+    benefits = TextField(_("Benefits and perks"), blank=True)
     salary_min = DecimalField(_("Minimum salary"), max_digits=12, decimal_places=2, null=True, blank=True)
     salary_max = DecimalField(_("Maximum salary"), max_digits=12, decimal_places=2, null=True, blank=True)
     salary_currency = CharField(_("Salary currency"), max_length=3, default="USD")

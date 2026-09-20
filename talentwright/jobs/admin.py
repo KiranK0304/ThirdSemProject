@@ -2,7 +2,16 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from talentwright.jobs.models import EmploymentType, Job, JobAlert, JobBookmark, JobStatus, SavedJob
+from talentwright.jobs.models import (
+    EmploymentType,
+    ExperienceLevel,
+    Job,
+    JobAlert,
+    JobBookmark,
+    JobStatus,
+    SavedJob,
+    WorkplaceType,
+)
 
 
 @admin.action(description=_("Mark selected jobs as Open"))
@@ -25,6 +34,9 @@ class JobAdmin(admin.ModelAdmin):
     list_display = [
         "title",
         "employer_company",
+        "department",
+        "workplace_badge",
+        "experience_level",
         "status_badge",
         "employment_type_badge",
         "location",
@@ -32,9 +44,10 @@ class JobAdmin(admin.ModelAdmin):
         "applicant_count",
         "created_at",
     ]
-    list_filter = ["status", "employment_type", "created_at"]
+    list_filter = ["status", "workplace_type", "experience_level", "employment_type", "department", "created_at"]
     search_fields = [
         "title",
+        "department",
         "description",
         "location",
         "employer__company_name",
@@ -52,10 +65,22 @@ class JobAdmin(admin.ModelAdmin):
                 "fields": (
                     "employer",
                     "title",
+                    "department",
                     "status",
-                    "employment_type",
+                    ("workplace_type", "employment_type", "experience_level"),
                     "location",
                     "description",
+                ),
+            },
+        ),
+        (
+            _("Role Specifications & Screening"),
+            {
+                "fields": (
+                    "skills",
+                    "responsibilities",
+                    "requirements",
+                    "benefits",
                 ),
             },
         ),
@@ -74,6 +99,21 @@ class JobAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    @admin.display(description=_("Workplace"), ordering="workplace_type")
+    def workplace_badge(self, obj):
+        colors = {
+            WorkplaceType.REMOTE: ("#0284c7", "#e0f2fe"),
+            WorkplaceType.HYBRID: ("#7c3aed", "#ede9fe"),
+            WorkplaceType.ON_SITE: ("#0d9488", "#ccfbf1"),
+        }
+        fg, bg = colors.get(obj.workplace_type, ("#475569", "#f1f5f9"))
+        return format_html(
+            '<span style="background-color: {}; color: {}; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">{}</span>',
+            bg,
+            fg,
+            obj.get_workplace_type_display(),
+        )
 
     @admin.display(description=_("Employer"), ordering="employer__company_name")
     def employer_company(self, obj):
