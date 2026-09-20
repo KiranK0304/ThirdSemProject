@@ -16,6 +16,7 @@ from .auth_serializers import (
     CustomTokenObtainPairSerializer,
     EmployerProfileAdminSerializer,
     LogoutSerializer,
+    PublicCompanyDetailSerializer,
     RegisterSerializer,
     ResumeSerializer,
     UserMeSerializer,
@@ -210,3 +211,13 @@ class SeekerResumeSetPrimaryView(APIView):
         resume.save()
         serializer = ResumeSerializer(resume, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PublicCompanyDetailView(generics.RetrieveAPIView):
+    """
+    Public API view for retrieving company showcase details and active job postings.
+    """
+
+    queryset = EmployerProfile.objects.all()
+    serializer_class = PublicCompanyDetailSerializer
+    permission_classes = [AllowAny]

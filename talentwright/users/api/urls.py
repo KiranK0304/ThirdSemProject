@@ -7,6 +7,7 @@ from .auth_views import (
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
     LogoutView,
+    PublicCompanyDetailView,
     RegisterView,
     SeekerResumeDetailView,
     SeekerResumeListCreateView,
@@ -22,6 +23,7 @@ urlpatterns = [
     path("refresh/", CustomTokenRefreshView.as_view(), name="refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("me/", UserMeView.as_view(), name="me"),
+    path("companies/<int:pk>/", PublicCompanyDetailView.as_view(), name="company-detail"),
     path("seeker/resumes/", SeekerResumeListCreateView.as_view(), name="seeker-resumes"),
     path("seeker/resumes/<int:pk>/", SeekerResumeDetailView.as_view(), name="seeker-resume-detail"),
     path(

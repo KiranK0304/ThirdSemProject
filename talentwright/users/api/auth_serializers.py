@@ -69,13 +69,56 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "company_name",
+            "tagline",
             "website",
             "description",
+            "company_size",
+            "headquarters",
+            "founded_year",
+            "logo_url",
+            "perks",
+            "social_linkedin",
+            "social_twitter",
             "verification_status",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "verification_status", "created_at", "updated_at"]
+
+
+class PublicCompanyDetailSerializer(serializers.ModelSerializer):
+    """
+    Public serializer for Company Showcase page, including active job openings.
+    """
+
+    active_jobs = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EmployerProfile
+        fields = [
+            "id",
+            "company_name",
+            "tagline",
+            "website",
+            "description",
+            "company_size",
+            "headquarters",
+            "founded_year",
+            "logo_url",
+            "perks",
+            "social_linkedin",
+            "social_twitter",
+            "verification_status",
+            "created_at",
+            "active_jobs",
+        ]
+
+    def get_active_jobs(self, obj):
+        from talentwright.jobs.api.serializers import PublicJobSerializer
+        from talentwright.jobs.models import Job, JobStatus
+
+        jobs = Job.objects.filter(employer=obj, status=JobStatus.OPEN).order_by("-created_at")
+        return PublicJobSerializer(jobs, many=True, context=self.context).data
 
 
 class SeekerProfileSerializer(serializers.ModelSerializer):

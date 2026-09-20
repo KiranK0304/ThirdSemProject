@@ -11,7 +11,9 @@ from django.db.models import (
     EmailField,
     FileField,
     ForeignKey,
+    JSONField,
     OneToOneField,
+    PositiveIntegerField,
     TextChoices,
     TextField,
     URLField,
@@ -70,8 +72,16 @@ class EmployerProfile(models.Model):
 
     user = OneToOneField(User, on_delete=models.CASCADE, related_name="employer_profile")
     company_name = CharField(_("Company Name"), max_length=255, blank=True)
+    tagline = CharField(_("Company Tagline"), max_length=255, blank=True)
     website = URLField(_("Company Website"), blank=True)
     description = TextField(_("Company Description"), blank=True)
+    company_size = CharField(_("Company Size"), max_length=50, blank=True)
+    headquarters = CharField(_("Headquarters Location"), max_length=255, blank=True)
+    founded_year = PositiveIntegerField(_("Founded Year"), null=True, blank=True)
+    logo_url = URLField(_("Logo URL"), blank=True)
+    perks = JSONField(_("Company Perks & Culture"), default=list, blank=True)
+    social_linkedin = URLField(_("LinkedIn URL"), blank=True)
+    social_twitter = URLField(_("Twitter/X URL"), blank=True)
     verification_status = CharField(
         _("Verification Status"),
         max_length=20,
