@@ -1,12 +1,14 @@
 from django.urls import path
 
 from talentwright.applications.api.views import (
+    EmployerApplicantCsvExportView,
     EmployerApplicationsListView,
     EmployerApplicationStatusUpdateView,
     EmployerInterviewCreateView,
     EmployerInterviewListView,
     EmployerInterviewUpdateView,
     EmployerJobOfferCreateUpdateView,
+    EmployerRecruitmentAnalyticsView,
     JobApplicationCreateView,
     JobApplicationsListView,
     SeekerApplicationDetailView,
@@ -18,6 +20,8 @@ from talentwright.applications.api.views import (
 app_name = "applications"
 
 urlpatterns = [
+    path("employer/analytics/", EmployerRecruitmentAnalyticsView.as_view(), name="employer-recruitment-analytics"),
+    path("employer/export/csv/", EmployerApplicantCsvExportView.as_view(), name="employer-applicant-csv-export"),
     path("jobs/<int:job_id>/apply/", JobApplicationCreateView.as_view(), name="job-apply"),
     path("jobs/<int:job_id>/applications/", JobApplicationsListView.as_view(), name="job-applications"),
     path("employer/applications/", EmployerApplicationsListView.as_view(), name="employer-applications"),

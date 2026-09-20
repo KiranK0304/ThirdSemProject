@@ -739,3 +739,73 @@ class TestJobOfferAPI:
             recipient=employer_user,
             title="Offer Accepted by Candidate",
         ).exists()
+
+
+class TestRecruitmentAnalyticsAndCsvExport:
+    def setup_method(self):
+        self.client = APIClient()
+
+    def test_analytics_and_csv_export(self):
+        # 1. Setup Employer & Job
+        employer_user = User.objects.create_user(
+            email="emp-analytics@example.com",
+            password="Password123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=employer_user,
+            company_name="Metric Corp",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        job = Job.objects.create(
+            employer=employer,
+            title="Data Scientist",
+            description="ML modeling.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+
+        # 2. Setup Seeker & Application
+        seeker_user = User.objects.create_user(
+            email="candidate-analytics@example.com",
+            password="Password123!",
+            is_active=True,
+            name="Alex Rivera",
+        )
+        seeker = SeekerProfile.objects.create(
+            user=seeker_user,
+            phone="+1234567890",
+            location="Austin, TX",
+            skills=["Python", "PyTorch"],
+        )
+        application = Application.objects.create(
+            job=job,
+            seeker=seeker,
+            status=ApplicationStatus.SHORTLISTED,
+        )
+
+        # 3. Log in as employer
+        login_resp = self.client.post(
+            reverse("auth_api:login"),
+            {"email": "emp-analytics@example.com", "password": "Password123!"},
+            format="json",
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login_resp.data['access']}")
+
+        # 4. Test Analytics endpoint
+        analytics_resp = self.client.get(reverse("applications_api:employer-recruitment-analytics"))
+        assert analytics_resp.status_code == status.HTTP_200_OK
+        data = analytics_resp.data
+        assert data["summary"]["total_applicants"] == 1
+        assert data["summary"]["shortlisted_count"] == 1
+        assert len(data["funnel"]) == 5
+        assert len(data["jobs_breakdown"]) == 1
+
+        # 5. Test CSV Export endpoint
+        csv_resp = self.client.get(reverse("applications_api:employer-applicant-csv-export"))
+        assert csv_resp.status_code == status.HTTP_200_OK
+        assert csv_resp["Content-Type"].startswith("text/csv")
+        content = csv_resp.content.decode("utf-8")
+        assert "Application ID" in content
+        assert "Alex Rivera" in content
+        assert "Data Scientist" in content

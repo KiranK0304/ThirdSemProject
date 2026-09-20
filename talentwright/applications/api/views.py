@@ -1,3 +1,6 @@
+import csv
+
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
@@ -310,3 +313,152 @@ class SeekerJobOfferDecisionView(APIView):
         )
 
         return Response(JobOfferSerializer(offer).data)
+
+
+class EmployerRecruitmentAnalyticsView(APIView):
+    """
+    Provides recruitment pipeline analytics, funnel metrics, and conversion rates for employers.
+    """
+
+    permission_classes = [IsVerifiedEmployer]
+
+    def get(self, request):
+        employer = request.user.employer_profile
+        jobs = Job.objects.filter(employer=employer)
+        total_jobs = jobs.count()
+        active_jobs = jobs.filter(status=JobStatus.OPEN).count()
+
+        applications = (
+            Application.objects.filter(job__employer=employer)
+            .select_related("offer", "job")
+        )
+        total_applicants = applications.count()
+        submitted_count = applications.filter(status=ApplicationStatus.SUBMITTED).count()
+        under_review_count = applications.filter(status=ApplicationStatus.UNDER_REVIEW).count()
+        shortlisted_count = applications.filter(status=ApplicationStatus.SHORTLISTED).count()
+        offered_count = applications.filter(status=ApplicationStatus.OFFERED).count()
+        rejected_count = applications.filter(status=ApplicationStatus.REJECTED).count()
+
+        offers_accepted_count = applications.filter(offer__status=JobOfferStatus.ACCEPTED).count()
+        total_offers_extended = applications.filter(offer__isnull=False).count()
+
+        shortlist_rate = round((shortlisted_count + offered_count) / total_applicants * 100, 1) if total_applicants > 0 else 0.0
+        offer_rate = round(offered_count / total_applicants * 100, 1) if total_applicants > 0 else 0.0
+        acceptance_rate = round(offers_accepted_count / total_offers_extended * 100, 1) if total_offers_extended > 0 else 0.0
+
+        funnel = [
+            {"stage": "Applications Received", "count": total_applicants, "percentage": 100.0},
+            {"stage": "Reviewed / Evaluated", "count": under_review_count + shortlisted_count + offered_count, "percentage": round((under_review_count + shortlisted_count + offered_count) / total_applicants * 100, 1) if total_applicants > 0 else 0.0},
+            {"stage": "Shortlisted", "count": shortlisted_count + offered_count, "percentage": shortlist_rate},
+            {"stage": "Offers Extended", "count": total_offers_extended, "percentage": offer_rate},
+            {"stage": "Offers Accepted", "count": offers_accepted_count, "percentage": round(offers_accepted_count / total_applicants * 100, 1) if total_applicants > 0 else 0.0},
+        ]
+
+        jobs_breakdown = []
+        for j in jobs.order_by("-created_at")[:10]:
+            job_apps = applications.filter(job=j)
+            jobs_breakdown.append({
+                "job_id": j.id,
+                "title": j.title,
+                "status": j.status,
+                "applicant_count": job_apps.count(),
+                "shortlisted_count": job_apps.filter(status=ApplicationStatus.SHORTLISTED).count(),
+                "offered_count": job_apps.filter(status=ApplicationStatus.OFFERED).count(),
+                "created_at": j.created_at.isoformat(),
+            })
+
+        return Response({
+            "summary": {
+                "total_jobs": total_jobs,
+                "active_jobs": active_jobs,
+                "total_applicants": total_applicants,
+                "submitted_count": submitted_count,
+                "under_review_count": under_review_count,
+                "shortlisted_count": shortlisted_count,
+                "offered_count": offered_count,
+                "rejected_count": rejected_count,
+                "offers_accepted_count": offers_accepted_count,
+                "shortlist_rate": shortlist_rate,
+                "offer_rate": offer_rate,
+                "acceptance_rate": acceptance_rate,
+            },
+            "funnel": funnel,
+            "jobs_breakdown": jobs_breakdown,
+        })
+
+
+class EmployerApplicantCsvExportView(APIView):
+    """
+    Exports applicant data as a CSV spreadsheet.
+    """
+
+    permission_classes = [IsVerifiedEmployer]
+
+    def get(self, request):
+        employer = request.user.employer_profile
+        job_id = request.query_params.get("job_id")
+
+        qs = (
+            Application.objects.select_related(
+                "job",
+                "seeker",
+                "seeker__user",
+                "offer",
+                "resume_analysis",
+            )
+            .filter(job__employer=employer)
+            .order_by("-created_at")
+        )
+
+        if job_id:
+            qs = qs.filter(job_id=job_id)
+
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        filename = f"applicants_job_{job_id}.csv" if job_id else "all_applicants_export.csv"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            "Application ID",
+            "Job Title",
+            "Candidate Name",
+            "Candidate Email",
+            "Phone Number",
+            "Location",
+            "Years Experience",
+            "Skills",
+            "Fit Score",
+            "Application Status",
+            "Offer Status",
+            "Offer Base Salary",
+            "Applied Date",
+        ])
+
+        for app in qs:
+            seeker = app.seeker
+            seeker_user = seeker.user if seeker else None
+            skills_str = ", ".join(seeker.skills) if seeker and isinstance(seeker.skills, list) else ""
+            score = ""
+            if hasattr(app, "resume_analysis") and app.resume_analysis and app.resume_analysis.overall_score is not None:
+                score = f"{app.resume_analysis.overall_score}%"
+
+            offer_status = app.offer.status if hasattr(app, "offer") and app.offer else "N/A"
+            offer_salary = app.offer.base_salary if hasattr(app, "offer") and app.offer else "N/A"
+
+            writer.writerow([
+                app.id,
+                app.job.title if app.job else "N/A",
+                seeker_user.name if seeker_user else "N/A",
+                seeker_user.email if seeker_user else "N/A",
+                seeker.phone if seeker else "",
+                seeker.location if seeker else "",
+                seeker.years_of_experience if seeker and seeker.years_of_experience is not None else "",
+                skills_str,
+                score,
+                app.status,
+                offer_status,
+                offer_salary,
+                app.created_at.strftime("%Y-%m-%d %H:%M"),
+            ])
+
+        return response
