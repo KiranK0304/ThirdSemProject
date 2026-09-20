@@ -97,12 +97,20 @@ class EmployerProfile(models.Model):
 
 class SeekerProfile(models.Model):
     """
-    Profile model for Seeker accounts.
+    Profile model for Seeker accounts with full career portfolio.
     """
 
     user = OneToOneField(User, on_delete=models.CASCADE, related_name="seeker_profile")
+    headline = CharField(_("Professional Headline"), max_length=255, blank=True)
     phone = CharField(_("Phone Number"), max_length=30, blank=True)
+    location = CharField(_("Current Location"), max_length=255, blank=True)
     bio = TextField(_("Bio"), blank=True)
+    years_of_experience = PositiveIntegerField(_("Years of Experience"), null=True, blank=True)
+    skills = JSONField(_("Core Skills"), default=list, blank=True)
+    experience = JSONField(_("Work Experience Timeline"), default=list, blank=True)
+    education = JSONField(_("Education History"), default=list, blank=True)
+    projects = JSONField(_("Project Showcase"), default=list, blank=True)
+    social_links = JSONField(_("Developer & Social Links"), default=dict, blank=True)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
 

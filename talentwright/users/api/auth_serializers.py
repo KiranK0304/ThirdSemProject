@@ -130,7 +130,22 @@ class SeekerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SeekerProfile
-        fields = ["id", "phone", "bio", "resumes", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "headline",
+            "phone",
+            "location",
+            "bio",
+            "years_of_experience",
+            "skills",
+            "experience",
+            "education",
+            "projects",
+            "social_links",
+            "resumes",
+            "created_at",
+            "updated_at",
+        ]
         read_only_fields = ["id", "resumes", "created_at", "updated_at"]
 
 
@@ -248,15 +263,14 @@ class UserMeSerializer(serializers.ModelSerializer):
 
         if employer_profile_data and hasattr(instance, "employer_profile"):
             profile = instance.employer_profile
-            profile.company_name = employer_profile_data.get("company_name", profile.company_name)
-            profile.website = employer_profile_data.get("website", profile.website)
-            profile.description = employer_profile_data.get("description", profile.description)
+            for attr, val in employer_profile_data.items():
+                setattr(profile, attr, val)
             profile.save()
 
         if seeker_profile_data and hasattr(instance, "seeker_profile"):
             profile = instance.seeker_profile
-            profile.phone = seeker_profile_data.get("phone", profile.phone)
-            profile.bio = seeker_profile_data.get("bio", profile.bio)
+            for attr, val in seeker_profile_data.items():
+                setattr(profile, attr, val)
             profile.save()
 
         return instance
