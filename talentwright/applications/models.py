@@ -119,3 +119,45 @@ class Interview(models.Model):
 
     def __str__(self) -> str:
         return f"Interview for application {self.application_id}"
+
+
+class JobOfferStatus(TextChoices):
+    PENDING = "PENDING", _("Pending")
+    ACCEPTED = "ACCEPTED", _("Accepted")
+    DECLINED = "DECLINED", _("Declined")
+    WITHDRAWN = "WITHDRAWN", _("Withdrawn")
+
+
+class JobOffer(models.Model):
+    """
+    Formal digital employment offer extended to an applicant.
+    """
+
+    application = models.OneToOneField(
+        Application,
+        on_delete=CASCADE,
+        related_name="offer",
+    )
+    job_title = CharField(_("Offer Position Title"), max_length=255, blank=True)
+    base_salary = CharField(_("Base Salary / Compensation"), max_length=120)
+    bonus = CharField(_("Signing / Performance Bonus"), max_length=120, blank=True)
+    equity = CharField(_("Stock Grants / Equity"), max_length=120, blank=True)
+    start_date = models.DateField(_("Anticipated Start Date"), null=True, blank=True)
+    expiration_date = models.DateField(_("Offer Expiration Date"), null=True, blank=True)
+    additional_terms = TextField(_("Benefits, Relocation & Terms"), blank=True)
+    status = CharField(
+        _("Offer Status"),
+        max_length=20,
+        choices=JobOfferStatus,
+        default=JobOfferStatus.PENDING,
+    )
+    responded_at = DateTimeField(null=True, blank=True)
+    decline_reason = TextField(blank=True)
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Job Offer for Application {self.application_id} ({self.status})"

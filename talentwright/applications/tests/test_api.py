@@ -647,3 +647,95 @@ class TestApplicationNotifications:
             ).count()
             == 1
         )
+
+
+class TestJobOfferAPI:
+    def setup_method(self):
+        self.client = APIClient()
+
+    def test_employer_extend_offer_and_seeker_accept(self):
+        # 1. Setup Employer & Job
+        employer_user = User.objects.create_user(
+            email="emp-offer@example.com",
+            password="Password123!",
+            is_active=True,
+        )
+        employer = EmployerProfile.objects.create(
+            user=employer_user,
+            company_name="Offer Innovations",
+            verification_status=VerificationStatus.APPROVED,
+        )
+        job = Job.objects.create(
+            employer=employer,
+            title="Senior Architect",
+            description="High impact role.",
+            employment_type="FULL_TIME",
+            status=JobStatus.OPEN,
+        )
+
+        # 2. Setup Seeker & Application
+        seeker_user = User.objects.create_user(
+            email="candidate-offer@example.com",
+            password="Password123!",
+            is_active=True,
+            name="Morgan Lee",
+        )
+        seeker = SeekerProfile.objects.create(user=seeker_user)
+        application = Application.objects.create(job=job, seeker=seeker)
+
+        # 3. Employer logs in and extends offer
+        login_resp = self.client.post(
+            reverse("auth_api:login"),
+            {"email": "emp-offer@example.com", "password": "Password123!"},
+            format="json",
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login_resp.data['access']}")
+
+        offer_payload = {
+            "job_title": "Senior Staff Architect",
+            "base_salary": "$175,000 / year",
+            "bonus": "$20,000 Signing Bonus",
+            "equity": "0.5% ISO Options",
+            "additional_terms": "Full medical, dental, vision, 401(k) 4% match.",
+        }
+        create_resp = self.client.post(
+            reverse("applications_api:employer-job-offer", kwargs={"application_id": application.id}),
+            offer_payload,
+            format="json",
+        )
+        assert create_resp.status_code == status.HTTP_201_CREATED
+        assert create_resp.data["base_salary"] == "$175,000 / year"
+        assert create_resp.data["status"] == "PENDING"
+
+        # Verify application status transitioned to OFFERED
+        application.refresh_from_db()
+        assert application.status == ApplicationStatus.OFFERED
+
+        # Verify notification sent to seeker
+        assert Notification.objects.filter(
+            recipient=seeker_user,
+            notification_type=NotificationType.APPLICATION_STATUS_CHANGED,
+        ).exists()
+
+        # 4. Seeker logs in and accepts offer
+        login_resp = self.client.post(
+            reverse("auth_api:login"),
+            {"email": "candidate-offer@example.com", "password": "Password123!"},
+            format="json",
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login_resp.data['access']}")
+
+        decide_resp = self.client.post(
+            reverse("applications_api:seeker-job-offer-decision", kwargs={"application_id": application.id}),
+            {"decision": "ACCEPTED"},
+            format="json",
+        )
+        assert decide_resp.status_code == status.HTTP_200_OK
+        assert decide_resp.data["status"] == "ACCEPTED"
+        assert decide_resp.data["responded_at"] is not None
+
+        # Verify employer received notification
+        assert Notification.objects.filter(
+            recipient=employer_user,
+            title="Offer Accepted by Candidate",
+        ).exists()

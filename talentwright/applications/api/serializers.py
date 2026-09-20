@@ -4,7 +4,14 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
-from talentwright.applications.models import Application, ApplicationStatus, Interview, InterviewStatus
+from talentwright.applications.models import (
+    Application,
+    ApplicationStatus,
+    Interview,
+    InterviewStatus,
+    JobOffer,
+    JobOfferStatus,
+)
 from talentwright.jobs.api.serializers import PublicJobSerializer
 from talentwright.jobs.models import Job
 from talentwright.users.api.auth_serializers import ResumeSerializer
@@ -47,6 +54,54 @@ class CompactJobSerializer(serializers.ModelSerializer):
         fields = ["id", "title"]
 
 
+class JobOfferSerializer(serializers.ModelSerializer):
+    application_id = serializers.IntegerField(source="application.id", read_only=True)
+    company_name = serializers.CharField(source="application.job.employer.company_name", read_only=True)
+    company_logo = serializers.CharField(source="application.job.employer.logo_url", read_only=True)
+    seeker_name = serializers.CharField(source="application.seeker.user.name", read_only=True)
+    seeker_email = serializers.EmailField(source="application.seeker.user.email", read_only=True)
+
+    class Meta:
+        model = JobOffer
+        fields = [
+            "id",
+            "application_id",
+            "job_title",
+            "company_name",
+            "company_logo",
+            "seeker_name",
+            "seeker_email",
+            "base_salary",
+            "bonus",
+            "equity",
+            "start_date",
+            "expiration_date",
+            "additional_terms",
+            "status",
+            "responded_at",
+            "decline_reason",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "application_id",
+            "company_name",
+            "company_logo",
+            "seeker_name",
+            "seeker_email",
+            "responded_at",
+            "decline_reason",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class JobOfferDecisionSerializer(serializers.Serializer):
+    decision = serializers.ChoiceField(choices=["ACCEPTED", "DECLINED"])
+    decline_reason = serializers.CharField(required=False, allow_blank=True, default="")
+
+
 class JobApplicantSerializer(serializers.ModelSerializer):
     """
     Streamlined serializer for listing applicants for a job.
@@ -56,6 +111,7 @@ class JobApplicantSerializer(serializers.ModelSerializer):
     job = CompactJobSerializer(read_only=True)
     seeker = ApplicationSeekerSerializer(read_only=True)
     resume = ResumeSerializer(read_only=True)
+    offer = JobOfferSerializer(read_only=True)
     analysis = serializers.SerializerMethodField()
 
     class Meta:
@@ -68,6 +124,7 @@ class JobApplicantSerializer(serializers.ModelSerializer):
             "cover_letter",
             "rejection_note",
             "status",
+            "offer",
             "analysis",
             "created_at",
             "updated_at",
@@ -96,6 +153,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
     job = PublicJobSerializer(read_only=True)
     seeker = ApplicationSeekerSerializer(read_only=True)
     resume = ResumeSerializer(read_only=True)
+    offer = JobOfferSerializer(read_only=True)
     resume_id = serializers.PrimaryKeyRelatedField(
         queryset=Resume.objects.all(),
         source="resume",
@@ -117,6 +175,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "cover_letter",
             "rejection_note",
             "status",
+            "offer",
             "created_at",
             "updated_at",
         ]
@@ -127,6 +186,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "resume",
             "rejection_note",
             "status",
+            "offer",
             "created_at",
             "updated_at",
         ]

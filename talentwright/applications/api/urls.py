@@ -6,11 +6,13 @@ from talentwright.applications.api.views import (
     EmployerInterviewCreateView,
     EmployerInterviewListView,
     EmployerInterviewUpdateView,
+    EmployerJobOfferCreateUpdateView,
     JobApplicationCreateView,
     JobApplicationsListView,
     SeekerApplicationDetailView,
     SeekerApplicationsListView,
     SeekerInterviewListView,
+    SeekerJobOfferDecisionView,
 )
 
 app_name = "applications"
@@ -31,11 +33,21 @@ urlpatterns = [
         name="employer-interview-create",
     ),
     path(
+        "employer/applications/<int:application_id>/offer/",
+        EmployerJobOfferCreateUpdateView.as_view(),
+        name="employer-job-offer",
+    ),
+    path(
         "employer/applications/<int:pk>/status/",
         EmployerApplicationStatusUpdateView.as_view(),
         name="employer-application-status-update",
     ),
     path("seeker/applications/", SeekerApplicationsListView.as_view(), name="seeker-applications"),
     path("seeker/applications/<int:pk>/", SeekerApplicationDetailView.as_view(), name="seeker-application-detail"),
+    path(
+        "seeker/applications/<int:application_id>/offer/decision/",
+        SeekerJobOfferDecisionView.as_view(),
+        name="seeker-job-offer-decision",
+    ),
     path("seeker/interviews/", SeekerInterviewListView.as_view(), name="seeker-interviews"),
 ]

@@ -1,15 +1,27 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
+from django.utils import timezone
+from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from talentwright.applications.api.serializers import (
     ApplicationSerializer,
     ApplicationStatusUpdateSerializer,
     InterviewSerializer,
     JobApplicantSerializer,
+    JobOfferDecisionSerializer,
+    JobOfferSerializer,
 )
-from talentwright.applications.models import Application, ApplicationStatus, Interview
+from talentwright.applications.models import (
+    Application,
+    ApplicationStatus,
+    Interview,
+    JobOffer,
+    JobOfferStatus,
+)
 from talentwright.jobs.models import Job, JobStatus
+from talentwright.notifications.models import Notification, NotificationType
 from talentwright.notifications.services import (
     notify_application_status_changed,
     notify_application_submitted,
@@ -208,3 +220,93 @@ class EmployerInterviewUpdateView(generics.UpdateAPIView):
         context = super().get_serializer_context()
         context["application"] = self.get_object().application
         return context
+
+
+class EmployerJobOfferCreateUpdateView(APIView):
+    """
+    Allows employer to create, update, or retrieve an official job offer for an applicant.
+    """
+
+    permission_classes = [IsVerifiedEmployer]
+
+    def get_application(self, application_id):
+        return get_object_or_404(
+            Application.objects.select_related("job", "job__employer", "job__employer__user", "seeker", "seeker__user"),
+            pk=application_id,
+            job__employer=self.request.user.employer_profile,
+        )
+
+    def get(self, request, application_id):
+        application = self.get_application(application_id)
+        if not hasattr(application, "offer"):
+            return Response({"detail": "No offer extended yet."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = JobOfferSerializer(application.offer)
+        return Response(serializer.data)
+
+    def post(self, request, application_id):
+        application = self.get_application(application_id)
+        offer = getattr(application, "offer", None)
+        serializer = JobOfferSerializer(instance=offer, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        saved_offer = serializer.save(application=application)
+
+        # Automatically update application status to OFFERED
+        if application.status != ApplicationStatus.OFFERED:
+            application.status = ApplicationStatus.OFFERED
+            application.save()
+
+        # Send notification to applicant
+        Notification.objects.create(
+            recipient=application.seeker.user,
+            notification_type=NotificationType.APPLICATION_STATUS_CHANGED,
+            title="Official Job Offer Received! 🎉",
+            message=f"{application.job.employer.company_name} has extended an official employment offer for {application.job.title}.",
+            related_url="/applications",
+        )
+
+        return Response(
+            JobOfferSerializer(saved_offer).data,
+            status=status.HTTP_200_OK if offer else status.HTTP_201_CREATED,
+        )
+
+
+class SeekerJobOfferDecisionView(APIView):
+    """
+    Allows a candidate to accept or decline a formal employment offer.
+    """
+
+    permission_classes = [IsSeeker]
+
+    def post(self, request, application_id):
+        application = get_object_or_404(
+            Application.objects.select_related("job", "job__employer", "job__employer__user", "seeker", "seeker__user"),
+            pk=application_id,
+            seeker=request.user.seeker_profile,
+        )
+        if not hasattr(application, "offer"):
+            return Response({"detail": "No offer found for this application."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = JobOfferDecisionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        decision = serializer.validated_data["decision"]
+        decline_reason = serializer.validated_data.get("decline_reason", "")
+
+        offer = application.offer
+        offer.status = decision
+        offer.responded_at = timezone.now()
+        if decline_reason:
+            offer.decline_reason = decline_reason
+        offer.save()
+
+        # Notify employer
+        action_verb = "accepted" if decision == "ACCEPTED" else "declined"
+        Notification.objects.create(
+            recipient=application.job.employer.user,
+            notification_type=NotificationType.APPLICATION_STATUS_CHANGED,
+            title=f"Offer {decision.capitalize()} by Candidate",
+            message=f"{application.seeker.user.name} has {action_verb} your employment offer for {application.job.title}.",
+            related_url=f"/employer/jobs/{application.job.id}/applicants",
+        )
+
+        return Response(JobOfferSerializer(offer).data)
