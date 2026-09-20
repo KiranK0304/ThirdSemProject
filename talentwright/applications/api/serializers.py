@@ -58,6 +58,7 @@ class JobApplicantSerializer(serializers.ModelSerializer):
             "seeker",
             "resume",
             "cover_letter",
+            "rejection_note",
             "status",
             "analysis",
             "created_at",
@@ -95,6 +96,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
     cover_letter = serializers.CharField(allow_blank=True, required=False)
+    rejection_note = serializers.CharField(read_only=True)
 
     class Meta:
         model = Application
@@ -105,6 +107,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "resume",
             "resume_id",
             "cover_letter",
+            "rejection_note",
             "status",
             "created_at",
             "updated_at",
@@ -114,6 +117,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "job",
             "seeker",
             "resume",
+            "rejection_note",
             "status",
             "created_at",
             "updated_at",
@@ -155,11 +159,19 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
 
 class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):
+    rejection_note = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        default="",
+        help_text="Optional note/reason sent to applicant when rejected.",
+    )
+
     class Meta:
         model = Application
         fields = [
             "id",
             "status",
+            "rejection_note",
             "created_at",
             "updated_at",
         ]

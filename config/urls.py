@@ -8,6 +8,10 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 from talentwright.users.api.auth_views import UserMeView
 
+admin.site.site_header = "Talentwright Administration"
+admin.site.site_title = "Talentwright Admin Portal"
+admin.site.index_title = "Platform Operations & Management"
+
 urlpatterns = [
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),

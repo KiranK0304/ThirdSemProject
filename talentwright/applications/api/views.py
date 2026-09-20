@@ -13,6 +13,8 @@ from talentwright.jobs.models import Job, JobStatus
 from talentwright.notifications.services import (
     notify_application_status_changed,
     notify_application_submitted,
+    send_application_rejection_email,
+    send_application_shortlist_email,
 )
 from talentwright.users.api.permissions import IsSeeker, IsVerifiedEmployer
 from talentwright.users.models import VerificationStatus
@@ -100,6 +102,10 @@ class EmployerApplicationStatusUpdateView(generics.UpdateAPIView):
         instance = serializer.save()
         if previous_status != instance.status:
             notify_application_status_changed(instance)
+            if instance.status == ApplicationStatus.SHORTLISTED:
+                send_application_shortlist_email(instance)
+            elif instance.status == ApplicationStatus.REJECTED:
+                send_application_rejection_email(instance, instance.rejection_note)
 
 
 class SeekerApplicationsListView(generics.ListAPIView):

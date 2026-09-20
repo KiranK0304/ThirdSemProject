@@ -40,3 +40,10 @@ def notify_application_status_changed(application) -> Notification:
         message=f"Your application for {application.job.title} is now {status_label.lower()}.",
         related_url=f"/seeker/applications/{application.pk}",
     )
+
+
+# Re-export email notification functions for convenience
+from talentwright.notifications.email_services import (  # noqa: E402
+    send_application_rejection_email,
+    send_application_shortlist_email,
+)

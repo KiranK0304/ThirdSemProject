@@ -45,6 +45,7 @@ class Application(models.Model):
         related_name="applications",
     )
     cover_letter = TextField(_("Cover letter"), blank=True)
+    rejection_note = TextField(_("Rejection note"), blank=True)
     status = CharField(
         _("Status"),
         max_length=20,
