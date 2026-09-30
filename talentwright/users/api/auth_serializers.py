@@ -171,6 +171,32 @@ class RegisterSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True,
     )
+    # Employer-specific fields
+    company_name = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, default="", max_length=255
+    )
+    website = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, default="", max_length=255
+    )
+    company_size = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, default="", max_length=50
+    )
+    headquarters = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, default="", max_length=255
+    )
+    # Seeker-specific fields
+    headline = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, default="", max_length=255
+    )
+    phone = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, default="", max_length=30
+    )
+    location = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, default="", max_length=255
+    )
+    years_of_experience = serializers.IntegerField(
+        write_only=True, required=False, allow_null=True, default=None, min_value=0
+    )
 
     class Meta:
         model = User
@@ -181,6 +207,14 @@ class RegisterSerializer(serializers.ModelSerializer):
             "password",
             "password_confirm",
             "account_type",
+            "company_name",
+            "website",
+            "company_size",
+            "headquarters",
+            "headline",
+            "phone",
+            "location",
+            "years_of_experience",
         ]
 
     def validate(self, attrs):
@@ -192,32 +226,64 @@ class RegisterSerializer(serializers.ModelSerializer):
         validated_data.pop("password_confirm")
         account_type = validated_data.pop("account_type")
 
+        company_name = validated_data.pop("company_name", "").strip()
+        website = validated_data.pop("website", "").strip()
+        company_size = validated_data.pop("company_size", "").strip()
+        headquarters = validated_data.pop("headquarters", "").strip()
+
+        headline = validated_data.pop("headline", "").strip()
+        phone = validated_data.pop("phone", "").strip()
+        location = validated_data.pop("location", "").strip()
+        years_of_experience = validated_data.pop("years_of_experience", None)
+
         with transaction.atomic():
             user = User.objects.create_user(
                 email=validated_data["email"],
                 password=validated_data["password"],
                 name=validated_data.get("name", ""),
                 is_active=True,
+                is_email_verified=False,
             )
             if account_type == "EMPLOYER":
-                EmployerProfile.objects.create(user=user)
+                EmployerProfile.objects.create(
+                    user=user,
+                    company_name=company_name,
+                    website=website,
+                    company_size=company_size,
+                    headquarters=headquarters,
+                )
             elif account_type == "SEEKER":
-                SeekerProfile.objects.create(user=user)
+                SeekerProfile.objects.create(
+                    user=user,
+                    headline=headline,
+                    phone=phone,
+                    location=location,
+                    years_of_experience=years_of_experience,
+                )
             return user
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Custom SimpleJWT login serializer returning user profile details and account type.
+    Blocks login for users who haven't verified their email.
     """
 
     def validate(self, attrs):
         data = super().validate(attrs)
+
+        if not self.user.is_email_verified and not (self.user.is_staff or self.user.is_superuser):
+            raise serializers.ValidationError(
+                {"detail": "Please verify your email address before logging in. Check your inbox for the verification link."},
+                code="email_not_verified",
+            )
+
         data["user"] = {
             "id": self.user.id,
             "email": self.user.email,
             "name": self.user.name,
             "account_type": self.user.account_type,
+            "is_email_verified": self.user.is_email_verified,
         }
         return data
 
@@ -248,11 +314,12 @@ class UserMeSerializer(serializers.ModelSerializer):
             "account_type",
             "is_active",
             "is_staff",
+            "is_email_verified",
             "date_joined",
             "employer_profile",
             "seeker_profile",
         ]
-        read_only_fields = ["id", "email", "account_type", "is_active", "is_staff", "date_joined"]
+        read_only_fields = ["id", "email", "account_type", "is_active", "is_staff", "is_email_verified", "date_joined"]
 
     def update(self, instance, validated_data):
         employer_profile_data = validated_data.pop("employer_profile", None)
