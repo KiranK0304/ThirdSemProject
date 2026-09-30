@@ -31,7 +31,7 @@ from talentwright.notifications.services import (
     send_application_rejection_email,
     send_application_shortlist_email,
 )
-from talentwright.users.api.permissions import IsSeeker, IsVerifiedEmployer
+from talentwright.users.api.permissions import IsEmployer, IsSeeker, IsVerifiedEmployer
 from talentwright.users.models import VerificationStatus
 
 
@@ -86,7 +86,7 @@ class JobApplicationsListView(generics.ListAPIView):
 
 class EmployerApplicationsListView(generics.ListAPIView):
     serializer_class = JobApplicantSerializer
-    permission_classes = [IsVerifiedEmployer]
+    permission_classes = [IsEmployer]
 
     def get_queryset(self):
         employer = self.request.user.employer_profile
@@ -320,7 +320,7 @@ class EmployerRecruitmentAnalyticsView(APIView):
     Provides recruitment pipeline analytics, funnel metrics, and conversion rates for employers.
     """
 
-    permission_classes = [IsVerifiedEmployer]
+    permission_classes = [IsEmployer]
 
     def get(self, request):
         employer = request.user.employer_profile

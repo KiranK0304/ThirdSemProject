@@ -16,7 +16,7 @@ from talentwright.jobs.api.serializers import (
 )
 from talentwright.jobs.models import Job, JobAlert, JobBookmark, JobStatus, SavedJob
 from talentwright.jobs.services import matching_jobs_for_alert
-from talentwright.users.api.permissions import IsSeeker, IsVerifiedEmployer
+from talentwright.users.api.permissions import IsEmployer, IsSeeker, IsVerifiedEmployer
 from talentwright.users.models import VerificationStatus
 
 
@@ -118,6 +118,11 @@ class JobCreateView(EmployerJobQuerysetMixin, ListCreateAPIView):
     search_fields = ["title", "description", "location"]
     ordering_fields = ["created_at", "salary_min", "salary_max", "title", "status"]
     ordering = ["-created_at"]
+
+    def get_permissions(self):
+        if self.request.method in ("GET", "HEAD", "OPTIONS"):
+            return [IsEmployer()]
+        return [IsVerifiedEmployer()]
 
 
 class JobDetailView(EmployerJobQuerysetMixin, RetrieveUpdateDestroyAPIView):
