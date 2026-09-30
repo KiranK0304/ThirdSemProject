@@ -196,7 +196,7 @@ class TestJWTAuthenticationAPI:
 
     def test_non_admin_forbidden_on_admin_endpoints(self):
         _normal_user = User.objects.create_user(
-            email="normal@example.com", password="NormalPassword123!", is_active=True
+            email="normal@example.com", password="NormalPassword123!", is_active=True, is_email_verified=True
         )
         login_url = reverse("auth_api:login")
         login_resp = self.client.post(

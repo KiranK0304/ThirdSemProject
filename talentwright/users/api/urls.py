@@ -9,10 +9,12 @@ from .auth_views import (
     LogoutView,
     PublicCompanyDetailView,
     RegisterView,
+    ResendVerificationView,
     SeekerResumeDetailView,
     SeekerResumeListCreateView,
     SeekerResumeSetPrimaryView,
     UserMeView,
+    VerifyEmailView,
 )
 
 app_name = "auth"
@@ -22,6 +24,8 @@ urlpatterns = [
     path("login/", CustomTokenObtainPairView.as_view(), name="login"),
     path("refresh/", CustomTokenRefreshView.as_view(), name="refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("verify-email/", VerifyEmailView.as_view(), name="verify-email"),
+    path("resend-verification/", ResendVerificationView.as_view(), name="resend-verification"),
     path("me/", UserMeView.as_view(), name="me"),
     path("companies/<int:pk>/", PublicCompanyDetailView.as_view(), name="company-detail"),
     path("seeker/resumes/", SeekerResumeListCreateView.as_view(), name="seeker-resumes"),

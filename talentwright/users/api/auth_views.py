@@ -5,11 +5,13 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from talentwright.notifications.services import notify_employer_approved, notify_employer_rejected
 from talentwright.users.api.permissions import IsAdmin, IsSeeker
+from talentwright.users.email_verification import send_verification_email, verify_token
 from talentwright.users.models import EmployerProfile, Resume, VerificationStatus
 
 from .auth_serializers import (
@@ -30,11 +32,15 @@ class RegisterView(generics.CreateAPIView):
 
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+
+        # Send verification email (non-blocking: failure is logged, not raised)
+        send_verification_email(user)
 
         # Generate JWT tokens for the newly registered user
         refresh = RefreshToken.for_user(user)
@@ -46,6 +52,7 @@ class RegisterView(generics.CreateAPIView):
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
             },
+            "email_verification_sent": True,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -91,6 +98,101 @@ class LogoutView(APIView):
                 {"detail": f"Invalid or expired refresh token: {e!s}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class VerifyEmailView(APIView):
+    """
+    API view for verifying a user's email address using a signed token.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        token = request.data.get("token", "")
+        if not token:
+            return Response(
+                {"detail": "Verification token is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = verify_token(token)
+        if payload is None:
+            return Response(
+                {"detail": "Invalid or expired verification link. Please request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(pk=payload["user_id"], email=payload["email"])
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "User not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if user.is_email_verified:
+            return Response(
+                {"detail": "Email is already verified."},
+                status=status.HTTP_200_OK,
+            )
+
+        user.is_email_verified = True
+        user.save(update_fields=["is_email_verified"])
+
+        return Response(
+            {"detail": "Email verified successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResendVerificationView(APIView):
+    """
+    API view for resending the email verification link.
+    Accepts either an authenticated request or an email in the request body.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        # Try authenticated user first, then email from body
+        user = None
+        if request.user and request.user.is_authenticated:
+            user = request.user
+        else:
+            email = request.data.get("email", "")
+            if not email:
+                return Response(
+                    {"detail": "Email address is required."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                # Don't reveal whether email exists — always return success
+                return Response(
+                    {"detail": "If an account with that email exists, a verification email has been sent."},
+                    status=status.HTTP_200_OK,
+                )
+
+        if user.is_email_verified:
+            return Response(
+                {"detail": "Email is already verified."},
+                status=status.HTTP_200_OK,
+            )
+
+        send_verification_email(user)
+        return Response(
+            {"detail": "Verification email sent."},
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserMeView(generics.RetrieveUpdateAPIView):
