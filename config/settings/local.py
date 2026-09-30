@@ -29,9 +29,9 @@ CACHES = {
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-EMAIL_HOST = env("EMAIL_HOST", default="mailpit")
+EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-EMAIL_PORT = 1025
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 
 # django-debug-toolbar
 # ------------------------------------------------------------------------------
@@ -69,8 +69,20 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 
 # Your stuff...

@@ -221,8 +221,17 @@ EMAIL_BACKEND = env(
     "DJANGO_EMAIL_BACKEND",
     default="django.core.mail.backends.smtp.EmailBackend",
 )
+EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="TalentWright <noreply@talentwright.com>")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
+
+# Frontend URL for email links (verification, etc.)
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 
 # ADMIN
 # ------------------------------------------------------------------------------
@@ -260,8 +269,6 @@ LOGGING = {
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -295,8 +302,23 @@ CORS_ALLOWED_ORIGINS = env.list(
     default=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+    ],
+)
+CSRF_TRUSTED_ORIGINS = env.list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    default=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ],
 )
 
