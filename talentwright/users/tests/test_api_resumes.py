@@ -19,6 +19,7 @@ class TestSeekerResumeAPI:
             password="StrongPassword123!",
             name="Resume Candidate",
             is_active=True,
+            is_email_verified=True,
         )
         seeker = SeekerProfile.objects.create(user=user, phone="+1234567890", bio="Bio info")
         login_resp = self.client.post(

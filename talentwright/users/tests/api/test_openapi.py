@@ -2,11 +2,17 @@ from http import HTTPStatus
 
 import pytest
 from django.urls import reverse
+from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
-def test_api_docs_accessible_by_admin(admin_client):
+@pytest.mark.django_db
+def test_api_docs_accessible_by_admin(admin_user):
+    client = APIClient()
+    token = str(RefreshToken.for_user(admin_user).access_token)
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
     url = reverse("api-docs")
-    response = admin_client.get(url)
+    response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
 
@@ -17,7 +23,12 @@ def test_api_docs_not_accessible_by_anonymous_users(client):
     assert response.status_code in [HTTPStatus.FORBIDDEN, HTTPStatus.UNAUTHORIZED]
 
 
-def test_api_schema_generated_successfully(admin_client):
+@pytest.mark.django_db
+def test_api_schema_generated_successfully(admin_user):
+    client = APIClient()
+    token = str(RefreshToken.for_user(admin_user).access_token)
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
     url = reverse("api-schema")
-    response = admin_client.get(url)
+    response = client.get(url)
     assert response.status_code == HTTPStatus.OK
+

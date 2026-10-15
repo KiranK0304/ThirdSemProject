@@ -9,6 +9,7 @@ from talentwright.users.models import User
 class UserFactory(DjangoModelFactory[User]):
     email = Faker("email")
     name = Faker("name")
+    is_email_verified = True
 
     @post_generation
     def password(self: User, create: bool, extracted: str | None, **kwargs):  # noqa: FBT001
