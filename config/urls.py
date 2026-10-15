@@ -67,6 +67,10 @@ if settings.DEBUG:
         ),
         path("500/", default_views.server_error),
     ]
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
+    urlpatterns += staticfiles_urlpatterns()
+
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
 
