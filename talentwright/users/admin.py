@@ -37,6 +37,7 @@ class UserAdmin(auth_admin.UserAdmin):
             {
                 "fields": (
                     "is_active",
+                    "is_email_verified",
                     "is_staff",
                     "is_superuser",
                     "groups",
@@ -46,8 +47,8 @@ class UserAdmin(auth_admin.UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
-    list_display = ["email", "name", "role_badge", "is_staff", "is_active", "date_joined"]
-    list_filter = ["is_staff", "is_active", "is_superuser", "date_joined"]
+    list_display = ["email", "name", "role_badge", "is_email_verified", "is_staff", "is_active", "date_joined"]
+    list_filter = ["is_email_verified", "is_staff", "is_active", "is_superuser", "date_joined"]
     search_fields = ["email", "name"]
     ordering = ["-date_joined"]
     add_fieldsets = (
@@ -99,9 +100,9 @@ def reject_employers(modeladmin, request, queryset):
 
 @admin.register(EmployerProfile)
 class EmployerProfileAdmin(admin.ModelAdmin):
-    list_display = ["user_email", "company_name", "verification_badge", "job_count", "created_at"]
-    list_filter = ["verification_status", "created_at"]
-    search_fields = ["user__email", "user__name", "company_name"]
+    list_display = ["user_email", "company_name", "company_size", "headquarters", "verification_badge", "job_count", "created_at"]
+    list_filter = ["verification_status", "company_size", "created_at"]
+    search_fields = ["user__email", "user__name", "company_name", "headquarters"]
     list_select_related = ["user"]
     autocomplete_fields = ["user"]
     readonly_fields = ["created_at", "updated_at", "job_count"]

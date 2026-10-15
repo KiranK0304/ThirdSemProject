@@ -283,6 +283,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "email": self.user.email,
             "name": self.user.name,
             "account_type": self.user.account_type,
+            "is_staff": self.user.is_staff,
+            "is_superuser": self.user.is_superuser,
             "is_email_verified": self.user.is_email_verified,
         }
         return data
@@ -360,6 +362,8 @@ class EmployerProfileAdminSerializer(serializers.ModelSerializer):
             "user_name",
             "company_name",
             "website",
+            "company_size",
+            "headquarters",
             "description",
             "verification_status",
             "created_at",
