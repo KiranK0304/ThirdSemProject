@@ -266,17 +266,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
     Custom SimpleJWT login serializer returning user profile details and account type.
-    Blocks login for users who haven't verified their email.
+    Email verification is optional and does not block password-based login.
     """
 
     def validate(self, attrs):
         data = super().validate(attrs)
-
-        if not self.user.is_email_verified and not (self.user.is_staff or self.user.is_superuser):
-            raise serializers.ValidationError(
-                {"detail": "Please verify your email address before logging in. Check your inbox for the verification link."},
-                code="email_not_verified",
-            )
 
         data["user"] = {
             "id": self.user.id,

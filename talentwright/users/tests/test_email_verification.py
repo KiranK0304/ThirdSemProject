@@ -52,8 +52,8 @@ class TestEmailVerification:
         assert "newuser@example.com" in sent_email.to
         assert "/verify-email?token=" in sent_email.body
 
-    def test_unverified_user_cannot_login(self):
-        """An unverified user attempting to log in receives a 400 error requiring verification."""
+    def test_unverified_user_can_login_with_email_and_password(self):
+        """Email verification is optional; valid credentials still issue login tokens."""
         User.objects.create_user(
             email="unverified@example.com",
             password="StrongPassword123!",
@@ -66,9 +66,10 @@ class TestEmailVerification:
             format="json",
         )
 
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        error_detail = str(response.data)
-        assert "verify your email" in error_detail.lower()
+        assert response.status_code == status.HTTP_200_OK
+        assert "access" in response.data
+        assert "refresh" in response.data
+        assert response.data["user"]["is_email_verified"] is False
 
     def test_verified_user_can_login(self):
         """A verified user can log in normally."""
@@ -207,24 +208,6 @@ class TestEmailVerification:
 
         assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
         assert "couldn't send" in response.data["detail"]
-
-    def test_unverified_login_message_mentions_verification(self):
-        """The login error for unverified users carries the text the frontend looks for."""
-        User.objects.create_user(
-            email="pending@example.com",
-            password="StrongPassword123!",
-            is_email_verified=False,
-        )
-        url = reverse("auth_api:login")
-        response = self.client.post(
-            url,
-            {"email": "pending@example.com", "password": "StrongPassword123!"},
-            format="json",
-        )
-
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert "verify your email" in " ".join(response.data["detail"]).lower()
-
 
 class TestMarkExistingUsersVerifiedMigration:
     def test_only_accounts_older_than_verification_feature_are_marked(self):
