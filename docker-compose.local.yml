@@ -19,8 +19,13 @@ services:
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
+    environment:
+      # Links in verification emails must point at the frontend's host port
+      - FRONTEND_URL=http://localhost:${FRONTEND_PORT:-5173}
+      # SMTP settings and sender address come from .envs/.local/.django above.
     ports:
-      - '8000:8000'
+      # Host ports can be changed in a local .env file (see .env.example)
+      - '${DJANGO_PORT:-8000}:8000'
     expose:
       - '8000'
     command: /start
@@ -41,7 +46,7 @@ services:
     image: docker.io/axllent/mailpit:latest
     container_name: talentwright_local_mailpit
     ports:
-      - "8025:8025"
+      - "${MAILPIT_PORT:-8025}:8025"
 
   frontend:
     build:
@@ -57,5 +62,6 @@ services:
       - /app/node_modules
     environment:
       - VITE_BACKEND_URL=http://django:8000
+      - VITE_DJANGO_ADMIN_URL=http://localhost:${DJANGO_PORT:-8000}/admin/
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"

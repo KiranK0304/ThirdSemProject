@@ -21,6 +21,7 @@ class TestPublicJobSearchAPI:
             email="approved@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         approved_employer = EmployerProfile.objects.create(
             user=approved_user,
@@ -47,6 +48,7 @@ class TestPublicJobSearchAPI:
             email="pending@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         pending_employer = EmployerProfile.objects.create(
             user=pending_user,
@@ -75,6 +77,7 @@ class TestPublicJobSearchAPI:
             email="detail-approved@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         approved_employer = EmployerProfile.objects.create(
             user=approved_user,
@@ -100,6 +103,7 @@ class TestPublicJobSearchAPI:
             email="hidden-approved@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         approved_employer = EmployerProfile.objects.create(
             user=approved_user,
@@ -123,6 +127,7 @@ class TestPublicJobSearchAPI:
             email="search-test@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=approved_user,
@@ -154,6 +159,7 @@ class TestPublicJobSearchAPI:
             email="filter-test@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=approved_user,
@@ -194,6 +200,7 @@ class TestPublicJobSearchAPI:
             email="ordering-test@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=approved_user,
@@ -231,6 +238,7 @@ class TestSeekerRecommendationsAPI:
             email="recommendation-employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -241,6 +249,7 @@ class TestSeekerRecommendationsAPI:
             email="recommendation-seeker@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         self.seeker = SeekerProfile.objects.create(user=seeker_user)
         self.seeker_user = seeker_user
@@ -332,7 +341,7 @@ class TestEmployerJobManagementAPI:
         self.client = APIClient()
 
     def _create_verified_employer_and_login(self, email: str):
-        user = User.objects.create_user(email=email, password="StrongPassword123!", is_active=True)
+        user = User.objects.create_user(email=email, password="StrongPassword123!", is_active=True, is_email_verified=True)
         employer = EmployerProfile.objects.create(
             user=user,
             company_name=f"{email.split('@')[0]} Co",
@@ -351,6 +360,7 @@ class TestEmployerJobManagementAPI:
             email="approved-employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         EmployerProfile.objects.create(
             user=employer_user,
@@ -389,6 +399,7 @@ class TestEmployerJobManagementAPI:
             email="pending-employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         EmployerProfile.objects.create(
             user=employer_user,
@@ -427,6 +438,7 @@ class TestEmployerJobManagementAPI:
             email="employer-two@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         other_employer = EmployerProfile.objects.create(
             user=other_user,
@@ -474,6 +486,7 @@ class TestEmployerJobManagementAPI:
             email="other-owner@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         other_employer = EmployerProfile.objects.create(
             user=other_user,
@@ -530,6 +543,7 @@ class TestEmployerJobManagementAPI:
             email="seeker@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
 
         login_resp = self.client.post(
@@ -581,6 +595,7 @@ class TestSavedJobsAndAlertsAPI:
             email="seeker-alerts@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         self.seeker = SeekerProfile.objects.create(user=self.seeker_user)
         self.client.force_authenticate(user=self.seeker_user)
@@ -589,6 +604,7 @@ class TestSavedJobsAndAlertsAPI:
             email="alert-employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -683,12 +699,14 @@ class TestSendJobAlertsCommand:
             email="alert-recipient@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         seeker = SeekerProfile.objects.create(user=seeker_user)
         employer_user = User.objects.create_user(
             email="command-employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -724,6 +742,7 @@ class TestJobBookmarksAPI:
             email="bookmark-employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -741,6 +760,7 @@ class TestJobBookmarksAPI:
             email="bookmark-seeker@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         SeekerProfile.objects.create(user=self.seeker_user)
         self.client.force_authenticate(user=self.seeker_user)

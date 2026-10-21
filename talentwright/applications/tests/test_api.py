@@ -24,6 +24,7 @@ class TestJobApplicationAPI:
             email="employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -43,6 +44,7 @@ class TestJobApplicationAPI:
             email=email,
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         SeekerProfile.objects.create(user=user, phone="+10000000000", bio="Candidate bio")
         login_resp = self.client.post(
@@ -58,6 +60,7 @@ class TestJobApplicationAPI:
             email=email,
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=user,
@@ -134,6 +137,7 @@ class TestJobApplicationAPI:
             email="owner-list@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         owner_employer = EmployerProfile.objects.create(
             user=owner_user,
@@ -148,7 +152,7 @@ class TestJobApplicationAPI:
             status=JobStatus.OPEN,
         )
         seeker_user = User.objects.create_user(
-            email="seeker1@example.com", password="StrongPassword123!", is_active=True
+            email="seeker1@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         Application.objects.create(job=job, seeker=seeker_profile, cover_letter="First application.")
@@ -181,6 +185,7 @@ class TestJobApplicationAPI:
             email="owner@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -204,10 +209,10 @@ class TestJobApplicationAPI:
         )
 
         seeker_one = User.objects.create_user(
-            email="seeker-one@example.com", password="StrongPassword123!", is_active=True
+            email="seeker-one@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         seeker_two = User.objects.create_user(
-            email="seeker-two@example.com", password="StrongPassword123!", is_active=True
+            email="seeker-two@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         profile_one = SeekerProfile.objects.create(user=seeker_one)
         profile_two = SeekerProfile.objects.create(user=seeker_two)
@@ -238,7 +243,7 @@ class TestJobApplicationAPI:
             status=JobStatus.OPEN,
         )
         seeker_user = User.objects.create_user(
-            email="seeker-status@example.com", password="StrongPassword123!", is_active=True
+            email="seeker-status@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
@@ -257,7 +262,7 @@ class TestJobApplicationAPI:
     def test_non_owner_cannot_update_application_status(self):
         job = self._create_approved_employer_job()
         seeker_user = User.objects.create_user(
-            email="seeker-other@example.com", password="StrongPassword123!", is_active=True
+            email="seeker-other@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
@@ -284,7 +289,7 @@ class TestJobApplicationAPI:
             status=JobStatus.OPEN,
         )
         seeker_user = User.objects.create_user(
-            email="seeker-inv@example.com", password="StrongPassword123!", is_active=True
+            email="seeker-inv@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         application = Application.objects.create(job=job, seeker=seeker_profile, status=ApplicationStatus.SUBMITTED)
@@ -324,7 +329,7 @@ class TestJobApplicationAPI:
 
         seeker_user = self._login_seeker("my-applications@example.com")
         other_user = User.objects.create_user(
-            email="other-seeker@example.com", password="StrongPassword123!", is_active=True
+            email="other-seeker@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         other_seeker = SeekerProfile.objects.create(user=other_user)
 
@@ -372,7 +377,7 @@ class TestJobApplicationAPI:
     def test_seeker_cannot_retrieve_or_withdraw_other_seeker_application(self):
         job = self._create_approved_employer_job()
         other_user = User.objects.create_user(
-            email="other-person@example.com", password="StrongPassword123!", is_active=True
+            email="other-person@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         other_seeker = SeekerProfile.objects.create(user=other_user)
         application = Application.objects.create(job=job, seeker=other_seeker, cover_letter="Other app")
@@ -420,7 +425,7 @@ class TestJobApplicationAPI:
     def test_seeker_cannot_apply_with_another_users_resume(self):
         job = self._create_approved_employer_job()
         other_user = User.objects.create_user(
-            email="other-r@example.com", password="StrongPassword123!", is_active=True
+            email="other-r@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         other_seeker = SeekerProfile.objects.create(user=other_user)
         other_resume = Resume.objects.create(
@@ -450,7 +455,7 @@ class TestJobApplicationAPI:
             status=JobStatus.OPEN,
         )
         seeker_user = User.objects.create_user(
-            email="applicant-resume@example.com", password="StrongPassword123!", is_active=True
+            email="applicant-resume@example.com", password="StrongPassword123!", is_active=True, is_email_verified=True
         )
         seeker_profile = SeekerProfile.objects.create(user=seeker_user)
         resume = Resume.objects.create(
@@ -475,6 +480,7 @@ class TestInterviewSchedulingAPI:
             email="interview-employer@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         self.employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -492,6 +498,7 @@ class TestInterviewSchedulingAPI:
             email="interview-seeker@example.com",
             password="StrongPassword123!",
             is_active=True,
+            is_email_verified=True,
         )
         self.seeker = SeekerProfile.objects.create(user=seeker_user)
         self.application = Application.objects.create(
@@ -582,13 +589,13 @@ class TestInterviewSchedulingAPI:
 class TestApplicationNotifications:
     def setup_method(self):
         self.client = APIClient()
-        self.employer_user = User.objects.create_user(email="employer-notif@example.com", password="Password123!")
+        self.employer_user = User.objects.create_user(email="employer-notif@example.com", password="Password123!", is_email_verified=True)
         self.employer_profile = EmployerProfile.objects.create(
             user=self.employer_user,
             company_name="Example Co",
             verification_status=VerificationStatus.APPROVED,
         )
-        self.seeker_user = User.objects.create_user(email="seeker-notif@example.com", password="Password123!")
+        self.seeker_user = User.objects.create_user(email="seeker-notif@example.com", password="Password123!", is_email_verified=True)
         self.seeker_profile = SeekerProfile.objects.create(user=self.seeker_user)
         self.job = Job.objects.create(
             employer=self.employer_profile,
@@ -659,6 +666,7 @@ class TestJobOfferAPI:
             email="emp-offer@example.com",
             password="Password123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -678,6 +686,7 @@ class TestJobOfferAPI:
             email="candidate-offer@example.com",
             password="Password123!",
             is_active=True,
+            is_email_verified=True,
             name="Morgan Lee",
         )
         seeker = SeekerProfile.objects.create(user=seeker_user)
@@ -751,6 +760,7 @@ class TestRecruitmentAnalyticsAndCsvExport:
             email="emp-analytics@example.com",
             password="Password123!",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=employer_user,
@@ -770,6 +780,7 @@ class TestRecruitmentAnalyticsAndCsvExport:
             email="candidate-analytics@example.com",
             password="Password123!",
             is_active=True,
+            is_email_verified=True,
             name="Alex Rivera",
         )
         seeker = SeekerProfile.objects.create(

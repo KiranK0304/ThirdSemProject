@@ -239,6 +239,7 @@ class Command(BaseCommand):
         )
         emp_user.name = EMPLOYER["name"]
         emp_user.set_password(COMMON_PASSWORD)
+        emp_user.is_email_verified = True
         emp_user.save()
         emp_profile, _ = EmployerProfile.objects.update_or_create(
             user=emp_user,
@@ -283,6 +284,7 @@ class Command(BaseCommand):
             )
             user.name = emp_data["name"]
             user.set_password(COMMON_PASSWORD)
+            user.is_email_verified = True
             user.save()
 
             seeker_profile, _ = SeekerProfile.objects.update_or_create(

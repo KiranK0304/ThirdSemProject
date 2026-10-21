@@ -27,7 +27,7 @@ from .auth_serializers import (
 
 class RegisterView(generics.CreateAPIView):
     """
-    API view for registering a new user and returning immediate JWT access & refresh tokens.
+    API view for registering a new user and sending an email verification link.
     """
 
     serializer_class = RegisterSerializer
@@ -40,19 +40,12 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
 
         # Send verification email (non-blocking: failure is logged, not raised)
-        send_verification_email(user)
-
-        # Generate JWT tokens for the newly registered user
-        refresh = RefreshToken.for_user(user)
+        email_sent = send_verification_email(user)
 
         user_data = UserMeSerializer(user).data
         response_data = {
             "user": user_data,
-            "tokens": {
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-            },
-            "email_verification_sent": True,
+            "email_verification_sent": email_sent,
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
 
@@ -188,7 +181,11 @@ class ResendVerificationView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        send_verification_email(user)
+        if not send_verification_email(user):
+            return Response(
+                {"detail": "We couldn't send the verification email right now. Please try again in a few minutes."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         return Response(
             {"detail": "Verification email sent."},
             status=status.HTTP_200_OK,

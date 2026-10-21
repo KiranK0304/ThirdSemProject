@@ -445,12 +445,16 @@ class Command(BaseCommand):
                 defaults={
                     "name": company["user_name"],
                     "is_active": True,
+                    "is_email_verified": True,
                 },
             )
             if created:
                 user.set_password("demo1234")
                 user.save()
                 self.stdout.write(f"  [+] Created employer user: {company['email']}")
+            elif not user.is_email_verified:
+                user.is_email_verified = True
+                user.save(update_fields=["is_email_verified"])
 
             profile, _ = EmployerProfile.objects.get_or_create(
                 user=user,
@@ -471,12 +475,16 @@ class Command(BaseCommand):
                 defaults={
                     "name": seeker["name"],
                     "is_active": True,
+                    "is_email_verified": True,
                 },
             )
             if created:
                 user.set_password("demo1234")
                 user.save()
                 self.stdout.write(f"  [+] Created seeker user: {seeker['email']}")
+            elif not user.is_email_verified:
+                user.is_email_verified = True
+                user.save(update_fields=["is_email_verified"])
 
             profile, _ = SeekerProfile.objects.get_or_create(
                 user=user,

@@ -24,6 +24,7 @@ class TestMessageAppAPI:
             password="StrongPassword123!",
             name=name,
             is_active=True,
+            is_email_verified=True,
         )
         seeker = SeekerProfile.objects.create(
             user=user,
@@ -50,6 +51,7 @@ class TestMessageAppAPI:
             password="StrongPassword123!",
             name="Employer Rep",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=user,
@@ -75,6 +77,7 @@ class TestMessageAppAPI:
             password="StrongPassword123!",
             name="Unverified Employer",
             is_active=True,
+            is_email_verified=True,
         )
         employer = EmployerProfile.objects.create(
             user=user,
@@ -204,6 +207,7 @@ class TestMessageAppAPI:
             password="StrongPassword123!",
             name="Alice Seeker",
             is_active=True,
+            is_email_verified=True,
         )
         seeker = SeekerProfile.objects.create(user=seeker_user)
 
@@ -244,6 +248,7 @@ class TestMessageAppAPI:
             password="StrongPassword123!",
             name="Bob Seeker",
             is_active=True,
+            is_email_verified=True,
         )
         seeker = SeekerProfile.objects.create(user=seeker_user)
         _, employer = self._login_verified_employer()

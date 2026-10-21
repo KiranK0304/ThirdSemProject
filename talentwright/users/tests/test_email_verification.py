@@ -1,5 +1,12 @@
+import importlib
+import smtplib
+from datetime import UTC, datetime
+from unittest import mock
+
 import pytest
+from django.apps import apps
 from django.core import mail
+from django.db import connection
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -33,6 +40,7 @@ class TestEmailVerification:
 
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["email_verification_sent"] is True
+        assert "tokens" not in response.data
 
         user = User.objects.get(email="newuser@example.com")
         assert user.is_email_verified is False
@@ -167,3 +175,69 @@ class TestEmailVerification:
         assert response.status_code == status.HTTP_200_OK
         assert "already verified" in response.data["detail"].lower()
         assert len(mail.outbox) == 0
+
+    def test_registration_reports_when_email_could_not_be_sent(self):
+        """If the mail server rejects the login, registration still succeeds but says no email went out."""
+        url = reverse("auth_api:register")
+        payload = {
+            "email": "nomail@example.com",
+            "name": "No Mail",
+            "password": "StrongPassword123!",
+            "password_confirm": "StrongPassword123!",
+            "account_type": "SEEKER",
+        }
+        smtp_error = smtplib.SMTPAuthenticationError(535, b"Username and Password not accepted")
+        with mock.patch("talentwright.users.email_verification.send_mail", side_effect=smtp_error):
+            response = self.client.post(url, payload, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+        assert response.data["email_verification_sent"] is False
+
+    def test_resend_verification_reports_send_failure(self):
+        """Resend returns 503 with a readable message instead of claiming the email was sent."""
+        User.objects.create_user(
+            email="resend-fail@example.com",
+            password="StrongPassword123!",
+            is_email_verified=False,
+        )
+        url = reverse("auth_api:resend-verification")
+        smtp_error = smtplib.SMTPAuthenticationError(535, b"Username and Password not accepted")
+        with mock.patch("talentwright.users.email_verification.send_mail", side_effect=smtp_error):
+            response = self.client.post(url, {"email": "resend-fail@example.com"}, format="json")
+
+        assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
+        assert "couldn't send" in response.data["detail"]
+
+    def test_unverified_login_message_mentions_verification(self):
+        """The login error for unverified users carries the text the frontend looks for."""
+        User.objects.create_user(
+            email="pending@example.com",
+            password="StrongPassword123!",
+            is_email_verified=False,
+        )
+        url = reverse("auth_api:login")
+        response = self.client.post(
+            url,
+            {"email": "pending@example.com", "password": "StrongPassword123!"},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert "verify your email" in " ".join(response.data["detail"]).lower()
+
+
+class TestMarkExistingUsersVerifiedMigration:
+    def test_only_accounts_older_than_verification_feature_are_marked(self):
+        """Accounts from before migration 0007 are verified; newer unverified sign-ups are left alone."""
+        migration = importlib.import_module("talentwright.users.migrations.0008_mark_existing_users_verified")
+        old_user = User.objects.create_user(email="old@example.com", password="StrongPassword123!")
+        User.objects.filter(pk=old_user.pk).update(date_joined=datetime(2020, 1, 1, tzinfo=UTC))
+        new_user = User.objects.create_user(email="new@example.com", password="StrongPassword123!")
+
+        with connection.schema_editor() as schema_editor:
+            migration.mark_existing_users_verified(apps, schema_editor)
+
+        old_user.refresh_from_db()
+        new_user.refresh_from_db()
+        assert old_user.is_email_verified is True
+        assert new_user.is_email_verified is False

@@ -25,7 +25,7 @@ class TestJWTAuthenticationAPI:
         response = self.client.post(url, payload, format="json")
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert "tokens" in response.data
+        assert "tokens" not in response.data
         assert response.data["user"]["email"] == "employer@acme.com"
         assert response.data["user"]["account_type"] == "EMPLOYER"
         assert response.data["user"]["employer_profile"]["verification_status"] == "PENDING"
@@ -74,8 +74,17 @@ class TestJWTAuthenticationAPI:
             "password_confirm": "StrongPassword123!",
             "account_type": "EMPLOYER",
         }
-        reg_resp = self.client.post(url, payload, format="json")
-        access_token = reg_resp.data["tokens"]["access"]
+        self.client.post(url, payload, format="json")
+        user = User.objects.get(email="emp_patch@acme.com")
+        user.is_email_verified = True
+        user.save(update_fields=["is_email_verified"])
+        login_resp = self.client.post(
+            reverse("auth_api:login"),
+            {"email": "emp_patch@acme.com", "password": "StrongPassword123!"},
+            format="json",
+        )
+        assert login_resp.status_code == status.HTTP_200_OK
+        access_token = login_resp.data["access"]
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
         me_url = reverse("api-me")
