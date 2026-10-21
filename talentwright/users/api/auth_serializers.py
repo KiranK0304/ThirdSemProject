@@ -236,13 +236,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         location = validated_data.pop("location", "").strip()
         years_of_experience = validated_data.pop("years_of_experience", None)
 
+        from django.conf import settings
+        auto_verify = getattr(settings, "AUTO_VERIFY_EMAIL", settings.DEBUG and not getattr(settings, "EMAIL_HOST_USER", ""))
         with transaction.atomic():
             user = User.objects.create_user(
                 email=validated_data["email"],
                 password=validated_data["password"],
                 name=validated_data.get("name", ""),
                 is_active=True,
-                is_email_verified=False,
+                is_email_verified=bool(auto_verify),
             )
             if account_type == "EMPLOYER":
                 EmployerProfile.objects.create(
@@ -273,10 +275,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
 
         if not self.user.is_email_verified and not (self.user.is_staff or self.user.is_superuser):
-            raise serializers.ValidationError(
-                {"detail": "Please verify your email address before logging in. Check your inbox for the verification link."},
-                code="email_not_verified",
-            )
+            from django.conf import settings
+            if getattr(settings, "AUTO_VERIFY_EMAIL", False) or (settings.DEBUG and not getattr(settings, "EMAIL_HOST_USER", "")):
+                self.user.is_email_verified = True
+                self.user.save(update_fields=["is_email_verified"])
+            else:
+                raise serializers.ValidationError(
+                    {"detail": "Please verify your email address before logging in. Check your inbox for the verification link."},
+                    code="email_not_verified",
+                )
 
         data["user"] = {
             "id": self.user.id,

@@ -28,10 +28,20 @@ CACHES = {
 
 # EMAIL
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+# In local development, use console backend if no SMTP credentials are provided,
+# so emails print to terminal without timing out or failing.
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+if EMAIL_HOST_USER:
+    EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+    EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
+    EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+    EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+else:
+    EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+
+# Auto-verify email in local development when no real SMTP credentials are provided
+AUTO_VERIFY_EMAIL = env.bool("AUTO_VERIFY_EMAIL", default=True)
 
 # django-debug-toolbar
 # ------------------------------------------------------------------------------
